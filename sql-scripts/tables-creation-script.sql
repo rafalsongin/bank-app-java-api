@@ -1,4 +1,4 @@
-CREATE TABLE `User` (
+CREATE TABLE `user` (
                         `user_id` INT AUTO_INCREMENT,
                         `username` VARCHAR(255) NOT NULL UNIQUE,
                         `email` VARCHAR(255) NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE `User` (
                         PRIMARY KEY (`user_id`)
 );
 
-CREATE TABLE `Customer` (
+CREATE TABLE `customer` (
                             `customer_id` INT AUTO_INCREMENT,
                             `user_id` INT NOT NULL,
                             `BSN_number` VARCHAR(50) NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE `Customer` (
                             FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`)
 );
 
-CREATE TABLE `Employee` (
+CREATE TABLE `employee` (
                             `employee_id` INT AUTO_INCREMENT,
                             `user_id` INT NOT NULL,
                             `employee_role` VARCHAR(50) NOT NULL,
@@ -31,14 +31,14 @@ CREATE TABLE `Employee` (
                             FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`)
 );
 
-CREATE TABLE `Bank` (
+CREATE TABLE `bank` (
                         `bank_id` INT AUTO_INCREMENT,
                         `name` VARCHAR(255) NOT NULL,
                         `currency` VARCHAR(3) NOT NULL,
                         PRIMARY KEY (`bank_id`)
 );
 
-CREATE TABLE `Account` (
+CREATE TABLE `account` (
                            `account_id` INT AUTO_INCREMENT,
                             `customer_id` INT NOT NULL,
                            `IBAN` VARCHAR(34) NOT NULL UNIQUE,
@@ -50,7 +50,7 @@ CREATE TABLE `Account` (
                             FOREIGN KEY (`customer_id`) REFERENCES `Customer` (`customer_id`)
 );
 
-CREATE TABLE `Transaction` (
+CREATE TABLE `transaction` (
                                `transaction_id` INT AUTO_INCREMENT,
                                 `transaction_type` VARCHAR(50) NOT NULL,
                                `amount` FLOAT NOT NULL,
@@ -64,9 +64,9 @@ CREATE TABLE `Transaction` (
                                FOREIGN KEY (`initiated_by_user`) REFERENCES `User` (`user_id`)
 );
 
-DROP TABLE IF EXISTS `User`;
-DROP TABLE IF EXISTS `Customer`;
-DROP TABLE IF EXISTS `Employee`;
-DROP TABLE IF EXISTS `Bank`;
-DROP TABLE IF EXISTS `Account`;
-DROP TABLE IF EXISTS `Transaction`;
+DROP TABLE IF EXISTS `user`;
+DROP TABLE IF EXISTS `customer`;
+DROP TABLE IF EXISTS `employee`;
+DROP TABLE IF EXISTS `eank`;
+DROP TABLE IF EXISTS `account`;
+DROP TABLE IF EXISTS `transaction`;

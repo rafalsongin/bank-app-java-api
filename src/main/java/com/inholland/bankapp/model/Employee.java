@@ -1,6 +1,7 @@
 package com.inholland.bankapp.model;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import jakarta.persistence.Entity;
 import jakarta.persistence.*;
@@ -8,7 +9,11 @@ import jakarta.persistence.*;
 @Setter
 @Getter
 @Entity
+@DiscriminatorValue("Employee")
+@NoArgsConstructor
 public class Employee extends User{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int employee_id;
     private EmployeeRole role;
 
