@@ -52,6 +52,7 @@ CREATE TABLE `Account` (
 
 CREATE TABLE `Transaction` (
                                `transaction_id` INT AUTO_INCREMENT,
+                                `transaction_type` VARCHAR(50) NOT NULL,
                                `amount` FLOAT NOT NULL,
                                `timestamp` DATETIME NOT NULL,
                                `from_account` INT NOT NULL,
