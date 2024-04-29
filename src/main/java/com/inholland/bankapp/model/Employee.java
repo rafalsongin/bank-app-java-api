@@ -6,12 +6,12 @@ import lombok.Setter;
 @Setter
 @Getter
 public class Employee extends User {
-    private String id; // Consider if this is necessary as `user_id` already exists in User
-    private EmployeeRole role; // Specific to Employee
+    private int employee_id;
+    private EmployeeRole role;
 
-    public Employee(int user_id, String username, String email, String password, String userRole, String JWT, String firstName, String lastName, String id, EmployeeRole role) {
-        super(user_id, username, email, password, userRole, JWT, firstName, lastName); // Call to User's constructor
-        this.id = id; // Employee specific ID, if different from user_id
-        this.role = role; // Employee specific role
+    public Employee(int employee_id, int user_id, String username, String email, String password, boolean isEmployee, String JWT, String firstName, String lastName, int bank_id, EmployeeRole role) {
+        super(user_id, username, email, password, isEmployee, JWT, firstName, lastName, bank_id);
+        this.employee_id = employee_id;
+        this.role = role;
     }
 }
