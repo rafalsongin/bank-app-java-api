@@ -3,30 +3,32 @@ CREATE TABLE `User` (
                         `username` VARCHAR(255) NOT NULL UNIQUE,
                         `email` VARCHAR(255) NOT NULL,
                         `password` VARCHAR(255) NOT NULL,
-                        `role` VARCHAR(50) NOT NULL,
+                        `isEmployee` BOOLEAN NOT NULL,
                         `JWT` TEXT,
                         `first_name` VARCHAR(255) NOT NULL,
                         `last_name` VARCHAR(255) NOT NULL,
+                        `bank_id` INT NOT NULL,
+                        FOREIGN KEY (`bank_id`) REFERENCES `Bank` (`bank_id`),
                         PRIMARY KEY (`user_id`)
 );
 
 CREATE TABLE `Customer` (
                             `customer_id` INT AUTO_INCREMENT,
-                            `username` VARCHAR(255) NOT NULL,
+                            `user_id` INT NOT NULL,
                             `BSN_number` VARCHAR(50) NOT NULL,
                             `phone_number` VARCHAR(50),
                             `account_approval_status` VARCHAR(50),
                             `transaction_limits` FLOAT,
                             PRIMARY KEY (`customer_id`),
-                            FOREIGN KEY (`username`) REFERENCES `User` (`username`)
+                            FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`)
 );
 
 CREATE TABLE `Employee` (
                             `employee_id` INT AUTO_INCREMENT,
-                            `username` VARCHAR(255) NOT NULL,
+                            `user_id` INT NOT NULL,
                             `employee_role` VARCHAR(50) NOT NULL,
                             PRIMARY KEY (`employee_id`),
-                            FOREIGN KEY (`username`) REFERENCES `User` (`username`)
+                            FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`)
 );
 
 CREATE TABLE `Bank` (
