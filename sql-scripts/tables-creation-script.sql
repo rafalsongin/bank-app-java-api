@@ -16,7 +16,6 @@ CREATE TABLE `Customer` (
                             `BSN_number` VARCHAR(50) NOT NULL,
                             `phone_number` VARCHAR(50),
                             `account_approval_status` VARCHAR(50),
-                            `account_balance` FLOAT,
                             `transaction_limits` FLOAT,
                             PRIMARY KEY (`customer_id`),
                             FOREIGN KEY (`username`) REFERENCES `User` (`username`)
@@ -40,7 +39,7 @@ CREATE TABLE `Bank` (
 CREATE TABLE `Account` (
                            `account_id` INT AUTO_INCREMENT,
                             `customer_id` INT NOT NULL,
-                           `account_number` VARCHAR(34) NOT NULL UNIQUE,
+                           `IBAN` VARCHAR(34) NOT NULL UNIQUE,
                            `account_type` VARCHAR(50) NOT NULL,
                            `balance` FLOAT NOT NULL,
                            `absolute_transfer_limit` FLOAT NOT NULL,
