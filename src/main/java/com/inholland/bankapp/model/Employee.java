@@ -2,10 +2,13 @@ package com.inholland.bankapp.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 
 @Setter
 @Getter
-public class Employee extends User {
+@Entity
+public class Employee extends User{
     private int employee_id;
     private EmployeeRole role;
 
@@ -14,4 +17,5 @@ public class Employee extends User {
         this.employee_id = employee_id;
         this.role = role;
     }
+
 }
