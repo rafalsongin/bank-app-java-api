@@ -6,21 +6,19 @@ import lombok.Setter;
 import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 
+@Entity
+@Table(name = "employee")
+@PrimaryKeyJoinColumn(name = "user_id")
 @Setter
 @Getter
-@Entity
-@DiscriminatorValue("Employee")
 @NoArgsConstructor
 public class Employee extends User{
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int employee_id;
-    private EmployeeRole role;
+    @Enumerated(EnumType.STRING)
+    private EmployeeRole employee_role;
 
-    public Employee(int employee_id, int user_id, String username, String email, String password, boolean isEmployee, String JWT, String firstName, String lastName, int bank_id, EmployeeRole role) {
-        super(user_id, username, email, password, isEmployee, JWT, firstName, lastName, bank_id);
-        this.employee_id = employee_id;
-        this.role = role;
-    }
+//    public Employee( int user_id, String username, String email, String password, boolean isEmployee, String JWT, String firstName, String lastName, int bank_id, EmployeeRole role) {
+//        super(user_id, username, email, password, isEmployee, JWT, firstName, lastName, bank_id);
+//        this.role = role;
+//    }
 
 }

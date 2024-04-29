@@ -1,24 +1,22 @@
 package com.inholland.bankapp.model;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "customer")
+@PrimaryKeyJoinColumn(name = "user_id")
 @Setter
 @Getter
+@NoArgsConstructor
 public class Customer extends User {
-    private int customer_id;
-    private String BSNNumber;
-    private String phoneNumber;
-    private String accountApprovalStatus;
-    private float dailyTransactionLimit;
+    private String BSN_number;
+    private String phone_number;
+    private String account_approval_status;
+    private float transaction_limits;
 
-    public Customer(int user_id, String username, String email, String password, boolean isEmployee, String JWT, String first_name, String last_name,
-                    String BSNNumber, String phoneNumber, String accountApprovalStatus, float dailyTransactionLimit, int bank_id) {
-        super(user_id, username, email, password, isEmployee, JWT, first_name, last_name,bank_id);
-        this.BSNNumber = BSNNumber;
-        this.phoneNumber = phoneNumber;
-        this.accountApprovalStatus = accountApprovalStatus;
-        this.dailyTransactionLimit = dailyTransactionLimit;
-    }
 }
 

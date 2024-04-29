@@ -8,27 +8,23 @@ CREATE TABLE `user` (
                         `first_name` VARCHAR(255) NOT NULL,
                         `last_name` VARCHAR(255) NOT NULL,
                         `bank_id` INT NOT NULL,
-                        FOREIGN KEY (`bank_id`) REFERENCES `Bank` (`bank_id`),
+                        FOREIGN KEY (`bank_id`) REFERENCES `bank` (`bank_id`),
                         PRIMARY KEY (`user_id`)
 );
 
 CREATE TABLE `customer` (
-                            `customer_id` INT AUTO_INCREMENT,
-                            `user_id` INT NOT NULL,
+                            `user_id` INT PRIMARY KEY NOT NULL,
                             `BSN_number` VARCHAR(50) NOT NULL,
                             `phone_number` VARCHAR(50),
                             `account_approval_status` VARCHAR(50),
                             `transaction_limits` FLOAT,
-                            PRIMARY KEY (`customer_id`),
-                            FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`)
+                            FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
 );
 
 CREATE TABLE `employee` (
-                            `employee_id` INT AUTO_INCREMENT,
-                            `user_id` INT NOT NULL,
+                            `user_id` INT PRIMARY KEY NOT NULL,
                             `employee_role` VARCHAR(50) NOT NULL,
-                            PRIMARY KEY (`employee_id`),
-                            FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`)
+                            FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
 );
 
 CREATE TABLE `bank` (
@@ -47,7 +43,7 @@ CREATE TABLE `account` (
                            `absolute_transfer_limit` FLOAT NOT NULL,
                            `daily_transfer_limit` FLOAT NOT NULL,
                            PRIMARY KEY (`account_id`),
-                            FOREIGN KEY (`customer_id`) REFERENCES `Customer` (`customer_id`)
+                            FOREIGN KEY (`customer_id`) REFERENCES `customer` (`user_id`)
 );
 
 CREATE TABLE `transaction` (
@@ -59,14 +55,14 @@ CREATE TABLE `transaction` (
                                `to_account` INT NOT NULL,
                                `initiated_by_user` INT NOT NULL,
                                PRIMARY KEY (`transaction_id`),
-                               FOREIGN KEY (`from_account`) REFERENCES `Account` (`account_id`),
-                               FOREIGN KEY (`to_account`) REFERENCES `Account` (`account_id`),
-                               FOREIGN KEY (`initiated_by_user`) REFERENCES `User` (`user_id`)
+                               FOREIGN KEY (`from_account`) REFERENCES `account` (`account_id`),
+                               FOREIGN KEY (`to_account`) REFERENCES `account` (`account_id`),
+                               FOREIGN KEY (`initiated_by_user`) REFERENCES `user` (`user_id`)
 );
 
 DROP TABLE IF EXISTS `user`;
 DROP TABLE IF EXISTS `customer`;
 DROP TABLE IF EXISTS `employee`;
-DROP TABLE IF EXISTS `eank`;
+DROP TABLE IF EXISTS `bank`;
 DROP TABLE IF EXISTS `account`;
 DROP TABLE IF EXISTS `transaction`;
