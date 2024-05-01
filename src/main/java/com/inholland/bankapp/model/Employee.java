@@ -16,9 +16,5 @@ public class Employee extends User{
     @Enumerated(EnumType.STRING)
     private EmployeeRole employee_role;
 
-//    public Employee( int user_id, String username, String email, String password, boolean isEmployee, String JWT, String firstName, String lastName, int bank_id, EmployeeRole role) {
-//        super(user_id, username, email, password, isEmployee, JWT, firstName, lastName, bank_id);
-//        this.role = role;
-//    }
 
 }

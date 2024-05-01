@@ -15,7 +15,10 @@ import jakarta.persistence.*;
 public class Customer extends User {
     private String BSN_number;
     private String phone_number;
-    private String account_approval_status;
+
+    @Enumerated(EnumType.STRING)
+    private AccountApprovalStatus account_approval_status;
+
     private float transaction_limits;
 
 }
