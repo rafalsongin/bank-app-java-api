@@ -16,7 +16,7 @@ import lombok.Setter;
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    
+
     private int account_id;
     private int customer_id;
     private String IBAN;
