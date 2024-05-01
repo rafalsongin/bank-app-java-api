@@ -25,7 +25,7 @@ public class EmployeeService {
     }
 
     // A method to find an employee by ID
-    public Optional<Employee> findEmployeeById(Long id) {
+    public Optional<Employee> findEmployeeById(int id) {
         return employeeRepository.findById(id);
     }
 
@@ -35,7 +35,7 @@ public class EmployeeService {
     }
 
     // A method to delete an employee by ID
-    public void deleteEmployee(Long id) {
+    public void deleteEmployee(int id) {
         employeeRepository.deleteById(id);
     }
 
