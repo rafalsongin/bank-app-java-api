@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("customers")
+@RequestMapping("/customers")
 public class CustomerController {
 
     @Autowired
@@ -20,6 +20,15 @@ public class CustomerController {
     @GetMapping
     public ResponseEntity<List<Customer>> getAllCustomers() {
         List<Customer> customers = customerService.getAllCustomers();
+        if (customers.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(customers);
+    }
+
+    @GetMapping("/unverified")
+    public ResponseEntity<List<Customer>> getUnverifiedCustomers() {
+        List<Customer> customers = customerService.getCustomersWithUnverifiedAccounts();
         if (customers.isEmpty()) {
             return ResponseEntity.noContent().build();
         }

@@ -17,6 +17,6 @@ public class CustomerService {
         return customerRepository.findAll();
     }
     public List<Customer> getCustomersWithUnverifiedAccounts() {
-        return customerRepository.findByApprovalStatus(AccountApprovalStatus.UNVERIFIED);
+        return customerRepository.findByAccountApprovalStatus(AccountApprovalStatus.UNVERIFIED);
     }
 }
