@@ -2,7 +2,6 @@ package com.inholland.bankapp.service;
 
 import com.inholland.bankapp.model.Account;
 import com.inholland.bankapp.model.AccountType;
-import com.inholland.bankapp.model.Customer;
 import com.inholland.bankapp.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,14 +19,15 @@ public class AccountService {
     private static final SecureRandom random = new SecureRandom();
     private static final String BANK_CODE = "INHO0"; // Your bank's code
     private static final String COUNTRY_CODE = "NL";
-    final float defaultBalance = 0;
-    final float defaultAbsolutTransferLimit = 10000;
-    final float defaultDailyTransferLimit = 1000;
+    private static final float DEFAULT_BALANCE = 0;
+    private static final float DEFAULT_ABSOLUTE_TRANSFER_LIMIT = 10000;
+    private static final float DEFAULT_DAILY_TRANSFER_LIMIT = 1000;
+    private static final int ACCOUNT_NUMBER_LENGTH = 10;
 
     public String generateUniqueIBAN() {
         String baseIBAN = COUNTRY_CODE + "xx" + BANK_CODE; // Placeholder for check digits
         while (true) {
-            String accountNumber = generateRandomDigits(10);
+            String accountNumber = generateAccountNumber();
             String uniqueIBAN = baseIBAN + accountNumber;
             uniqueIBAN = computeCheckDigits(uniqueIBAN); // Implement this method based on the IBAN standard
 
@@ -37,14 +37,14 @@ public class AccountService {
         }
     }
 
-    private boolean isIBANUnique(String iban) {
-        Optional<Account> existingAccount = accountRepository.findByIBAN(iban);
+    private boolean isIBANUnique(String IBAN) {
+        Optional<Account> existingAccount = accountRepository.findByIBAN(IBAN);
         return existingAccount.isEmpty();
     }
 
-    private String generateRandomDigits(int length) {
+    private String generateAccountNumber() {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < ACCOUNT_NUMBER_LENGTH; i++) {
             sb.append(random.nextInt(10));
         }
         return sb.toString();
@@ -68,11 +68,12 @@ public class AccountService {
         // Save the new account
         accountRepository.save(account);
     }
+
     private void createSavingsAccount(int customerID){
         try{
             AccountType typeOfAccount = AccountType.SAVINGS;
             String uniqueIBAN = generateUniqueIBAN();
-            createAccount(customerID, uniqueIBAN, typeOfAccount, defaultBalance, defaultAbsolutTransferLimit, defaultDailyTransferLimit);
+            createAccount(customerID, uniqueIBAN, typeOfAccount, DEFAULT_BALANCE, DEFAULT_ABSOLUTE_TRANSFER_LIMIT, DEFAULT_DAILY_TRANSFER_LIMIT);
         }
         catch (Exception e){
             //e.printStackTrace();
@@ -83,7 +84,7 @@ public class AccountService {
         try{
             AccountType typeOfAccount = AccountType.CHECKING;
             String uniqueIBAN =generateUniqueIBAN();
-            createAccount(customerID, uniqueIBAN, typeOfAccount, defaultBalance, defaultAbsolutTransferLimit, defaultDailyTransferLimit);
+            createAccount(customerID, uniqueIBAN, typeOfAccount, DEFAULT_BALANCE, DEFAULT_ABSOLUTE_TRANSFER_LIMIT, DEFAULT_DAILY_TRANSFER_LIMIT);
         }
         catch (Exception e) {
             //e.printStackTrace();
