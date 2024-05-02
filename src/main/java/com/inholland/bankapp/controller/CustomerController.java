@@ -5,11 +5,13 @@ import com.inholland.bankapp.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/customers")
+@CrossOrigin(origins = "http://localhost:5173")
 public class CustomerController {
 
     @Autowired

@@ -14,17 +14,24 @@ import jakarta.persistence.*;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int user_id;
+    @Column(name = "user_id")
+    private int userID;
 
     private String username;
     private String email;
     private String password;
-    private boolean is_employee;
+    @Column (name = "is_employee")
+    private boolean isEmployee;
     private String JWT;
-    private String first_name;
-    private String last_name;
-    private int bank_id;
+    @Column (name ="first_name")
+    private String firstName;
+    @Column (name = "last_name")
+    private String lastName;
+    @Column (name = "bank_id")
+    private int bankID;
 
+    @Transient
+    private String fullName = firstName + " " + lastName;
 }
 
 

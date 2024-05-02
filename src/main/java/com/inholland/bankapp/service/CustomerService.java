@@ -19,9 +19,6 @@ public class CustomerService {
     @Autowired
     private AccountService accountService;
 
-
-
-
     public List<Customer> getAllCustomers() {
         return customerRepository.findAll();
     }
@@ -35,7 +32,7 @@ public class CustomerService {
         if (customer != null) {
             customer.setAccountApprovalStatus(AccountApprovalStatus.VERIFIED);
             customerRepository.save(customer);
-            accountService.createAccounts(customer.getUser_id());
+            accountService.createAccounts(customer.getUserID());
         }
         else {
             throw new IllegalArgumentException("Customer not found");

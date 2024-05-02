@@ -14,7 +14,8 @@ import jakarta.persistence.*;
 @NoArgsConstructor
 public class Employee extends User{
     @Enumerated(EnumType.STRING)
-    private EmployeeRole employee_role;
+    @Column(name = "employee_role")
+    private EmployeeRole employeeRole;
 
 
 }
