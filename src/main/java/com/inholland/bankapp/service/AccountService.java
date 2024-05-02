@@ -58,12 +58,12 @@ public class AccountService {
 
     public void createAccount(int customerId, String IBAN, AccountType accountType, float balance, float absoluteTransferLimit, float dailyTransferLimit) {
         Account account = new Account();
-        account.setCustomer_id(customerId);
+        account.setCustomerId(customerId);
         account.setIBAN(IBAN);
-        account.setAccount_type(accountType);
+        account.setAccountType(accountType);
         account.setBalance(balance);
-        account.setAbsolute_transfer_limit(absoluteTransferLimit);
-        account.setDaily_transfer_limit(dailyTransferLimit);
+        account.setAbsoluteTransferLimit(absoluteTransferLimit);
+        account.setDailyTransferLimit(dailyTransferLimit);
 
         // Save the new account
         accountRepository.save(account);
@@ -95,4 +95,3 @@ public class AccountService {
         createCheckingAccount(customerId);
     }
 }
-
