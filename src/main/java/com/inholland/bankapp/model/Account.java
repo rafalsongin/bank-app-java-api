@@ -1,10 +1,7 @@
 package com.inholland.bankapp.model;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,12 +14,22 @@ public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
-    private int account_id;
-    private int customer_id;
-    private String IBAN;
-    private AccountType account_type;
-    private float balance;
-    private float absolute_transfer_limit;
-    private float daily_transfer_limit;
+    @Column(name = "account_id")
+    private int accountId;
 
+    @Column(name = "customer_id")
+    private int customerId;
+
+    private String IBAN;
+
+    @Column(name = "account_type")
+    private AccountType accountType;
+
+    private float balance;
+
+    @Column (name = "absolute_transfer_limit")
+    private float absoluteTransferLimit;
+
+    @Column (name = "daily_transfer_limit")
+    private float dailyTransferLimit;
 }
