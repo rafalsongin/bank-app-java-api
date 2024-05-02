@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/customers")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5173") // this will need changes depending on the port number
 public class CustomerController {
 
     @Autowired
@@ -46,15 +46,5 @@ public class CustomerController {
         customerService.declineCustomer(customerID);
         return ResponseEntity.ok("Customer declined");
     }
-
-    // pass the id of customer
-    // change the status to approved in db
-    // generate the necessary account details
-    // for account details you need unique account number with nl bla bla
-    // create 2 accounts, 1 for savings and 1 for checking
-    // set default data for the rest of the fields
-    // return response message that it worked
-
-
 
 }

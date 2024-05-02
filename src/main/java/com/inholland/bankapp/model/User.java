@@ -30,8 +30,6 @@ public class User {
     @Column (name = "bank_id")
     private int bankID;
 
-    @Transient
-    private String fullName = firstName + " " + lastName;
 }
 
 
