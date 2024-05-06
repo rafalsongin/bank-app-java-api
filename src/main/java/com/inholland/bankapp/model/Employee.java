@@ -1,10 +1,10 @@
 package com.inholland.bankapp.model;
 
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import jakarta.persistence.Entity;
-import jakarta.persistence.*;
 
 @Entity
 @Table(name = "employee")
@@ -12,10 +12,9 @@ import jakarta.persistence.*;
 @Setter
 @Getter
 @NoArgsConstructor
-public class Employee extends User{
+public class Employee extends User {
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "employee_role")
-    private EmployeeRole employeeRole;
-
-
+    @Column(name = "employment_status")
+    private EmploymentStatus employmentStatus;
 }
