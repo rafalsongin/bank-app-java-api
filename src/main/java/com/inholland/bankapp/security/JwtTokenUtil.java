@@ -1,9 +1,9 @@
 package com.inholland.bankapp.security;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
@@ -40,7 +40,26 @@ public class JwtTokenUtil {
     }
 
     public boolean validateJwtToken(String authToken) {
-        Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
-        return true;
+        try {
+            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
+            return true;
+        } catch (SignatureException e) {
+            // Invalid signature
+            System.out.println("Invalid JWT signature: " + e.getMessage());
+        } catch (MalformedJwtException e) {
+            // Invalid JWT token
+            System.out.println("Invalid JWT token: " + e.getMessage());
+        } catch (ExpiredJwtException e) {
+            // JWT token is expired
+            System.out.println("JWT token is expired: " + e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            // JWT token is unsupported
+            System.out.println("JWT token is unsupported: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            // JWT claims string is empty
+            System.out.println("JWT claims string is empty: " + e.getMessage());
+        }
+
+        return false;
     }
 }

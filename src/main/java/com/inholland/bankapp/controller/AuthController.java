@@ -19,7 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 public class AuthController {
 
     @Autowired
@@ -42,7 +42,6 @@ public class AuthController {
         Customer customer = customerService.registerNewCustomer(registrationDto);
         return ResponseEntity.ok("Customer registered successfully");
     }
-    
     
     @PostMapping("/register-employee")
     public ResponseEntity<?> registerEmployee(@RequestBody EmployeeRegistrationDto registrationDto) {

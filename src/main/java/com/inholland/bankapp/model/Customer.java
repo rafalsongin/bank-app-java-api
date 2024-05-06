@@ -23,8 +23,9 @@ public class Customer extends User {
     @Enumerated(EnumType.STRING)
     @Column(name = "account_approval_status")
     private AccountApprovalStatus accountApprovalStatus;
+    
+    @Column(name = "transaction_limits")
 
-    @Column(name = "transaction_limit")
     private float transactionLimit;
 
 
