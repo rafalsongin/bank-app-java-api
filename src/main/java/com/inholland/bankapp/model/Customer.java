@@ -13,6 +13,7 @@ import jakarta.persistence.*;
 @Getter
 @NoArgsConstructor
 public class Customer extends User {
+
     @Column(name = "bsn_number")
     private String BSN;
     
@@ -24,7 +25,9 @@ public class Customer extends User {
     private AccountApprovalStatus accountApprovalStatus;
     
     @Column(name = "transaction_limits")
+
     private float transactionLimit;
+
 
 }
 
