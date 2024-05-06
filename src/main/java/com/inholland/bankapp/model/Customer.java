@@ -13,14 +13,18 @@ import jakarta.persistence.*;
 @Getter
 @NoArgsConstructor
 public class Customer extends User {
-    private String BSN_number;
-    private String phone_number;
-
+    @Column(name = "bsn_number")
+    private String BSN;
+    
+    @Column(name = "phone_number")
+    private String phoneNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "account_approval_status")
     private AccountApprovalStatus accountApprovalStatus;
-    private float transaction_limits;
+    
+    @Column(name = "transaction_limit")
+    private float transactionLimit;
 
 }
 
