@@ -13,6 +13,7 @@ import jakarta.persistence.*;
 @Getter
 @NoArgsConstructor
 public class Customer extends User {
+
     @Column(name = "bsn_number")
     private String BSN;
     
@@ -22,9 +23,10 @@ public class Customer extends User {
     @Enumerated(EnumType.STRING)
     @Column(name = "account_approval_status")
     private AccountApprovalStatus accountApprovalStatus;
-    
+
     @Column(name = "transaction_limit")
     private float transactionLimit;
+
 
 }
 
