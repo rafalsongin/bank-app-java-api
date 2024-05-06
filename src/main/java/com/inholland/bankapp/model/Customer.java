@@ -23,7 +23,7 @@ public class Customer extends User {
     @Column(name = "account_approval_status")
     private AccountApprovalStatus accountApprovalStatus;
     
-    @Column(name = "transaction_limit")
+    @Column(name = "transaction_limits")
     private float transactionLimit;
 
 }
