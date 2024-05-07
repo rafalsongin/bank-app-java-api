@@ -26,7 +26,4 @@ public class Customer extends User {
     
     @Column(name = "transaction_limits")
     private Float transactionLimit;
-
-
 }
-

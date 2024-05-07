@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CustomerService {
@@ -24,6 +25,15 @@ public class CustomerService {
 
     public List<Customer> getAllCustomers() {
         return customerRepository.findAll();
+    }
+  
+    /**
+     Get Method - getting the customer by id
+     @param id  - parameter is of Long type, that represents the id for the customer
+     @return    - returns the customer, if id parameter is provided.
+     */
+    public Optional<Customer> getCustomerById(Long id) {
+        return customerRepository.findById(id);
     }
 
     public List<Customer> getCustomersWithUnverifiedAccounts() {
@@ -53,7 +63,6 @@ public class CustomerService {
         }
     }
     
-
     /*public Customer registerNewCustomerAccount(UserRegistrationDto registrationDto) {
         Customer user = new Customer();
         user.setEmail(registrationDto.getEmail());
@@ -100,6 +109,4 @@ public class CustomerService {
 
         return customerRepository.save(user);
     }
-
-
 }
