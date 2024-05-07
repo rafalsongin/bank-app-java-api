@@ -12,13 +12,9 @@ import jakarta.persistence.*;
 public class Bank {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int bank_id;
+    @Column(name = "bank_id")
+    private int bankId;
+
     private String name;
     private String currency;
-
-    public Bank(int bank_id, String name, String currency) {
-        this.bank_id = bank_id;
-        this.name = name;
-        this.currency = currency;
-    }
 }
