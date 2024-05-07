@@ -28,7 +28,7 @@ public class CustomerController {
     }
   
     @GetMapping("/{id}")
-    public ResponseEntity<Customer> getCustomerById(@PathVariable Long id) {
+    public ResponseEntity<Customer> getCustomerById(@PathVariable Integer id) {
         Customer customer = customerService.getCustomerById(id).orElse(null);
 
         // Check if the object was not found

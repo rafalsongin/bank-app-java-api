@@ -32,7 +32,7 @@ public class CustomerService {
      @param id  - parameter is of Long type, that represents the id for the customer
      @return    - returns the customer, if id parameter is provided.
      */
-    public Optional<Customer> getCustomerById(Long id) {
+    public Optional<Customer> getCustomerById(Integer id) {
         return customerRepository.findById(id);
     }
 
