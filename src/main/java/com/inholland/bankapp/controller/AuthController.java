@@ -45,7 +45,6 @@ public class AuthController {
     
     @PostMapping("/register-employee")
     public ResponseEntity<?> registerEmployee(@RequestBody EmployeeRegistrationDto registrationDto) {
-        System.out.println("testing");
         Employee employee = employeeService.registerNewEmployee(registrationDto);
         return ResponseEntity.ok("Employee registered successfully");
     }
@@ -53,7 +52,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginDto loginDto) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword())
+                new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword())
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
