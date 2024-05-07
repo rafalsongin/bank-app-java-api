@@ -73,13 +73,4 @@ public class UserDetailsImpl implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
-    // Optionally, you can add custom fields that are accessible through getters:
-    public String getEmail() {
-        return email;
-    }
-
-    public int getId() {
-        return id;
-    }
 }

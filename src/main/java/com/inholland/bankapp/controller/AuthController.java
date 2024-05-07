@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin("http://localhost:5173")
 public class AuthController {
 
     @Autowired
@@ -45,7 +46,6 @@ public class AuthController {
     
     @PostMapping("/register-employee")
     public ResponseEntity<?> registerEmployee(@RequestBody EmployeeRegistrationDto registrationDto) {
-        System.out.println("testing");
         Employee employee = employeeService.registerNewEmployee(registrationDto);
         return ResponseEntity.ok("Employee registered successfully");
     }
@@ -53,7 +53,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginDto loginDto) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword())
+                new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword())
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);

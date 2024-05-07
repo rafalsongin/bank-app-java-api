@@ -25,6 +25,5 @@ public class Customer extends User {
     private AccountApprovalStatus accountApprovalStatus;
     
     @Column(name = "transaction_limits")
-
     private Float transactionLimit;
 }
