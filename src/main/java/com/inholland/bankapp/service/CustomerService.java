@@ -1,6 +1,8 @@
 package com.inholland.bankapp.service;
 
 import com.inholland.bankapp.dto.CustomerRegistrationDto;
+import com.inholland.bankapp.exceptions.InvalidDataException;
+import com.inholland.bankapp.exceptions.UserAlreadyExistsException;
 import com.inholland.bankapp.model.AccountApprovalStatus;
 import com.inholland.bankapp.model.Customer;
 import com.inholland.bankapp.model.UserRole;
@@ -52,54 +54,74 @@ public class CustomerService {
             throw new IllegalArgumentException("Customer not found");
         }
     }
-    
-
-    /*public Customer registerNewCustomerAccount(UserRegistrationDto registrationDto) {
-        Customer user = new Customer();
-        user.setEmail(registrationDto.getEmail());
-        user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
-        user.setUsername(user.getFirstName() + user.getLastName());
-        user.setFirstName(registrationDto.getFirstName());
-        user.setLastName(registrationDto.getLastName());
-        user.setUserRole(UserRole.CUSTOMER);
-        user.setAccountApprovalStatus(AccountApprovalStatus.UNVERIFIED);
-
-        *//*Customer customer = new Customer();
-        customer.setEmail("rafal.songin@gmail.com");
-        customer.setPassword(passwordEncoder.encode("rafalsongin"));
-        customer.setFirstName("Rafal");
-        customer.setLastName("Songin");
-        customer.setUserRole(UserRole.CUSTOMER);
-        customer.setAccountApprovalStatus(AccountApprovalStatus.UNVERIFIED);*//*
-        return customerRepository.save(user);
-    }*/
 
     public Customer registerNewCustomer(CustomerRegistrationDto registrationDto) {
+        validateRegistrationData(registrationDto);
+        
+        if (customerExists(registrationDto.getEmail())) {
+            throw new UserAlreadyExistsException("Customer with " + registrationDto.getEmail() + " email already exists.");
+        }
+        
+        Customer user = createCustomer(registrationDto);
+        
+        return customerRepository.save(user);
+    }
+    
+    private Customer createCustomer(CustomerRegistrationDto registrationDto) {
         Customer user = new Customer();
-
-        // Set username to a combination of firstName and lastName. Ensure this is unique or handled appropriately.
         String username = registrationDto.getFirstName() + registrationDto.getLastName();
-
+        
         user.setUsername(username);
         user.setEmail(registrationDto.getEmail());
         user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
         user.setFirstName(registrationDto.getFirstName());
         user.setLastName(registrationDto.getLastName());
-
-        // Assuming you are setting some default or fetching an existing bank_id
-        user.setBankId(1); // You need to have a valid bank_id or retrieve it dynamically as per your logic
-
-        // Set user role, assuming UserRole.CUSTOMER maps correctly to your user_role in the database
+        user.setBankId(1);
         user.setUserRole(UserRole.CUSTOMER);
-
-        // For Customer specific fields
-        user.setBSN(registrationDto.getBsn()); // Assuming you added BSN to your DTO
-        user.setPhoneNumber(registrationDto.getPhoneNumber()); // Assuming you added phoneNumber to your DTO
+        user.setBSN(registrationDto.getBsn());
+        user.setPhoneNumber(registrationDto.getPhoneNumber());
         user.setTransactionLimit(0.0f); // Set a default or specified transaction limit
         user.setAccountApprovalStatus(AccountApprovalStatus.UNVERIFIED);
-
-        return customerRepository.save(user);
+        
+        return user;
     }
 
+    private boolean customerExists(String email) {
+        return customerRepository.findByEmail(email).isPresent();
+    }
 
+    protected void validateRegistrationData(CustomerRegistrationDto registrationDto) {
+        if (registrationDto.getEmail() == null || !registrationDto.getEmail().matches("[^@ ]+@[^@ ]+\\.[^@ ]+")) {
+            System.out.println("1");
+            throw new InvalidDataException("Invalid email format");
+        }
+        if (registrationDto.getPassword() == null || registrationDto.getPassword().length() < 6) {
+            System.out.println("2");
+            throw new InvalidDataException("Password must be at least 6 characters long");
+        }
+        if (registrationDto.getFirstName() == null || registrationDto.getFirstName().isEmpty()) {
+            System.out.println("3");
+            throw new InvalidDataException("First name is required");
+        }
+        if (registrationDto.getLastName() == null || registrationDto.getLastName().isEmpty()) {
+            System.out.println("4");
+            throw new InvalidDataException("Last name is required");
+        }
+        if (registrationDto.getPhoneNumber() == null || !isValidPhoneNumber(registrationDto.getPhoneNumber())) {
+            System.out.println("5");
+            throw new InvalidDataException("Invalid Dutch phone number");
+        }
+        if (registrationDto.getBsn() == null || !isValidBSN(registrationDto.getBsn())) {
+            System.out.println("6");
+            throw new InvalidDataException("Invalid BSN number");
+        }
+    }
+
+    private boolean isValidPhoneNumber(String phoneNumber) {
+        return phoneNumber.matches("(\\+31|0)[1-9][0-9]{8}");
+    }
+
+    private boolean isValidBSN(String bsn) {
+        return bsn.length() >= 8 && bsn.length() <= 9 && bsn.matches("\\d+");
+    }
 }
