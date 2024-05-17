@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-public class AuthController {    
+@CrossOrigin("http://localhost:5173")
+public class AuthController {
+  
     @Autowired
     private CustomerService customerService;
     
