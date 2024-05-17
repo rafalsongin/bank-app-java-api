@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 
 import java.security.SecureRandom;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -94,5 +95,9 @@ public class AccountService {
     public void createAccounts(int customerId) {
         createSavingsAccount(customerId);
         createCheckingAccount(customerId);
+    }
+
+    public List<Account> getAccountsByCustomerId(int customer_id){
+        return accountRepository.getAccountsByCustomerId(customer_id);
     }
 }
