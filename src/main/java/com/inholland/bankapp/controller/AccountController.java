@@ -30,4 +30,13 @@ public class AccountController {
         return ResponseEntity.ok(accounts);
     }
 
+    @PutMapping("/changeAccount/{accountId}")
+    public ResponseEntity<Account> updateAccount(@PathVariable int accountId, @RequestBody Account updatedAccount) {
+        Account account = accountService.updateAccount(accountId, updatedAccount);
+        if (account == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(account);
+    }
+
 }

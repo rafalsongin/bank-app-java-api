@@ -100,4 +100,16 @@ public class AccountService {
     public List<Account> getAccountsByCustomerId(int customer_id){
         return accountRepository.getAccountsByCustomerId(customer_id);
     }
+
+    public Account updateAccount(int accountId, Account updatedAccount) {
+        Optional<Account> account = accountRepository.findById(accountId);
+        if (account.isEmpty()) {
+            return null;
+        }
+        Account existingAccount = account.get();
+        existingAccount.setBalance(updatedAccount.getBalance());
+        existingAccount.setAbsoluteTransferLimit(updatedAccount.getAbsoluteTransferLimit());
+        existingAccount.setDailyTransferLimit(updatedAccount.getDailyTransferLimit());
+        return accountRepository.save(existingAccount);
+    }
 }
