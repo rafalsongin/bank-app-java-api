@@ -41,7 +41,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> registerCustomer(@RequestBody CustomerRegistrationDto registrationDto) {
         try {
-            Customer customer = customerService.registerNewCustomer(registrationDto);
+            customerService.registerNewCustomer(registrationDto);
             return ResponseEntity.status(HttpStatus.OK).body("Customer registration form submitted successfully"); // returning 200 OK
         } catch (UserAlreadyExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage()); // returning 409 Conflict
@@ -56,7 +56,7 @@ public class AuthController {
     @PostMapping("/register-employee")
     public ResponseEntity<?> registerEmployee(@RequestBody EmployeeRegistrationDto registrationDto) {
         try {
-            Employee employee = employeeService.registerNewEmployee(registrationDto);
+            employeeService.registerNewEmployee(registrationDto);
             return ResponseEntity.ok("Employee registered successfully");
         } catch (UserAlreadyExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage()); // returning 409 Conflict

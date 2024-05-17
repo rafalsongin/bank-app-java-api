@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class CustomerService {
+public class CustomerService extends UserService {
     @Autowired
     private CustomerRepository customerRepository;
 
@@ -65,16 +65,16 @@ public class CustomerService {
         }
     }
 
-    public Customer registerNewCustomer(CustomerRegistrationDto registrationDto) {
+    public void registerNewCustomer(CustomerRegistrationDto registrationDto) {
         validateRegistrationData(registrationDto);
         
-        if (customerExists(registrationDto.getEmail())) {
+        if (userExists(registrationDto.getEmail())) {
             throw new UserAlreadyExistsException("Customer with " + registrationDto.getEmail() + " email already exists.");
         }
         
         Customer user = createCustomer(registrationDto);
-        
-        return customerRepository.save(user);
+
+        customerRepository.save(user);
     }
     
     private Customer createCustomer(CustomerRegistrationDto registrationDto) {
@@ -95,11 +95,7 @@ public class CustomerService {
         
         return user;
     }
-
-    private boolean customerExists(String email) {
-        return customerRepository.findByEmail(email).isPresent();
-    }
-
+    
     protected void validateRegistrationData(CustomerRegistrationDto registrationDto) {
         if (registrationDto.getEmail() == null || !registrationDto.getEmail().matches("[^@ ]+@[^@ ]+\\.[^@ ]+")) {
             System.out.println("1");
