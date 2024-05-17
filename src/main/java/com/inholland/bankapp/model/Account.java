@@ -32,4 +32,7 @@ public class Account {
 
     @Column (name = "daily_transfer_limit")
     private float dailyTransferLimit;
+
+    @Column (name = "account_status")
+    private AccountStatus accountStatus;
 }
