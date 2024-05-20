@@ -6,8 +6,6 @@ import com.inholland.bankapp.dto.EmployeeRegistrationDto;
 import com.inholland.bankapp.dto.LoginDto;
 import com.inholland.bankapp.exceptions.UserAlreadyExistsException;
 import com.inholland.bankapp.exceptions.InvalidDataException;
-import com.inholland.bankapp.model.Customer;
-import com.inholland.bankapp.model.Employee;
 import com.inholland.bankapp.security.JwtTokenUtil;
 import com.inholland.bankapp.service.CustomerService;
 import com.inholland.bankapp.service.EmployeeService;
@@ -78,10 +76,10 @@ public class AuthController {
             String jwt = jwtTokenUtil.generateToken(authentication);
             return ResponseEntity.ok(jwt);
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(401).body("Invalid email or password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body("An error occurred");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
         }
     }
     
