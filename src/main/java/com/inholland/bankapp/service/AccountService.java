@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 
 import java.security.SecureRandom;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -38,7 +39,7 @@ public class AccountService {
     }
 
     private boolean isIBANUnique(String IBAN) {
-        Optional<Account> existingAccount = accountRepository.findByIBAN(IBAN);
+        Optional<Account> existingAccount = accountRepository.findAccountByIBAN(IBAN);
         return existingAccount.isEmpty();
     }
 
@@ -94,5 +95,17 @@ public class AccountService {
     public void createAccounts(int customerId) {
         createSavingsAccount(customerId);
         createCheckingAccount(customerId);
+    }
+
+    public List<Account> getAccountsByCustomerId(Integer customerId) {
+        return accountRepository.findAccountsByCustomerId(customerId);
+    }
+
+    public Optional<Account> getAccountByIBAN(String accountIban) {
+        return accountRepository.findAccountByIBAN(accountIban);
+    }
+
+    public Account updateAccount(Account account){
+        return accountRepository.save(account);
     }
 }

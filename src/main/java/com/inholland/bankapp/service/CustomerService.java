@@ -97,7 +97,7 @@ public class CustomerService {
     }
 
     private boolean customerExists(String email) {
-        return customerRepository.findByEmail(email).isPresent();
+        return customerRepository.getCustomerByEmail(email).isPresent();
     }
 
     protected void validateRegistrationData(CustomerRegistrationDto registrationDto) {
@@ -133,5 +133,9 @@ public class CustomerService {
 
     private boolean isValidBSN(String bsn) {
         return bsn.length() >= 8 && bsn.length() <= 9 && bsn.matches("\\d+");
+    }
+
+    public Optional<Customer> getCustomerByEmail(String email) {
+        return customerRepository.getCustomerByEmail(email);
     }
 }
