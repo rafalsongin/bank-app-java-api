@@ -21,9 +21,9 @@ public class AccountService {
     private static final String BANK_CODE = "INHO0"; // Your bank's code
     private static final String COUNTRY_CODE = "NL";
     private static final float DEFAULT_BALANCE = 0;
-    private static final float DEFAULT_ABSOLUTE_TRANSFER_LIMIT = 10000;
+    private static final float DEFAULT_ABSOLUTE_TRANSFER_LIMIT = 0;
     private static final float DEFAULT_DAILY_TRANSFER_LIMIT = 1000;
-    private static final int ACCOUNT_NUMBER_LENGTH = 10;
+    private static final int ACCOUNT_NUMBER_LENGTH = 9;
 
     public String generateUniqueIBAN() {
         String baseIBAN = COUNTRY_CODE + "xx" + BANK_CODE; // Placeholder for check digits
@@ -111,5 +111,13 @@ public class AccountService {
         existingAccount.setAbsoluteTransferLimit(updatedAccount.getAbsoluteTransferLimit());
         existingAccount.setDailyTransferLimit(updatedAccount.getDailyTransferLimit());
         return accountRepository.save(existingAccount);
+    }
+
+    public Account getCheckingAccountByIBAN(String IBAN) {
+        Optional<Account> account = accountRepository.findByIBAN(IBAN);
+        if (account.isPresent() && account.get().getAccountType() == AccountType.CHECKING) {
+            return account.get();
+        }
+        return null;
     }
 }

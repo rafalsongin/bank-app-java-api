@@ -6,6 +6,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.List;
+
+import java.time.*;
+
 @Entity
 @Setter
 @Getter
@@ -35,4 +43,31 @@ public class Account {
 
     @Column (name = "account_status")
     private AccountStatus accountStatus;
+
+    @ManyToOne
+    @JoinColumn(name = "customer_id", insertable = false, updatable = false)
+    private User customer;
+
+    @OneToMany(mappedBy = "from_account")
+    private List<Transaction> outgoingTransactions;
+
+    // Getter for customer's full name
+    public String getCustomerFullName() {
+        return customer.getFirstName() + " " + customer.getLastName();
+    }
+
+    // Getter for available daily amount for transfer
+    public float getAvailableDailyAmountForTransfer() {
+        LocalDate today = LocalDate.now(ZoneId.of("Europe/Amsterdam"));
+        float totalTransfersToday = outgoingTransactions.stream()
+                .filter(t -> t.getTimestamp().toLocalDate().isEqual(today))
+                .map(Transaction::getAmount)
+                .reduce(0.0f, Float::sum);
+        return dailyTransferLimit - totalTransfersToday;
+    }
+
+    // Getter for available absolute amount for transfer
+    public float getAvailableAbsoluteAmountForTransfer() {
+        return balance - absoluteTransferLimit;
+    }
 }

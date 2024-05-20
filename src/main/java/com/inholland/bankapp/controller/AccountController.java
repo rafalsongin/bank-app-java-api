@@ -39,4 +39,15 @@ public class AccountController {
         return ResponseEntity.ok(account);
     }
 
+    @GetMapping("/getCheckingAccount/{IBAN}")
+    public ResponseEntity<Account> getCheckingAccountByIBAN(@PathVariable String IBAN) {
+        Account account = accountService.getCheckingAccountByIBAN(IBAN);
+        if (account == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(account);
+    }
+
+
+
 }
