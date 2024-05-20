@@ -1,20 +1,20 @@
 package com.inholland.bankapp.controller;
 
+import com.inholland.bankapp.dto.TransactionCreationDto;
+import com.inholland.bankapp.exceptions.InvalidDataException;
+import com.inholland.bankapp.exceptions.UserAlreadyExistsException;
 import com.inholland.bankapp.model.Transaction;
 import com.inholland.bankapp.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("api/transactions")
+@CrossOrigin(origins = "http://localhost:5173") // this will need changes depending on the port number
 public class TransactionController {
 
     @Autowired
@@ -32,15 +32,13 @@ public class TransactionController {
         return ResponseEntity.ok(transactions);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Transaction> getTransactionById(@PathVariable Integer id){
-        Transaction transaction = service.getTransactionById(id).orElse(null);
-
-        // Check if the object was not found
-        if (transaction == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-
-        return ResponseEntity.ok(transaction);
+    /**
+     Create Method - creating a transaction
+     @param transactionCreationDto  - parameter is an TransactionCreationDto type, that represents a transaction as DTO (Data Transfer Object)
+     */
+    @PostMapping
+    public ResponseEntity<TransactionCreationDto> createTransaction(@RequestBody TransactionCreationDto transactionCreationDto) {
+        TransactionCreationDto createdTransaction = service.saveTransaction(transactionCreationDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdTransaction);
     }
 }

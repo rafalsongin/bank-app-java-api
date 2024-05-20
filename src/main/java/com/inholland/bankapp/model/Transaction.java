@@ -12,11 +12,25 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Transaction {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "transaction_id")
     private int transaction_id;
+
+    @Column(name = "transaction_type")
     private String transaction_type;
+
+    @Column(name = "amount")
     private float amount;
+
+    @Column(name = "timestamp")
     private String timestamp;
+
+    @Column(name = "from_account")
     private int from_account;
+
+    @Column(name = "to_account")
     private int to_account;
-    private int initiated_by_user;
+
+    @Column(name = "initiated_by_user")
+    private int initiated_by_account;
 }
