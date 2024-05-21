@@ -17,7 +17,19 @@ public class Transaction {
     private String transaction_type;
     private float amount;
     private LocalDateTime timestamp; // changed here to LocalDateTime
-    private int from_account;
-    private int to_account;
+    @Column(name = "from_account")
+    private int fromAccount;
+
+    @Column(name = "to_account")
+    private int toAccount;
+
     private int initiated_by_user;
+
+    @ManyToOne
+    @JoinColumn(name = "from_account", insertable = false, updatable = false)
+    private Account fromAccountEntity;
+
+    @ManyToOne
+    @JoinColumn(name = "to_account", insertable = false, updatable = false)
+    private Account toAccountEntity;
 }

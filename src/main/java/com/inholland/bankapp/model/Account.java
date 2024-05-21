@@ -1,6 +1,7 @@
 package com.inholland.bankapp.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,15 +42,20 @@ public class Account {
     @Column (name = "daily_transfer_limit")
     private float dailyTransferLimit;
 
-    @Column (name = "account_status")
-    private AccountStatus accountStatus;
+    @OneToMany(mappedBy = "fromAccountEntity")
+    @JsonIgnore
+    private List<Transaction> outgoingTransactions;
+
+    @OneToMany(mappedBy = "toAccountEntity")
+    @JsonIgnore
+    private List<Transaction> incomingTransactions;
 
     @ManyToOne
     @JoinColumn(name = "customer_id", insertable = false, updatable = false)
     private User customer;
 
-    @OneToMany(mappedBy = "from_account")
-    private List<Transaction> outgoingTransactions;
+//    @OneToMany(mappedBy = "from_account")
+//    private List<Transaction> outgoingTransactions;
 
     // Getter for customer's full name
     public String getCustomerFullName() {

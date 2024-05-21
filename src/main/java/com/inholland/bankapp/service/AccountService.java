@@ -65,7 +65,7 @@ public class AccountService {
         account.setBalance(balance);
         account.setAbsoluteTransferLimit(absoluteTransferLimit);
         account.setDailyTransferLimit(dailyTransferLimit);
-
+        
         // Save the new account
         accountRepository.save(account);
     }

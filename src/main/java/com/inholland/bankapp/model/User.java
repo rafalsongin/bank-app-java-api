@@ -20,7 +20,6 @@ public class User {
     private String username;
     private String email;
     private String password;
-    private String JWT;
 
     @Column(name = "first_name")
     private String firstName;
@@ -31,5 +30,3 @@ public class User {
     private UserRole userRole;
 
 }
-
-

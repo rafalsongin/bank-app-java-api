@@ -3,14 +3,14 @@ package com.inholland.bankapp.service;
 import com.inholland.bankapp.dto.CustomerRegistrationDto;
 import com.inholland.bankapp.exceptions.InvalidDataException;
 import com.inholland.bankapp.exceptions.UserAlreadyExistsException;
-import com.inholland.bankapp.model.AccountApprovalStatus;
-import com.inholland.bankapp.model.Customer;
-import com.inholland.bankapp.model.UserRole;
+import com.inholland.bankapp.model.*;
 import com.inholland.bankapp.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +21,9 @@ public class CustomerService {
 
     @Autowired
     private AccountService accountService;
+
+    @Autowired
+    private TransactionService transactionService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -133,5 +136,35 @@ public class CustomerService {
 
     private boolean isValidBSN(String bsn) {
         return bsn.length() >= 8 && bsn.length() <= 9 && bsn.matches("\\d+");
+    }
+
+    public void closeCustomerAccount(int customerID) {
+        Customer customer = customerRepository.findById(customerID).orElse(null);
+        if (customer != null) {
+            customer.setAccountApprovalStatus(AccountApprovalStatus.CLOSED);
+            customerRepository.save(customer);
+        }
+        else {
+            throw new IllegalArgumentException("Customer not found");
+        }
+    }
+
+    public List<Transaction> getCustomerTransactions(int customerID) {
+        Customer customer = customerRepository.findById(customerID).orElse(null);
+        if (customer != null) {
+            List<Account> accounts = accountService.getAccountsByCustomerId(customerID);
+            if (accounts.isEmpty()) {
+                throw new IllegalArgumentException("Customer has no accounts");
+            }
+            List<Transaction> transactions = new ArrayList<>();
+            for (Account account : accounts) {
+                transactions.addAll(transactionService.getTransactionsByAccountId(account.getAccountId()));
+            }
+            transactions.sort(Comparator.comparing(Transaction::getTimestamp));
+            return transactions;
+        }
+        else {
+            throw new IllegalArgumentException("Customer not found");
+        }
     }
 }

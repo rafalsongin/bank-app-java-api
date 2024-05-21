@@ -1,6 +1,7 @@
 package com.inholland.bankapp.controller;
 
 import com.inholland.bankapp.model.Customer;
+import com.inholland.bankapp.model.Transaction;
 import com.inholland.bankapp.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -60,4 +61,15 @@ public class CustomerController {
         return ResponseEntity.ok("Customer declined");
     }
 
+    @PutMapping("/closeAccount/{customerID}")
+    public ResponseEntity<String> closeCustomerAccount(@PathVariable int customerID) {
+        customerService.closeCustomerAccount(customerID);
+        return ResponseEntity.ok("Customer account closed");
+    }
+
+    @GetMapping("/transactions/{customerID}")
+    public ResponseEntity<List<Transaction>> getCustomerTransactions(@PathVariable int customerID) {
+        List<Transaction> transactions = customerService.getCustomerTransactions(customerID);
+        return ResponseEntity.ok(transactions);
+    }
 }
