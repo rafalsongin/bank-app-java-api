@@ -2,12 +2,12 @@ package com.inholland.bankapp.security;
 
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenUtil {
@@ -20,10 +20,14 @@ public class JwtTokenUtil {
 
     public String generateToken(Authentication authentication) {
         // Correctly obtaining the username from the authentication object
-        String username = ((org.springframework.security.core.userdetails.User) authentication.getPrincipal()).getUsername();
+        String username = ((User) authentication.getPrincipal()).getUsername();
+        String role = authentication.getAuthorities().stream()
+                .map(grantedAuthority -> grantedAuthority.getAuthority())
+                .collect(Collectors.joining(","));
 
         return Jwts.builder()
                 .setSubject(username)
+                .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(new Date().getTime() + jwtExpirationMs))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
@@ -39,9 +43,17 @@ public class JwtTokenUtil {
         return claims.getSubject();
     }
 
+    public String getUserRoleFromJwtToken(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(jwtSecret)
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("role", String.class);
+    }
+
     public boolean validateJwtToken(String authToken) {
         try {
-            System.out.println("Token for parsing: " + authToken);
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
             return true;
         } catch (SignatureException e) {
