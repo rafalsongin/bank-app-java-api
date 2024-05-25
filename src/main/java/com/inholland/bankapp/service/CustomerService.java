@@ -37,6 +37,10 @@ public class CustomerService extends UserService {
     public Optional<Customer> getCustomerById(Integer id) {
         return customerRepository.findById(id);
     }
+    
+    public Optional<Customer> getCustomerByEmail(String email) {
+        return customerRepository.findByEmail(email);
+    }
 
     public List<Customer> getCustomersWithUnverifiedAccounts() {
         return customerRepository.findByAccountApprovalStatus(AccountApprovalStatus.UNVERIFIED);
