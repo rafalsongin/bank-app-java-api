@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class EmployeeService {
+public class EmployeeService extends UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -46,20 +46,20 @@ public class EmployeeService {
         employeeRepository.deleteById(id);
     }
 
-    public Employee registerNewEmployee(EmployeeRegistrationDto registrationDto) {
+    public void registerNewEmployee(EmployeeRegistrationDto registrationDto) {
 
-        if (employeeExists(registrationDto.getEmail())) {
+        if (userExists(registrationDto.getEmail())) {
             throw new UserAlreadyExistsException("Customer with " + registrationDto.getEmail() + " email already exists.");
         }
         
         Employee user = createEmployee(registrationDto);
-        return employeeRepository.save(user);
+        employeeRepository.save(user);
     }
     
     private Employee createEmployee(EmployeeRegistrationDto registrationDto) {
         Employee user = new Employee();
-
         String username = registrationDto.getFirstName() + registrationDto.getLastName();
+        
         user.setUsername(username);
         user.setEmail(registrationDto.getEmail());
         user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
@@ -70,9 +70,5 @@ public class EmployeeService {
         user.setEmploymentStatus(EmploymentStatus.ACTIVE);
         
         return user;
-    }
-
-    private boolean employeeExists(String email) {
-        return employeeRepository.findByEmail(email).isPresent();
     }
 }
