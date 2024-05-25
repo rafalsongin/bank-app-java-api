@@ -1,7 +1,7 @@
 package com.inholland.bankapp.service;
 
-import com.inholland.bankapp.dto.CustomerRegistrationDto;
 import com.inholland.bankapp.dto.EmployeeRegistrationDto;
+import com.inholland.bankapp.exceptions.UserAlreadyExistsException;
 import com.inholland.bankapp.model.*;
 import com.inholland.bankapp.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class EmployeeService {
+public class EmployeeService extends UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -46,30 +46,29 @@ public class EmployeeService {
         employeeRepository.deleteById(id);
     }
 
-    // Additional methods to handle other business logic related to employees
-    // can be added here as well
+    public void registerNewEmployee(EmployeeRegistrationDto registrationDto) {
 
-
-    public Employee registerNewEmployee(EmployeeRegistrationDto registrationDto) {
+        if (userExists(registrationDto.getEmail())) {
+            throw new UserAlreadyExistsException("Customer with " + registrationDto.getEmail() + " email already exists.");
+        }
+        
+        Employee user = createEmployee(registrationDto);
+        employeeRepository.save(user);
+    }
+    
+    private Employee createEmployee(EmployeeRegistrationDto registrationDto) {
         Employee user = new Employee();
-
-        // Set username to a combination of firstName and lastName. Ensure this is unique or handled appropriately.
         String username = registrationDto.getFirstName() + registrationDto.getLastName();
-
+        
         user.setUsername(username);
         user.setEmail(registrationDto.getEmail());
         user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
         user.setFirstName(registrationDto.getFirstName());
         user.setLastName(registrationDto.getLastName());
-
-        // Assuming you are setting some default or fetching an existing bank_id
-        user.setBankId(1); // You need to have a valid bank_id or retrieve it dynamically as per your logic
-        
+        user.setBankId(1);
         user.setUserRole(UserRole.EMPLOYEE);
-
-        // For Employee specific fields
         user.setEmploymentStatus(EmploymentStatus.ACTIVE);
-
-        return employeeRepository.save(user);
+        
+        return user;
     }
 }

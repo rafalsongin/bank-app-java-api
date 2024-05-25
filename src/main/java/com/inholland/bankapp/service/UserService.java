@@ -1,6 +1,8 @@
 package com.inholland.bankapp.service;
 
 import com.inholland.bankapp.dto.CustomerRegistrationDto;
+import com.inholland.bankapp.dto.EmployeeRegistrationDto;
+import com.inholland.bankapp.exceptions.InvalidDataException;
 import com.inholland.bankapp.model.AccountApprovalStatus;
 import com.inholland.bankapp.model.Customer;
 import com.inholland.bankapp.model.User;
@@ -18,29 +20,12 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    public User registerNewUserAccount(CustomerRegistrationDto registrationDto) {
-        /*Customer user = new Customer();
-        user.setEmail(registrationDto.getEmail());
-        user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
-        user.setFirstName(registrationDto.getFirstName());
-        user.setLastName(registrationDto.getLastName());
-        user.setUserRole(UserRole.CUSTOMER);
-        user.setAccountApprovalStatus(AccountApprovalStatus.UNVERIFIED);*/
-        
-        Customer user = new Customer();
-        user.setEmail(registrationDto.getEmail());
-        user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
-        user.setFirstName(registrationDto.getFirstName());
-        user.setLastName(registrationDto.getLastName());
-        user.setUserRole(UserRole.CUSTOMER);
-        user.setAccountApprovalStatus(AccountApprovalStatus.UNVERIFIED);
-        return userRepository.save(user);
+    protected boolean userExists(String email) {
+        return userRepository.findByEmail(email).isPresent();
     }
+    
 }
