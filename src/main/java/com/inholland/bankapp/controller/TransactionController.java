@@ -1,8 +1,6 @@
 package com.inholland.bankapp.controller;
 
-import com.inholland.bankapp.dto.TransactionCreationDto;
-import com.inholland.bankapp.exceptions.InvalidDataException;
-import com.inholland.bankapp.exceptions.UserAlreadyExistsException;
+import com.inholland.bankapp.dto.TransactionDto;
 import com.inholland.bankapp.model.Transaction;
 import com.inholland.bankapp.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,11 +32,27 @@ public class TransactionController {
 
     /**
      Create Method - creating a transaction
-     @param transactionCreationDto  - parameter is an TransactionCreationDto type, that represents a transaction as DTO (Data Transfer Object)
+     @param iban  - parameter is a String type, that represents iban received through path.
+     */
+    @GetMapping("/account/{iban}")
+    public ResponseEntity<List<TransactionDto>> getAllTransactionsByIban(@PathVariable String iban) {
+        List<TransactionDto> transactions = service.getAllTransactionsByIban(iban);
+
+        // Check if the list is empty (not found)
+        if (transactions.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(transactions);
+    }
+
+    /**
+     Create Method - creating a transaction
+     @param transactionDto  - parameter is an TransactionCreationDto type, that represents a transaction as DTO (Data Transfer Object)
      */
     @PostMapping
-    public ResponseEntity<TransactionCreationDto> createTransaction(@RequestBody TransactionCreationDto transactionCreationDto) {
-        TransactionCreationDto createdTransaction = service.saveTransaction(transactionCreationDto);
+    public ResponseEntity<TransactionDto> createTransaction(@RequestBody TransactionDto transactionDto) {
+        TransactionDto createdTransaction = service.saveTransaction(transactionDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTransaction);
     }
 }

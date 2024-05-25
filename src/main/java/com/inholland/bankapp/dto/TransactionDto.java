@@ -1,13 +1,12 @@
 package com.inholland.bankapp.dto;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class TransactionCreationDto {
+public class TransactionDto {
     @NotNull
     private String transaction_type;
 
