@@ -26,8 +26,23 @@ public class CustomerController {
         }
         return ResponseEntity.ok(customers);
     }
-  
-    @GetMapping("/{id}")
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<Customer> getCustomerById(@PathVariable String email) {
+        System.out.println("Received request for email: " + email);
+
+        Optional<Customer> customerOpt = customerService.getCustomerByEmail(email);
+        if (!customerOpt.isPresent()) {
+            System.out.println("Customer not found for email: " + email);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+
+        Customer customer = customerOpt.get();
+        System.out.println("Customer found: " + customer.getUsername());
+        return ResponseEntity.ok(customer);
+    }
+
+    @GetMapping("/id/{id}")
     public ResponseEntity<Customer> getCustomerById(@PathVariable Integer id) {
         Customer customer = customerService.getCustomerById(id).orElse(null);
 

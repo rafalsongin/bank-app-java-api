@@ -130,11 +130,23 @@ public class CustomerService extends UserService {
         return bsn.length() >= 8 && bsn.length() <= 9 && bsn.matches("\\d+");
     }
 
+    /**
+     Get Method - getting the customer by email
+     @param email  - parameter is of String type, that represents the email of the customer
+     @return    - returns the customer, if email parameter is provided.
+     */
     public Optional<Customer> getCustomerByEmail(String email) {
-        return customerRepository.getCustomerByEmail(email);
+        Optional<Customer> customer = customerRepository.getCustomerByEmail(email);
+        System.out.println("Customer fetched from repository: " + customer.get().getUsername());
+        return customer;
     }
 
-    private boolean customerExists(String email) {
+    /**
+     Check Method - check if customer exists by using the email
+     @param email  - parameter is of String type, that represents the email of the customer
+     @return    - returns a boolean value
+     */
+    private boolean checkCustomerExists(String email) {
         return customerRepository.getCustomerByEmail(email).isPresent();
     }
 }
