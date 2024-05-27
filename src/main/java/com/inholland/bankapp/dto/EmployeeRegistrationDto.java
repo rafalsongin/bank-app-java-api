@@ -1,6 +1,5 @@
 package com.inholland.bankapp.dto;
 
-import com.inholland.bankapp.model.EmploymentStatus;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

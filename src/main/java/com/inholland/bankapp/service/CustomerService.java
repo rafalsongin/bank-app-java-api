@@ -37,10 +37,6 @@ public class CustomerService extends UserService {
     public Optional<Customer> getCustomerById(Integer id) {
         return customerRepository.findById(id);
     }
-    
-    public Optional<Customer> getCustomerByEmail(String email) {
-        return customerRepository.findByEmail(email);
-    }
 
     public List<Customer> getCustomersWithUnverifiedAccounts() {
         return customerRepository.findByAccountApprovalStatus(AccountApprovalStatus.UNVERIFIED);
@@ -99,7 +95,6 @@ public class CustomerService extends UserService {
         
         return user;
     }
-    
     protected void validateRegistrationData(CustomerRegistrationDto registrationDto) {
         if (registrationDto.getEmail() == null || !registrationDto.getEmail().matches("[^@ ]+@[^@ ]+\\.[^@ ]+")) {
             System.out.println("1");
@@ -133,5 +128,25 @@ public class CustomerService extends UserService {
 
     private boolean isValidBSN(String bsn) {
         return bsn.length() >= 8 && bsn.length() <= 9 && bsn.matches("\\d+");
+    }
+
+    /**
+     Get Method - getting the customer by email
+     @param email  - parameter is of String type, that represents the email of the customer
+     @return    - returns the customer, if email parameter is provided.
+     */
+    public Optional<Customer> getCustomerByEmail(String email) {
+        Optional<Customer> customer = customerRepository.getCustomerByEmail(email);
+        System.out.println("Customer fetched from repository: " + customer.get().getUsername());
+        return customer;
+    }
+
+    /**
+     Check Method - check if customer exists by using the email
+     @param email  - parameter is of String type, that represents the email of the customer
+     @return    - returns a boolean value
+     */
+    private boolean checkCustomerExists(String email) {
+        return customerRepository.getCustomerByEmail(email).isPresent();
     }
 }

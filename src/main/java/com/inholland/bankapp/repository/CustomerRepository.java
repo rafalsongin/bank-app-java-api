@@ -12,6 +12,5 @@ import java.util.Optional;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Integer> {
     List<Customer> findByAccountApprovalStatus(AccountApprovalStatus accountApprovalStatus);
-
-    Optional<Customer> findByEmail(String email);
+    Optional<Customer> getCustomerByEmail(String email);
 }
