@@ -4,7 +4,9 @@ import com.inholland.bankapp.model.Account;
 import com.inholland.bankapp.model.AccountType;
 import com.inholland.bankapp.repository.AccountRepository;
 import jakarta.transaction.Transactional;
+import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -126,5 +128,9 @@ public class AccountService {
     @Transactional
     public void updateTransferBalances(Account fromAccount, Account toAccount) {
         accountRepository.updateAccountBalances(fromAccount.getAccountId(), fromAccount.getBalance(), toAccount.getAccountId(), toAccount.getBalance());
+    }
+
+    public double findCheckingAccountBalanceByEmail(String email) {
+        return accountRepository.findCheckingAccountBalanceByEmail(email);
     }
 }

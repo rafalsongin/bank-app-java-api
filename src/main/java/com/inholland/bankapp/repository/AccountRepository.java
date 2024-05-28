@@ -23,4 +23,9 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
                                @Param("fromAccountBalance") Float fromAccountBalance,
                                @Param("toAccountId") Integer toAccountId,
                                @Param("toAccountBalance") Float toAccountBalance);
+
+
+
+    @Query("SELECT a.balance FROM Account a JOIN Customer c ON a.customerId = c.userId JOIN User u ON c.userId = u.userId WHERE u.email = :email AND a.accountType = 0")
+    double findCheckingAccountBalanceByEmail(@Param("email")  String email);
 }
