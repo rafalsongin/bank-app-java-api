@@ -66,6 +66,10 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginDto loginDto) {
+        return authenticateUserMethod(loginDto);
+    }
+
+    private ResponseEntity<String> authenticateUserMethod(LoginDto loginDto) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword())
@@ -81,9 +85,28 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
         }
     }
-    
-    @GetMapping("/test")
-    public ResponseEntity<?> test() {
-        return ResponseEntity.ok("Testing message");
+
+    @PostMapping("/login-atm") // only for customers
+    public ResponseEntity<?> authenticateCustomer(@RequestBody LoginDto loginDto) {
+        
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword())
+            );
+            
+            if (customerService.getCustomerByEmail(loginDto.getUsername()).isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not a customer");
+            }
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtTokenUtil.generateToken(authentication);
+            return ResponseEntity.ok(jwt);
+        } catch (BadCredentialsException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
+        }
     }
 }
