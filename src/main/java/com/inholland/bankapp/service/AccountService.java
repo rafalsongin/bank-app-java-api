@@ -155,5 +155,28 @@ public class AccountService {
     public double findCheckingAccountBalanceByEmail(String email) {
         return accountRepository.findCheckingAccountBalanceByEmail(email);
     }
+    
+    @Transactional
+    public void depositToCheckingAccount(String email, double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Deposit amount must be greater than zero");
+        }
+        
+        accountRepository.depositToCheckingAccount(email, amount);
+    }
+
+    @Transactional
+    public void withdrawFromCheckingAccount(String email, double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Withdrawal amount must be greater than zero");
+        }
+
+        double currentBalance = accountRepository.findCheckingAccountBalanceByEmail(email);
+        if (currentBalance < amount) {
+            throw new IllegalArgumentException("Insufficient funds for withdrawal");
+        }
+
+        accountRepository.withdrawFromCheckingAccount(email, amount);
+    }
 }
 
