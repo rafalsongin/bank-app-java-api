@@ -3,10 +3,10 @@ package com.inholland.bankapp.service;
 import com.inholland.bankapp.dto.TransactionDto;
 import com.inholland.bankapp.model.Account;
 import com.inholland.bankapp.model.Transaction;
-import com.inholland.bankapp.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import com.inholland.bankapp.repository.TransactionRepository;
+import java.util.Collection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,13 +29,8 @@ public class TransactionService {
         return repository.findAll();
     }
 
-    /**
-     Get Method - getting the transaction by id
-     @param id  - parameter is an Integer type, that represents the id of the transaction
-     @return    - returns the transaction, if id parameter is provided.
-     */
-    public Optional<Transaction> getTransactionById(Integer id) {
-        return repository.findById(id);
+    public List<Transaction> getTransactionsByAccountId(int accountId) {
+        return repository.findTransactionsByAccountId(accountId);
     }
 
     /**
@@ -45,8 +40,8 @@ public class TransactionService {
      */
     public TransactionDto saveTransaction(TransactionDto transactionDto) {
 
-        Optional<Account> optFromAccount = accountService.getAccountByIBAN(transactionDto.getFrom_account());
-        Optional<Account> optToAccount = accountService.getAccountByIBAN(transactionDto.getTo_account());
+        Optional<Account> optFromAccount = accountService.getAccountByIBAN(transactionDto.getFromAccount());
+        Optional<Account> optToAccount = accountService.getAccountByIBAN(transactionDto.getToAccount());
         if(!optFromAccount.isPresent() || !optToAccount.isPresent()){
             throw new RuntimeException("[Error] CreateTransactionDTO: From or To accounts not found!");
         }
@@ -74,21 +69,21 @@ public class TransactionService {
         Transaction transaction = new Transaction();
 
         // Check if accounts from the transaction exist
-        Optional<Account> optFromAccount = accountService.getAccountByIBAN(transactionDto.getFrom_account());
-        Optional<Account> optToAccount = accountService.getAccountByIBAN(transactionDto.getTo_account());
+        Optional<Account> optFromAccount = accountService.getAccountByIBAN(transactionDto.getFromAccount());
+        Optional<Account> optToAccount = accountService.getAccountByIBAN(transactionDto.getToAccount());
         if(!optFromAccount.isPresent() || !optToAccount.isPresent()){
             throw new RuntimeException("[Error] CreateTransactionDTO: From or To accounts not found!");
         }
 
         // Set transaction properties
-        transaction.setTransaction_type(transactionDto.getTransaction_type());
+        transaction.setTransactionType(transactionDto.getTransactionType());
         transaction.setAmount(transactionDto.getAmount());
-        transaction.setInitiated_by_account(transactionDto.getInitiated_by_account());
+        transaction.setInitiatedByUser(transactionDto.getInitiatedByUser());
         // set current timestamp
-        transaction.setTimestamp(LocalDateTime.now().toString());
+        transaction.setTimestamp(LocalDateTime.now());
         // Retrieve and set account IDs
-        transaction.setFrom_account(optFromAccount.get().getAccountId());
-        transaction.setTo_account(optToAccount.get().getAccountId());
+        transaction.setFromAccount(optFromAccount.get().getAccountId());
+        transaction.setToAccount(optToAccount.get().getAccountId());
 
         return transaction;
     }
@@ -102,19 +97,19 @@ public class TransactionService {
         TransactionDto transactionDto = new TransactionDto();
 
         // Check if accounts from the transaction exist
-        Optional<Account> optFromAccount = accountService.getAccountById(transaction.getFrom_account());
-        Optional<Account> optToAccount = accountService.getAccountById(transaction.getTo_account());
+        Optional<Account> optFromAccount = accountService.getAccountById(transaction.getFromAccount());
+        Optional<Account> optToAccount = accountService.getAccountById(transaction.getToAccount());
         if(!optFromAccount.isPresent() || !optToAccount.isPresent()){
             throw new RuntimeException("[Error] CreateTransactionDTO: From or To accounts not found!");
         }
 
         // Set transactionDto properties
-        transactionDto.setTransaction_type(transaction.getTransaction_type());
+        transactionDto.setTransactionType(transaction.getTransactionType());
         transactionDto.setAmount(transaction.getAmount());
-        transactionDto.setTimestamp(transaction.getTimestamp());
-        transactionDto.setFrom_account(optFromAccount.get().getIBAN());
-        transactionDto.setTo_account(optToAccount.get().getIBAN());
-        transactionDto.setInitiated_by_account(transaction.getInitiated_by_account());
+        transactionDto.setTimestamp(transaction.getTimestamp().toString());
+        transactionDto.setFromAccount(optFromAccount.get().getIBAN());
+        transactionDto.setToAccount(optToAccount.get().getIBAN());
+        transactionDto.setInitiatedByUser(transaction.getInitiatedByUser());
 
         return transactionDto;
     }
@@ -146,7 +141,7 @@ public class TransactionService {
             throw new RuntimeException("Account was not found!");
         }
 
-        List<Transaction> transactions = repository.findAllById(account.get().getAccountId());
+        List<Transaction> transactions = repository.findTransactionsByAccountId(account.get().getAccountId());
 
         List<TransactionDto> transactionDtos = new ArrayList<>();
         for (Transaction transaction:
@@ -157,3 +152,4 @@ public class TransactionService {
         return transactionDtos;
     }
 }
+
