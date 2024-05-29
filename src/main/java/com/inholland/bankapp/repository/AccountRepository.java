@@ -3,16 +3,17 @@ package com.inholland.bankapp.repository;
 import com.inholland.bankapp.model.Account;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface AccountRepository extends JpaRepository<Account, Integer> {
-    Optional<Account> findAccountByIBAN(String IBAN);
-    List<Account> findAccountsByCustomerId(int customer_id);
+
+    Optional<Account> findByIBAN(String IBAN);
+    List<Account> getAccountsByCustomerId(int customer_id);
 
     @Modifying
     @Transactional

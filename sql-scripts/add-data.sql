@@ -5,3 +5,6 @@ INSERT INTO `bank` (`name`, `currency`)
 VALUES ( 'Bank of Ukraine', 'UAH');
 
 select * from user;
+
+update account
+set account_status = '1';
