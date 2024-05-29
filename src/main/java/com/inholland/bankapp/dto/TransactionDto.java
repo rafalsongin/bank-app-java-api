@@ -8,19 +8,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TransactionDto {
     @NotNull
-    private String transaction_type;
+    private String transactionType;
 
     @NotNull
     private Float amount;
 
     @NotNull
-    private String from_account;
+    private String fromAccount;
 
     @NotNull
-    private String to_account;
+    private String toAccount;
 
     @NotNull
-    private Integer initiated_by_account;
+    private Integer initiatedByUser;
 
     private String timestamp;
 }
