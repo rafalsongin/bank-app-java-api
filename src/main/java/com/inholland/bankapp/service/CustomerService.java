@@ -98,7 +98,6 @@ public class CustomerService extends UserService {
         
         return user;
     }
-    
     protected void validateRegistrationData(CustomerRegistrationDto registrationDto) {
         if (registrationDto.getEmail() == null || !registrationDto.getEmail().matches("[^@ ]+@[^@ ]+\\.[^@ ]+")) {
             System.out.println("1");
@@ -134,6 +133,7 @@ public class CustomerService extends UserService {
         return bsn.length() >= 8 && bsn.length() <= 9 && bsn.matches("\\d+");
     }
 
+
     public void closeCustomerAccount(int customerID) {
         Customer customer = customerRepository.findById(customerID).orElse(null);
         if (customer != null) {
@@ -163,4 +163,25 @@ public class CustomerService extends UserService {
             throw new IllegalArgumentException("Customer not found");
         }
     }
+
+    /**
+     Get Method - getting the customer by email
+     @param email  - parameter is of String type, that represents the email of the customer
+     @return    - returns the customer, if email parameter is provided.
+     */
+    public Optional<Customer> getCustomerByEmail(String email) {
+        Optional<Customer> customer = customerRepository.getCustomerByEmail(email);
+        System.out.println("Customer fetched from repository: " + customer.get().getUsername());
+        return customer;
+    }
+
+    /**
+     Check Method - check if customer exists by using the email
+     @param email  - parameter is of String type, that represents the email of the customer
+     @return    - returns a boolean value
+     */
+    private boolean checkCustomerExists(String email) {
+        return customerRepository.getCustomerByEmail(email).isPresent();
+    }
 }
+

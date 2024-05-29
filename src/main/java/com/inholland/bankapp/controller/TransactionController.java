@@ -1,20 +1,18 @@
 package com.inholland.bankapp.controller;
 
+import com.inholland.bankapp.dto.TransactionDto;
 import com.inholland.bankapp.model.Transaction;
 import com.inholland.bankapp.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("api/transactions")
+@CrossOrigin(origins = "http://localhost:5173") // this will need changes depending on the port number
 public class TransactionController {
 
     @Autowired
@@ -32,15 +30,29 @@ public class TransactionController {
         return ResponseEntity.ok(transactions);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Transaction> getTransactionById(@PathVariable Integer id){
-        Transaction transaction = service.getTransactionById(id).orElse(null);
+    /**
+     Create Method - creating a transaction
+     @param iban  - parameter is a String type, that represents iban received through path.
+     */
+    @GetMapping("/account/{iban}")
+    public ResponseEntity<List<TransactionDto>> getAllTransactionsByIban(@PathVariable String iban) {
+        List<TransactionDto> transactions = service.getAllTransactionsByIban(iban);
 
-        // Check if the object was not found
-        if (transaction == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        // Check if the list is empty (not found)
+        if (transactions.isEmpty()) {
+            return ResponseEntity.noContent().build();
         }
 
-        return ResponseEntity.ok(transaction);
+        return ResponseEntity.ok(transactions);
+    }
+
+    /**
+     Create Method - creating a transaction
+     @param transactionDto  - parameter is an TransactionCreationDto type, that represents a transaction as DTO (Data Transfer Object)
+     */
+    @PostMapping
+    public ResponseEntity<TransactionDto> createTransaction(@RequestBody TransactionDto transactionDto) {
+        TransactionDto createdTransaction = service.saveTransaction(transactionDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdTransaction);
     }
 }

@@ -3,9 +3,9 @@ package com.inholland.bankapp.service;
 import com.inholland.bankapp.model.Account;
 import com.inholland.bankapp.model.AccountType;
 import com.inholland.bankapp.repository.AccountRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 
 import java.security.SecureRandom;
 import java.util.List;
@@ -97,6 +97,7 @@ public class AccountService {
         createCheckingAccount(customerId);
     }
 
+
     public List<Account> getAccountsByCustomerId(int customer_id){
         return accountRepository.getAccountsByCustomerId(customer_id);
     }
@@ -120,4 +121,33 @@ public class AccountService {
         }
         return null;
     }
+
+
+    public Optional<Account> getAccountByIBAN(String accountIban) {
+        return accountRepository.findByIBAN(accountIban);
+    }
+
+    public Optional<Account> getAccountById(Integer accountId) {
+        return accountRepository.findById(accountId);
+    }
+
+    /**
+     Update Method - update an account by passing an Account object
+     @param account  - parameter is of Account class, that represents the account of the customer
+     @return    - returns the account, if account parameter is provided.
+     */
+    public Account updateAccount(Account account){
+        return accountRepository.save(account);
+    }
+
+    /**
+     Update Method - update balances of 'sender' and 'retriever' accounts
+     @param fromAccount  - parameter is of Account class, that represents the account of the customer
+     @param toAccount  - parameter is of Account class, that represents the account of the customer
+     */
+    @Transactional
+    public void updateTransferBalances(Account fromAccount, Account toAccount) {
+        accountRepository.updateAccountBalances(fromAccount.getAccountId(), fromAccount.getBalance(), toAccount.getAccountId(), toAccount.getBalance());
+    }
 }
+

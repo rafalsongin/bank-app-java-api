@@ -13,17 +13,27 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Transaction {
     @Id
-    private int transaction_id;
-    private String transaction_type;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "transaction_id")
+    private int transactionId;
+
+    @Column(name = "transaction_type")
+    private String transactionType;
+
+    @Column(name = "amount")
     private float amount;
+
+    @Column(name = "timestamp")
     private LocalDateTime timestamp; // changed here to LocalDateTime
+
     @Column(name = "from_account")
     private int fromAccount;
 
     @Column(name = "to_account")
     private int toAccount;
 
-    private int initiated_by_user;
+    @Column(name = "initiated_by_user")
+    private int initiatedByUser;
 
     @ManyToOne
     @JoinColumn(name = "from_account", insertable = false, updatable = false)
