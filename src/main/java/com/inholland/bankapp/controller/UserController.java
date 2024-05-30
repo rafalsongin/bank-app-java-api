@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("users")
-@CrossOrigin(origins = "http://localhost:5173") // this will need changes depending on the port number
 public class UserController {
 
     @Autowired

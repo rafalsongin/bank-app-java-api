@@ -12,7 +12,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/transactions")
-@CrossOrigin(origins = "http://localhost:5173") // this will need changes depending on the port number
 public class TransactionController {
 
     @Autowired
