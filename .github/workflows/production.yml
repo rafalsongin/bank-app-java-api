@@ -39,7 +39,7 @@ jobs:
 
       - name: Deploy to DigitalOcean
         run: |
-          ssh root@188.166.27.231 << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@188.166.27.231 << 'EOF'
             cd /opt/bank-app-java-api
             git pull
             mvn clean install -DskipTests
