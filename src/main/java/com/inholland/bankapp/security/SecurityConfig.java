@@ -41,7 +41,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("https://bank-app-vue-jxxb5bwyu-rafals-projects-1f7ad1c4.vercel.app"));
+        configuration.setAllowedOrigins(List.of("https://bank-app-vue-jxxb5bwyu-rafals-projects-1f7ad1c4.vercel.app", "https://bank-app-vue-api.vercel.app"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
         configuration.setAllowCredentials(true);
