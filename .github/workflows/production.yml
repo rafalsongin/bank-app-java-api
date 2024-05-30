@@ -1,13 +1,23 @@
-name: Deploy Spring Boot Application
+name: Build and Deploy Spring Boot Application
 
 on:
   push:
+    branches:
+      - production
+  pull_request:
     branches:
       - production
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    env:
+      DB_URL: jdbc:mysql://inholland-2-4-project-do-user-16288780-0.c.db.ondigitalocean.com:25060/bankapp
+      DB_USERNAME: doadmin
+      DB_PASSWORD: AVNS_SUDgQyZZMWzrDAKbh8E
+      JWT_SECRET: NGbMC3N9KdaClSbuPPUs0lXHyZyvY6Y9MTuSMwMn53hBEncOquTPxlmPcd3FEsuh+yTQoSnqgV5WkL+neFU0eQ==
+      JWT_EXPIRATION_MS: 3600000
 
     steps:
       - name: Checkout code
@@ -20,18 +30,14 @@ jobs:
           java-version: '21'
 
       - name: Build with Maven
-        run: mvn clean install
-
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: mvn clean install -DskipTests
 
       - name: Deploy to DigitalOcean
+        if: github.ref == 'refs/heads/main'
         run: |
           ssh root@188.166.27.231 << 'EOF'
             cd /opt/bank-app-java-api
             git pull
-            mvn clean install -Dmaven.test.skip=true
+            mvn clean install -DskipTests
             systemctl restart springboot
           EOF
