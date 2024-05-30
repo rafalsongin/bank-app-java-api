@@ -17,8 +17,13 @@ public class User {
     @Column(name = "user_id")
     private int userId;
 
+    @Column(name = "username")
     private String username;
+
+    @Column(name = "email")
     private String email;
+
+    @Column(name = "password")
     private String password;
 
     @Column(name = "first_name")
@@ -26,7 +31,10 @@ public class User {
 
     @Column(name = "last_name")
     private String lastName;
-    private int bankId;
-    private UserRole userRole;
 
+    @Column(name = "bank_id")
+    private int bankId;
+
+    @Column(name = "user_role")
+    private UserRole userRole;
 }

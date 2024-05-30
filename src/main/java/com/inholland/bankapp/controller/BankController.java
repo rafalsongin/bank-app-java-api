@@ -1,18 +1,16 @@
 package com.inholland.bankapp.controller;
 
-import com.inholland.bankapp.model.User;
-import com.inholland.bankapp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import com.inholland.bankapp.model.Bank;
 import com.inholland.bankapp.service.BankService;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 @RestController
 @RequestMapping("banks")
+@CrossOrigin(origins = "http://localhost:5173") // this will need changes depending on the port number
 public class BankController {
 
     @Autowired
@@ -26,6 +24,4 @@ public class BankController {
         }
         return ResponseEntity.ok(banks);
     }
-
-
 }
