@@ -1,17 +1,18 @@
 package com.inholland.bankapp.service;
 
 import com.inholland.bankapp.dto.TransactionDto;
-import com.inholland.bankapp.model.Account;
-import com.inholland.bankapp.model.Transaction;
+import com.inholland.bankapp.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.inholland.bankapp.repository.TransactionRepository;
-import java.util.Collection;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
+import java.util.*;
+import java.time.LocalDateTime;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
 @Service
 public class TransactionService {
 
@@ -21,13 +22,20 @@ public class TransactionService {
     @Autowired
     private AccountService accountService;
 
+    @Autowired
+    private UserService userService;
+
     /**
      Get Method - gets all transactions
      @return    - returns all existing transactions
      */
-    public List<Transaction> getAllTransactions() {
-        return repository.findAll();
+
+    public Page<TransactionDto> getAllTransactions(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page-1, size);
+        Page<Transaction> transactions = repository.findAll(pageRequest);
+        return transactions.map(this::transformTransactionDTO);
     }
+
 
     public List<Transaction> getTransactionsByAccountId(int accountId) {
         return repository.findTransactionsByAccountId(accountId);
@@ -111,6 +119,9 @@ public class TransactionService {
         transactionDto.setFromAccount(optFromAccount.get().getIBAN());
         transactionDto.setToAccount(optToAccount.get().getIBAN());
         transactionDto.setInitiatedByUser(transaction.getInitiatedByUser());
+        User user = userService.getUserById(transaction.getInitiatedByUser());
+        transactionDto.setInitiatorName(user.getFirstName() + " " + user.getLastName());
+        transactionDto.setInitiatorRole(user.getUserRole().toString().toLowerCase());
 
         return transactionDto;
     }
@@ -152,5 +163,30 @@ public class TransactionService {
 
         return transactionDtos;
     }
-}
 
+    public List<TransactionDto> getCustomerTransactions(int customerID) {
+        User user = userService.getUserById(customerID);
+        if (user!= null && user.getUserRole().equals(UserRole.CUSTOMER)) {
+            List<Account> accounts = accountService.getAccountsByCustomerId(customerID);
+            if (accounts.isEmpty()) {
+                throw new IllegalArgumentException("Customer has no accounts");
+            }
+            List<Transaction> transactions = new ArrayList<>();
+            for (Account account : accounts) {
+                transactions.addAll(repository.findTransactionsByAccountId(account.getAccountId()));
+            }
+            transactions.sort(Comparator.comparing(Transaction::getTimestamp));
+
+            List<TransactionDto> transactionDtos = new ArrayList<>();
+            for (Transaction transaction:
+                    transactions) {
+                transactionDtos.add(this.transformTransactionDTO(transaction));
+            }
+
+            return transactionDtos;
+        }
+        else {
+            throw new IllegalArgumentException("Customer not found");
+        }
+    }
+}

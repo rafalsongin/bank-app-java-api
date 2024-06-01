@@ -22,5 +22,9 @@ public class TransactionDto {
     @NotNull
     private Integer initiatedByUser;
 
+    private String initiatorName;
+
+    private String initiatorRole;
+
     private String timestamp;
 }
