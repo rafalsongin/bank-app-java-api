@@ -1,8 +1,11 @@
 package com.inholland.bankapp.service;
 
+import com.inholland.bankapp.dto.AccountDto;
 import com.inholland.bankapp.model.Account;
 import com.inholland.bankapp.model.AccountType;
+import com.inholland.bankapp.model.Customer;
 import com.inholland.bankapp.repository.AccountRepository;
+import com.inholland.bankapp.repository.CustomerRepository;
 import jakarta.transaction.Transactional;
 import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +21,9 @@ public class AccountService {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private CustomerRepository customerRepository;
 
     private static final SecureRandom random = new SecureRandom();
     private static final String BANK_CODE = "INHO0"; // Your bank's code
@@ -116,10 +122,10 @@ public class AccountService {
         return accountRepository.save(existingAccount);
     }
 
-    public Account getCheckingAccountByIBAN(String IBAN) {
+    public AccountDto getCheckingAccountByIBAN(String IBAN) {
         Optional<Account> account = accountRepository.findByIBAN(IBAN);
         if (account.isPresent() && account.get().getAccountType() == AccountType.CHECKING) {
-            return account.get();
+            return transformAccountToAccountDto(account.get());
         }
         return null;
     }
@@ -177,6 +183,37 @@ public class AccountService {
         }
 
         accountRepository.withdrawFromCheckingAccount(email, amount);
+    }
+
+    public Account transformAccountDtoToAccount(AccountDto accountDto) {
+        Account account = new Account();
+        account.setAccountId(accountDto.getAccountId());
+        account.setIBAN(accountDto.getIBAN());
+        account.setAccountType(accountDto.getAccountType());
+        account.setBalance(accountDto.getBalance());
+        account.setAbsoluteTransferLimit(accountDto.getAbsoluteTransferLimit());
+        account.setDailyTransferLimit(accountDto.getDailyTransferLimit());
+        return account;
+    }
+
+    public AccountDto transformAccountToAccountDto(Account account) {
+        AccountDto accountDto = new AccountDto();
+        accountDto.setAccountId(account.getAccountId());
+        accountDto.setIBAN(account.getIBAN());
+        accountDto.setAccountType(account.getAccountType());
+        accountDto.setBalance(account.getBalance());
+        accountDto.setAbsoluteTransferLimit(account.getAbsoluteTransferLimit());
+        accountDto.setDailyTransferLimit(account.getDailyTransferLimit());
+        Customer owner = customerRepository.findById(account.getCustomerId()).get();
+
+        String ownerFullName = owner.getFirstName() + " " + owner.getLastName();
+        if (owner == null) {
+            ownerFullName = "Unknown";
+        }
+
+        accountDto.setCustomerFullName(ownerFullName);
+        accountDto.setAvailableDailyAmountForTransfer(account.getAvailableDailyAmountForTransfer());
+        return accountDto;
     }
 }
 
