@@ -24,7 +24,7 @@ public class TransactionController {
 
         // Check if the list is empty (not found)
         if (transactions.isEmpty()) {
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.notFound().build();
         }
 
         return ResponseEntity.ok(transactions);
@@ -40,7 +40,7 @@ public class TransactionController {
 
         // Check if the list is empty (not found)
         if (transactions.isEmpty()) {
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.notFound().build();
         }
 
         return ResponseEntity.ok(transactions);
@@ -53,6 +53,11 @@ public class TransactionController {
     @PostMapping
     public ResponseEntity<TransactionDto> createTransaction(@RequestBody TransactionDto transactionDto) {
         TransactionDto createdTransaction = service.saveTransaction(transactionDto);
+
+        if(createdTransaction == null){
+            return ResponseEntity.badRequest().build();
+        }
+
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTransaction);
     }
 }

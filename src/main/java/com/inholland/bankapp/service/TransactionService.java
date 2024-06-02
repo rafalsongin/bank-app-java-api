@@ -6,7 +6,6 @@ import com.inholland.bankapp.model.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.inholland.bankapp.repository.TransactionRepository;
-import java.util.Collection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +19,8 @@ public class TransactionService {
 
     @Autowired
     private AccountService accountService;
+
+    private String errorMessageStart = "[Error] Transaction-";
 
     /**
      Get Method - gets all transactions
@@ -36,28 +37,62 @@ public class TransactionService {
     /**
      Save Method - saves transaction to the database
      @param transactionDto  - parameter is an transactionDto class, that represents a transaction as DTO (Data Transfer Object)
-     @return    - returns the created transaction
+     @return    - returns the created transactionDto with a timestamp from database, if incorrect returns 'null'
      */
     public TransactionDto saveTransaction(TransactionDto transactionDto) {
+        try{
+            if(!isTransactionValid(transactionDto)){
+                throw new RuntimeException("CreateTransaction: Transaction is not valid!");
+            }
 
-        Optional<Account> optFromAccount = accountService.getAccountByIBAN(transactionDto.getFromAccount());
-        Optional<Account> optToAccount = accountService.getAccountByIBAN(transactionDto.getToAccount());
-        if(!optFromAccount.isPresent() || !optToAccount.isPresent()){
-            throw new RuntimeException("[Error] CreateTransactionDTO: From or To accounts not found!");
+            // Update both account balances
+            Account fromAccount = accountService.getCheckingAccountByIBAN(transactionDto.getFromAccount());
+            Account toAccount = accountService.getAccountByIBAN(transactionDto.getToAccount()).get();
+            updateFromAndToAccountBalances(transactionDto.getAmount(), fromAccount, toAccount);
+
+            // Save transaction
+            Transaction transaction = transformTransaction(transactionDto);
+            repository.save(transaction);
+
+            // Overwrite transactionDto with a transaction containing timestamp from Database
+            transactionDto = transformTransactionDTO(transaction);
+        }catch (Exception e){
+            System.out.println(errorMessageStart + e.getMessage());
+            return null;
         }
+        return transactionDto;
+    }
 
-        // Check if from_account has sufficient balance and update accounts, if it does
-        if (optFromAccount.get().getBalance() < transactionDto.getAmount()) {
-            throw new RuntimeException("Insufficient balance in the from account.");
+    /**
+     Boolean Method - checks transaction validity
+     @param transactionDto  - parameter is an transactionDto class, that represents a transaction as DTO (Data Transfer Object)
+     @return    - returns 'true' if transaction is good/correct, 'false' if transaction is bad/incorrect
+     */
+    private boolean isTransactionValid(TransactionDto transactionDto) {
+        try{
+            Optional<Account> optFromAccount = accountService.getAccountByIBAN(transactionDto.getFromAccount());
+            Optional<Account> optToAccount = accountService.getAccountByIBAN(transactionDto.getToAccount());
+            // Check if both accounts exits
+            if(!optFromAccount.isPresent() || !optToAccount.isPresent()){
+                throw new RuntimeException("SaveValidation: Sender or Recipient accounts not found!");
+            }
+
+            float balanceAfterThisTransaction = optFromAccount.get().getBalance()-transactionDto.getAmount();
+            // Check if account has reached the absolute limit
+            if(balanceAfterThisTransaction < optFromAccount.get().getAbsoluteTransferLimit()){
+                throw new RuntimeException(errorMessageStart + "SaveValidation: Absolute Limit reached!");
+            }
+
+            // Check if account has reached daily transfer limit
+            Float dailyTransferTotal = repository.getAccountTotalDailyTransferAmount(optFromAccount.get().getAccountId());
+            if(dailyTransferTotal+transactionDto.getAmount() > optFromAccount.get().getDailyTransferLimit()){
+                throw new RuntimeException(errorMessageStart + "SaveValidation: Daily Transfer Limit reached!");
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return false;
         }
-
-        updateFromAndToAccountBalances(transactionDto.getAmount(), optFromAccount.get(), optToAccount.get());
-
-        // Create, save and return transaction
-        Transaction transaction = transformTransaction(transactionDto);
-        repository.save(transaction);
-
-        return transformTransactionDTO(transaction);
+        return true;
     }
 
     /**
