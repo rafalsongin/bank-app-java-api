@@ -1,5 +1,7 @@
 package com.inholland.bankapp.controller;
 
+import com.inholland.bankapp.dto.CustomerDto;
+import com.inholland.bankapp.dto.CustomerRegistrationDto;
 import com.inholland.bankapp.model.Customer;
 import com.inholland.bankapp.model.Transaction;
 import com.inholland.bankapp.service.CustomerService;
@@ -79,5 +81,21 @@ public class CustomerController {
     public ResponseEntity<String> closeCustomerAccount(@PathVariable int customerID) {
         customerService.closeCustomerAccount(customerID);
         return ResponseEntity.ok("Customer account closed");
+    }
+
+    @GetMapping("/transactions/{customerID}")
+    public ResponseEntity<List<Transaction>> getCustomerTransactions(@PathVariable int customerID) {
+        List<Transaction> transactions = customerService.getCustomerTransactions(customerID);
+        return ResponseEntity.ok(transactions);
+    }
+
+    @PutMapping
+    public ResponseEntity<CustomerDto> updateCustomerDetails(@RequestBody CustomerDto customerDto){
+        Optional<CustomerDto> optCustomerDto = customerService.updateCustomerDetails(customerDto);
+
+        if(optCustomerDto.isEmpty()){
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(optCustomerDto.get());
     }
 }
