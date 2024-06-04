@@ -15,6 +15,7 @@
 	<description>Bank app project Inholland</description>
 	<properties>
 		<java.version>21</java.version>
+		<cucumber.version>7.17.0</cucumber.version> <!-- Cucumber version, maybe change ? -->
 	</properties>
 	<dependencies>
 		<dependency>
@@ -79,6 +80,14 @@
 			<groupId>com.sun.xml.bind</groupId>
 			<artifactId>jaxb-impl</artifactId>
 			<version>2.3.1</version>
+		</dependency>
+
+		<!-- Cucumber dependencies -->
+		<dependency>
+			<groupId>io.cucumber</groupId>
+			<artifactId>cucumber-spring</artifactId>
+			<version>${cucumber.version}</version>
+			<scope>test</scope>
 		</dependency>
 		
 	</dependencies>

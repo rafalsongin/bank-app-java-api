@@ -1,12 +1,15 @@
 package com.inholland.bankapp.controller;
 
+import com.inholland.bankapp.model.Customer;
 import com.inholland.bankapp.model.Employee;
 import com.inholland.bankapp.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/employees")
@@ -40,5 +43,19 @@ public class EmployeeController {
     public ResponseEntity<Void> deleteEmployee(@PathVariable int id) {
         employeeService.deleteEmployee(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<Employee> getEmployeeByEmail(@PathVariable String email) {
+
+        Optional<Employee> employeeOpt = employeeService.getEmployeeByEmail(email);
+        if (!employeeOpt.isPresent()) {
+            System.out.println("Customer not found for email: " + email);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+
+        Employee employee = employeeOpt.get();
+
+        return ResponseEntity.ok(employee);
     }
 }

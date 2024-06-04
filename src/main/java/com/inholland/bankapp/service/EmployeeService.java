@@ -66,4 +66,8 @@ public class EmployeeService extends UserService {
         
         return user;
     }
+
+    public Optional<Employee> getEmployeeByEmail(String email) {
+        return employeeRepository.findEmployeeByEmail(email);
+    }
 }
