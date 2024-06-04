@@ -16,8 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-
+import static org.hamcrest.Matchers.hasSize;
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(CustomerController.class)
 class CustomerControllerTest {
@@ -28,15 +27,17 @@ class CustomerControllerTest {
     @MockBean
     private CustomerService customerService;
 
+
+
     @Test
+    //@WithMockUser
     void getAllCustomers() throws Exception {
         when(customerService.getAllCustomers()).thenReturn(null);
 
-        this.mockMvc.perform(get("api/customers"))
+        this.mockMvc.perform(get("/customers"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
-
     }
 
     @Test
