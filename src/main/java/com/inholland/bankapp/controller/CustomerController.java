@@ -83,12 +83,6 @@ public class CustomerController {
         return ResponseEntity.ok("Customer account closed");
     }
 
-    @GetMapping("/transactions/{customerID}")
-    public ResponseEntity<List<Transaction>> getCustomerTransactions(@PathVariable int customerID) {
-        List<Transaction> transactions = customerService.getCustomerTransactions(customerID);
-        return ResponseEntity.ok(transactions);
-    }
-
     @PutMapping
     public ResponseEntity<CustomerDto> updateCustomerDetails(@RequestBody CustomerDto customerDto){
         Optional<CustomerDto> optCustomerDto = customerService.updateCustomerDetails(customerDto);
