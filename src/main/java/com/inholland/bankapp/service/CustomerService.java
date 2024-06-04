@@ -164,4 +164,18 @@ public class CustomerService extends UserService {
     private boolean checkCustomerExists(String email) {
         return customerRepository.getCustomerByEmail(email).isPresent();
     }
+
+    public String getIbanByCustomerName(String firstName, String lastName) {
+        Customer customer = customerRepository.findByFirstNameAndLastName(firstName, lastName);
+        String checkingAccountIban = "";
+        if (customer != null) {
+            List<Account> accounts = accountService.getAccountsByCustomerId(customer.getUserId());
+            if (accounts.size() > 0) {
+                Account checkingAccount ;
+                checkingAccount = accounts.stream().filter(account -> account.getAccountType() == AccountType.CHECKING).max(Comparator.comparing(Account::getAccountId)).get();
+                checkingAccountIban = checkingAccount.getIBAN();
+            }
+        }
+        return checkingAccountIban;
+    }
 }

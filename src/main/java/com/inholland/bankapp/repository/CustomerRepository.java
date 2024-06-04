@@ -13,4 +13,6 @@ import java.util.Optional;
 public interface CustomerRepository extends JpaRepository<Customer, Integer> {
     List<Customer> findByAccountApprovalStatus(AccountApprovalStatus accountApprovalStatus);
     Optional<Customer> getCustomerByEmail(String email);
+    Customer findByFirstNameAndLastName(String first_name, String last_name);
+
 }
