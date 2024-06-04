@@ -5,6 +5,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+
 
 @Entity
 @Setter
@@ -39,4 +43,22 @@ public class Account {
     @NotNull
     @Column (name = "daily_transfer_limit")
     private float dailyTransferLimit;
+
+    @OneToMany(mappedBy = "fromAccount")
+    private List<Transaction> outgoingTransactions = null;
+
+    // Getter for available daily amount for transfer
+    public float getAvailableDailyAmountForTransfer() {
+        if (outgoingTransactions == null) {
+            return dailyTransferLimit;
+        }
+
+        LocalDate today = LocalDate.now(ZoneId.of("Europe/Amsterdam"));
+        float totalTransfersToday = outgoingTransactions.stream()
+                .filter(t -> t.getTimestamp().toLocalDate().isEqual(today))
+                .map(Transaction::getAmount)
+                .reduce(0.0f, Float::sum);
+
+        return dailyTransferLimit - totalTransfersToday;
+    }
 }

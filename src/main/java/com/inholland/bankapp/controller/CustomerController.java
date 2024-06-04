@@ -80,10 +80,4 @@ public class CustomerController {
         customerService.closeCustomerAccount(customerID);
         return ResponseEntity.ok("Customer account closed");
     }
-
-    @GetMapping("/transactions/{customerID}")
-    public ResponseEntity<List<Transaction>> getCustomerTransactions(@PathVariable int customerID) {
-        List<Transaction> transactions = customerService.getCustomerTransactions(customerID);
-        return ResponseEntity.ok(transactions);
-    }
 }
