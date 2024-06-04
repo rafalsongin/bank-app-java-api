@@ -1,6 +1,5 @@
 package com.inholland.bankapp.service;
 
-import com.inholland.bankapp.dto.CustomerDto;
 import com.inholland.bankapp.dto.CustomerRegistrationDto;
 import com.inholland.bankapp.exceptions.InvalidDataException;
 import com.inholland.bankapp.exceptions.UserAlreadyExistsException;
@@ -25,9 +24,6 @@ public class CustomerService extends UserService {
 
     @Autowired
     private TransactionService transactionService;
-
-    @Autowired
-    private BankService bankService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -156,97 +152,16 @@ public class CustomerService extends UserService {
      */
     public Optional<Customer> getCustomerByEmail(String email) {
         Optional<Customer> customer = customerRepository.getCustomerByEmail(email);
-
-        if(!customer.isPresent()){
-            throw new RuntimeException("[Error] Customer not found!");
-        }
-
+        System.out.println("Customer fetched from repository: " + customer.get().getUsername());
         return customer;
     }
 
     /**
-     Update Method - update customer details, using email as search for customer
-     @param customerDto  - parameter is a customerDto class, that represents a customer as DTO (Data Transfer Object)
-     @return    - returns customerDto, if changes were made.
+     Check Method - check if customer exists by using the email
+     @param email  - parameter is of String type, that represents the email of the customer
+     @return    - returns a boolean value
      */
-    public Optional<CustomerDto> updateCustomerDetails(CustomerDto customerDto) {
-        try {
-            Customer customer = getCustomerByEmail(customerDto.getEmail()).get();
-
-            if(!isCustomerModified(customerDto, customer)){
-                System.out.println("[Warning] Customer details were not modified!");
-                return Optional.empty();
-            }
-
-            customer.setUsername(customerDto.getUsername());
-            customer.setFirstName(customerDto.getFirstName());
-            customer.setLastName(customerDto.getLastName());
-            customer.setPhoneNumber(customerDto.getPhoneNumber());
-            customer.setBSN(customerDto.getBsn());
-
-            Customer updatedCustomer = customerRepository.save(customer);
-
-            return Optional.of(transformCustomerIntoDto(updatedCustomer));
-        }catch (Exception e){
-            System.out.println("[Error] Updating customer: " + e);
-            return Optional.empty();
-        }
-    }
-
-    /**
-     Check Method - checks if the customerDto has changes from the original customer
-     @param customerDto  - parameter is a customerDto class, that represents a customer as DTO (Data Transfer Object)
-     @param customer    - parameter is a customer class, that represents the customer as an object
-     @return    - returns a boolean, 'true' if changes were made and 'false' if there are no changes.
-     */
-    private boolean isCustomerModified(CustomerDto customerDto, Customer customer) {
-        System.out.printf("Checking if customer is modified: ");
-        if(!customerDto.getUsername().equals(customer.getUsername())) {
-            System.out.println("Username modified");
-            return true;
-        }
-        if(!customerDto.getFirstName().equals(customer.getFirstName())) {
-            System.out.println("FirstName modified");
-            return true;
-        }
-        if(!customerDto.getLastName().equals(customer.getLastName())) {
-            System.out.println("LastName modified");
-            return true;
-        }
-        if(!customerDto.getPhoneNumber().equals(customer.getPhoneNumber())) {
-            System.out.println("PhoneNumber modified");
-            return true;
-        }
-        if(!customerDto.getBsn().equals(customer.getBSN())) {
-            System.out.println("BSN modified");
-            return true;
-        }
-
-        System.out.println("no modifications found!");
-        return false;
-    }
-
-    /**
-     Transform Method - transforms a customer object to a customerDto object
-     @param customer  - parameter is a customer class, which is used in the back end for customers
-     @return    - returns customerDto object
-     */
-    private CustomerDto transformCustomerIntoDto(Customer customer){
-        CustomerDto customerDto = new CustomerDto();
-
-        Optional<Bank> optBank = bankService.getBankById(customer.getBankId());
-
-        customerDto.setUsername(customer.getUsername());
-        customerDto.setEmail(customer.getEmail());
-        customerDto.setFirstName(customer.getFirstName());
-        customerDto.setLastName(customer.getLastName());
-        customerDto.setPhoneNumber(customer.getPhoneNumber());
-        customerDto.setBankName(optBank.get().getName());
-        customerDto.setUserRole(customer.getUserRole());
-        customerDto.setBsn(customer.getBSN());
-        customerDto.setPhoneNumber(customer.getPhoneNumber());
-        customerDto.setAccountApprovalStatus(customer.getAccountApprovalStatus());
-
-        return customerDto;
+    private boolean checkCustomerExists(String email) {
+        return customerRepository.getCustomerByEmail(email).isPresent();
     }
 }

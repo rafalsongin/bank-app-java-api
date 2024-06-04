@@ -17,12 +17,4 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
     Page<Transaction> findAll(Pageable pageable);
     @Query("SELECT t FROM Transaction t WHERE t.fromAccount = :accountId OR t.toAccount = :accountId ORDER BY t.timestamp")
     List<Transaction> findTransactionsByAccountId(@Param("accountId") Integer accountId);
-
-    /**
-     Get Method - fetches the daily total transaction amount by accountId
-     @param accountId  - parameter is an Integer type, that represents an Id of an account
-     @return    - returns the daily total transaction amount of an account, if the value is null returns 0
-     */
-    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.fromAccount = :accountId AND DATE(timestamp) = CURRENT_DATE")
-    Float getAccountTotalDailyTransferAmount(@Param("accountId") Integer accountId);
 }

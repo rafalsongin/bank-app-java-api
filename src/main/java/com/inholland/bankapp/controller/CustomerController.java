@@ -1,7 +1,5 @@
 package com.inholland.bankapp.controller;
 
-import com.inholland.bankapp.dto.CustomerDto;
-import com.inholland.bankapp.dto.CustomerRegistrationDto;
 import com.inholland.bankapp.model.Customer;
 import com.inholland.bankapp.model.Transaction;
 import com.inholland.bankapp.service.CustomerService;
@@ -83,13 +81,17 @@ public class CustomerController {
         return ResponseEntity.ok("Customer account closed");
     }
 
-    @PutMapping
-    public ResponseEntity<CustomerDto> updateCustomerDetails(@RequestBody CustomerDto customerDto){
-        Optional<CustomerDto> optCustomerDto = customerService.updateCustomerDetails(customerDto);
 
-        if(optCustomerDto.isEmpty()){
-            return ResponseEntity.badRequest().build();
-        }
-        return ResponseEntity.ok(optCustomerDto.get());
-    }
+//    @PutMapping
+//    public ResponseEntity<CustomerDto> updateCustomerDetails(@RequestBody CustomerDto customerDto){
+//        Optional<CustomerDto> optCustomerDto = customerService.updateCustomerDetails(customerDto);
+//
+//        if(optCustomerDto.isEmpty()){
+//            return ResponseEntity.badRequest().build();
+//        }
+//        return ResponseEntity.ok(optCustomerDto.get());
+//    }
 }
+
+
+
