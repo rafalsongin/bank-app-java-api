@@ -163,6 +163,18 @@ public class TransactionService {
         return transactionDtos;
     }
 
+    public List<TransactionDto> getAllTransactionsByAccountId(Integer accountId) {
+        List<Transaction> transactions = repository.findTransactionsByAccountId(accountId);
+
+        List<TransactionDto> transactionDtos = new ArrayList<>();
+        for (Transaction transaction:
+                transactions) {
+            transactionDtos.add(this.transformTransactionDTO(transaction));
+        }
+
+        return transactionDtos;
+    }
+
     public List<TransactionDto> getCustomerTransactions(int customerID) {
         User user = userService.getUserById(customerID);
         if (user!= null && user.getUserRole().equals(UserRole.CUSTOMER)) {
