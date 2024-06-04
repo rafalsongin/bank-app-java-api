@@ -7,22 +7,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("api/transactions")
-@CrossOrigin(origins = "http://localhost:5173") // this will need changes depending on the port number
 public class TransactionController {
 
     @Autowired
     private TransactionService service;
 
     @GetMapping
-    public ResponseEntity<List<Transaction>> getAllTransactions() {
-        List<Transaction> transactions = service.getAllTransactions();
+    public ResponseEntity<Page<TransactionDto>> getAllTransactions(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<TransactionDto> transactions = service.getAllTransactions(page, size);
 
-        // Check if the list is empty (not found)
         if (transactions.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -59,5 +65,11 @@ public class TransactionController {
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTransaction);
+    }
+
+    @GetMapping("/{customerID}")
+    public ResponseEntity<List<TransactionDto>> getCustomerTransactions(@PathVariable int customerID) {
+        List<TransactionDto> transactions = service.getCustomerTransactions(customerID);
+        return ResponseEntity.ok(transactions);
     }
 }

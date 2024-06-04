@@ -1,16 +1,25 @@
 package com.inholland.bankapp.service;
 
+import com.inholland.bankapp.dto.AccountDto;
+import com.inholland.bankapp.dto.CustomerDto;
 import com.inholland.bankapp.dto.TransactionDto;
-import com.inholland.bankapp.model.Account;
-import com.inholland.bankapp.model.Transaction;
+import com.inholland.bankapp.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.inholland.bankapp.repository.TransactionRepository;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import java.util.*;
+import java.time.LocalDateTime;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
 @Service
 public class TransactionService {
 
@@ -20,14 +29,23 @@ public class TransactionService {
     @Autowired
     private AccountService accountService;
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private CustomerService customerService;
+
     private String errorMessageStart = "[Error] Transaction-";
 
     /**
      Get Method - gets all transactions
      @return    - returns all existing transactions
      */
-    public List<Transaction> getAllTransactions() {
-        return repository.findAll();
+
+    public Page<TransactionDto> getAllTransactions(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page-1, size);
+        Page<Transaction> transactions = repository.findAll(pageRequest);
+        return transactions.map(this::transformTransactionDTO);
     }
 
     public List<Transaction> getTransactionsByAccountId(int accountId) {
@@ -46,7 +64,7 @@ public class TransactionService {
             }
 
             // Update both account balances
-            Account fromAccount = accountService.getCheckingAccountByIBAN(transactionDto.getFromAccount());
+            AccountDto fromAccount = accountService.getCheckingAccountByIBAN(transactionDto.getFromAccount());
             Account toAccount = accountService.getAccountByIBAN(transactionDto.getToAccount()).get();
             updateFromAndToAccountBalances(transactionDto.getAmount(), fromAccount, toAccount);
 
@@ -113,7 +131,11 @@ public class TransactionService {
         // Set transaction properties
         transaction.setTransactionType(transactionDto.getTransactionType());
         transaction.setAmount(transactionDto.getAmount());
-        transaction.setInitiatedByUser(transactionDto.getInitiatedByUser());
+
+        // Get customer by email and set customer Id
+        Customer customer = customerService.getCustomerByEmail(transactionDto.getInitiatorEmail()).get();
+        transaction.setInitiatedByUser(customer.getUserId());
+
         // set current timestamp
         transaction.setTimestamp(LocalDateTime.now());
         // Retrieve and set account IDs
@@ -144,7 +166,12 @@ public class TransactionService {
         transactionDto.setTimestamp(transaction.getTimestamp().toString());
         transactionDto.setFromAccount(optFromAccount.get().getIBAN());
         transactionDto.setToAccount(optToAccount.get().getIBAN());
-        transactionDto.setInitiatedByUser(transaction.getInitiatedByUser());
+
+
+        Customer customer = customerService.getCustomerById(transaction.getInitiatedByUser()).get();
+        transactionDto.setInitiatorEmail(customer.getEmail());
+        transactionDto.setInitiatorName(customer.getFirstName() + " " + customer.getLastName());
+        transactionDto.setInitiatorRole(customer.getUserRole().toString().toUpperCase());
 
         return transactionDto;
     }
@@ -155,7 +182,7 @@ public class TransactionService {
      @param fromAccount   - parameter is an Account class, used for updating from_account balance
      @param toAccount   - parameter is an Account class, used for updating to_account balance
      */
-    private void updateFromAndToAccountBalances(Float amount, Account fromAccount, Account toAccount){
+    private void updateFromAndToAccountBalances(Float amount, AccountDto fromAccount, Account toAccount){
         // Update account balances
         fromAccount.setBalance(fromAccount.getBalance() - amount); // decrease from_account balance
         toAccount.setBalance(toAccount.getBalance() + amount); // increase to_account balance
@@ -178,13 +205,61 @@ public class TransactionService {
 
         List<Transaction> transactions = repository.findTransactionsByAccountId(account.get().getAccountId());
 
-        List<TransactionDto> transactionDtos = new ArrayList<>();
-        for (Transaction transaction:
-             transactions) {
-            transactionDtos.add(this.transformTransactionDTO(transaction));
+        return transformTransactionListIntoDtoList(transactions);
+    }
+
+    // Original Maria's method, - Ignas changed the customerId param to email
+    private List<TransactionDto> getCustomerTransactions(String email) {
+        Customer customer = customerService.getCustomerByEmail(email).get();
+        User user = userService.getUserById(customer.getUserId());
+        if (user!= null && user.getUserRole().equals(UserRole.CUSTOMER)) {
+            List<Account> accounts = accountService.getAccountsByCustomerId(customer.getUserId());
+            if (accounts.isEmpty()) {
+                throw new IllegalArgumentException("Customer has no accounts");
+            }
+            List<Transaction> transactions = new ArrayList<>();
+            for (Account account : accounts) {
+                transactions.addAll(repository.findTransactionsByAccountId(account.getAccountId()));
+            }
+            transactions.sort(Comparator.comparing(Transaction::getTimestamp));
+
+            return transformTransactionListIntoDtoList(transactions);
+        }
+        else {
+            throw new IllegalArgumentException("Customer not found");
+        }
+    }
+
+    /**
+     Get Method - gets all transactions by customer email
+     @param email  - parameter is a String type, which is used in get the transactions
+     @return    - returns a list of transactions where each transaction is an TransactionDto object
+     */
+    public List<TransactionDto> getAllTransactionsByEmail(String email) {
+        // Customer will be retrieved as the method checks if it exists, otherwise Exception
+        Optional<Customer> optCustomer = customerService.getCustomerByEmail(email);
+
+        List<TransactionDto> transactions = getCustomerTransactions(optCustomer.get().getEmail());
+        if(transactions.isEmpty()){
+            throw new RuntimeException("[Error] No transactions were found!");
         }
 
-        return transactionDtos;
+        return transactions;
+    }
+
+    /**
+     Transform Method - transforms a transaction list to a transactionDto list
+     @param transactions  - parameter is a list of transaction class
+     @return    - returns transactionDto list
+     */
+    private List<TransactionDto> transformTransactionListIntoDtoList(List<Transaction> transactions) {
+        List<TransactionDto> transactionDto = new ArrayList<>();
+
+        for (Transaction transaction:
+                transactions) {
+            transactionDto.add(transformTransactionDTO(transaction));
+        }
+
+        return transactionDto;
     }
 }
-

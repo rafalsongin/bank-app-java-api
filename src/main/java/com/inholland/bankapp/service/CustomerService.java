@@ -149,25 +149,6 @@ public class CustomerService extends UserService {
         }
     }
 
-    public List<Transaction> getCustomerTransactions(int customerID) {
-        Customer customer = customerRepository.findById(customerID).orElse(null);
-        if (customer != null) {
-            List<Account> accounts = accountService.getAccountsByCustomerId(customerID);
-            if (accounts.isEmpty()) {
-                throw new IllegalArgumentException("Customer has no accounts");
-            }
-            List<Transaction> transactions = new ArrayList<>();
-            for (Account account : accounts) {
-                transactions.addAll(transactionService.getTransactionsByAccountId(account.getAccountId()));
-            }
-            transactions.sort(Comparator.comparing(Transaction::getTimestamp));
-            return transactions;
-        }
-        else {
-            throw new IllegalArgumentException("Customer not found");
-        }
-    }
-
     /**
      Get Method - getting the customer by email
      @param email  - parameter is of String type, that represents the email of the customer
@@ -269,4 +250,3 @@ public class CustomerService extends UserService {
         return customerDto;
     }
 }
-

@@ -20,4 +20,8 @@ public class UserService {
     protected boolean userExists(String email) {
         return userRepository.findByEmail(email).isPresent();
     }
+
+    public User getUserById(int initiatedByUser) {
+        return userRepository.findById(initiatedByUser).orElse(null);
+    }
 }

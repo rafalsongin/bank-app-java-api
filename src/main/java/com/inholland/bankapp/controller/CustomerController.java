@@ -1,9 +1,7 @@
 package com.inholland.bankapp.controller;
 
 import com.inholland.bankapp.dto.CustomerDto;
-import com.inholland.bankapp.dto.CustomerRegistrationDto;
 import com.inholland.bankapp.model.Customer;
-import com.inholland.bankapp.model.Transaction;
 import com.inholland.bankapp.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,51 +13,48 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("api/customers")
-@CrossOrigin(origins = "http://localhost:5173") // this will need changes depending on the port number
 public class CustomerController {
 
     @Autowired
     private CustomerService customerService;
 
     @GetMapping
-    public ResponseEntity<List<Customer>> getAllCustomers() {
-        List<Customer> customers = customerService.getAllCustomers();
+    public ResponseEntity<List<CustomerDto>> getAllCustomers() {
+        List<CustomerDto> customers = customerService.getAllCustomers();
         if (customers.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
+
         return ResponseEntity.ok(customers);
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<Customer> getCustomerById(@PathVariable String email) {
+    public ResponseEntity<CustomerDto> getCustomerByEmail(@PathVariable String email) {
         System.out.println("Received request for email: " + email);
 
-        Optional<Customer> customerOpt = customerService.getCustomerByEmail(email);
-        if (!customerOpt.isPresent()) {
-            System.out.println("Customer not found for email: " + email);
+        Optional<CustomerDto> optCustomerDto = customerService.getCustomerDtoByEmail(email);
+        if (!optCustomerDto.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
 
-        Customer customer = customerOpt.get();
-        System.out.println("Customer found: " + customer.getUsername());
-        return ResponseEntity.ok(customer);
+        return ResponseEntity.ok(optCustomerDto.get());
     }
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<Customer> getCustomerById(@PathVariable Integer id) {
-        Customer customer = customerService.getCustomerById(id).orElse(null);
+    public ResponseEntity<CustomerDto> getCustomerById(@PathVariable Integer id) {
+        Optional<CustomerDto> customerDto = customerService.getCustomerDtoById(id);
 
         // Check if the object was not found
-        if (customer == null) {
+        if (!customerDto.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
 
-        return ResponseEntity.ok(customer);
+        return ResponseEntity.ok(customerDto.get());
     }
 
     @GetMapping("/unverified")
-    public ResponseEntity<List<Customer>> getUnverifiedCustomers() {
-        List<Customer> customers = customerService.getCustomersWithUnverifiedAccounts();
+    public ResponseEntity<List<CustomerDto>> getUnverifiedCustomers() {
+        List<CustomerDto> customers = customerService.getCustomersWithUnverifiedAccounts();
         if (customers.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
@@ -82,12 +77,6 @@ public class CustomerController {
     public ResponseEntity<String> closeCustomerAccount(@PathVariable int customerID) {
         customerService.closeCustomerAccount(customerID);
         return ResponseEntity.ok("Customer account closed");
-    }
-
-    @GetMapping("/transactions/{customerID}")
-    public ResponseEntity<List<Transaction>> getCustomerTransactions(@PathVariable int customerID) {
-        List<Transaction> transactions = customerService.getCustomerTransactions(customerID);
-        return ResponseEntity.ok(transactions);
     }
 
     @PutMapping
