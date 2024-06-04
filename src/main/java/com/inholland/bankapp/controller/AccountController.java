@@ -1,5 +1,6 @@
 package com.inholland.bankapp.controller;
 
+import com.inholland.bankapp.dto.AccountDto;
 import com.inholland.bankapp.model.Account;
 import com.inholland.bankapp.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/accounts")
-@CrossOrigin(origins = "http://localhost:5173") // this will need changes depending on the port number
 public class AccountController {
 
     @Autowired
@@ -27,15 +27,15 @@ public class AccountController {
     }
 
     @GetMapping("/getCheckingAccount/{IBAN}")
-    public ResponseEntity<Account> getCheckingAccountByIBAN(@PathVariable String IBAN) {
-        Account account = accountService.getCheckingAccountByIBAN(IBAN);
+    public ResponseEntity<AccountDto> getCheckingAccountByIBAN(@PathVariable String IBAN) {
+        AccountDto account = accountService.getCheckingAccountByIBAN(IBAN);
         if (account == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(account);
     }
 
-    @GetMapping("/customer/{customerId}") //TODO: use this one to get accounts by customer id in frontend
+    @GetMapping("/customer/{customerId}")
     public ResponseEntity<List<Account>> getAccountsByCustomerId(@PathVariable Integer customerId) {
         List<Account> accounts = accountService.getAccountsByCustomerId(customerId);
 
