@@ -1,8 +1,9 @@
 package com.inholland.bankapp.controller;
 
-import com.inholland.bankapp.model.Account;
-import com.inholland.bankapp.service.AccountService;
+import com.inholland.bankapp.service.CustomerService;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -17,22 +18,52 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-
-import static org.junit.jupiter.api.Assertions.*;
-
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(AccountController.class)
-class AccountControllerTest {
+@WebMvcTest(CustomerController.class)
+class CustomerControllerTest {
 
-    // We use mockMvc to simulate HTTP requests to a controller class
     @Autowired
     private MockMvc mockMvc;
 
-   @MockBean
-    private AccountService accountService;
+    @MockBean
+    private CustomerService customerService;
 
+    @Test
+    void getAllCustomers() throws Exception {
+        when(customerService.getAllCustomers()).thenReturn(null);
 
+        this.mockMvc.perform(get("api/customers"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
 
+    }
 
+    @Test
+    void getCustomerById() {
+    }
 
+    @Test
+    void testGetCustomerById() {
+    }
+
+    @Test
+    void getUnverifiedCustomers() {
+    }
+
+    @Test
+    void approveCustomer() {
+    }
+
+    @Test
+    void declineCustomer() {
+    }
+
+    @Test
+    void closeCustomerAccount() {
+    }
+
+    @Test
+    void updateCustomerDetails() {
+    }
 }

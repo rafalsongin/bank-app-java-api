@@ -55,9 +55,9 @@ public class TransactionService {
             }
 
             // Update both account balances
-            Account fromAccount = accountService.getCheckingAccountByIBAN(transactionDto.getFromAccount());
-            Account toAccount = accountService.getAccountByIBAN(transactionDto.getToAccount()).get();
-            updateFromAndToAccountBalances(transactionDto.getAmount(), fromAccount, toAccount);
+//            Account fromAccount = accountService.getCheckingAccountByIBAN(transactionDto.getFromAccount());
+//            Account toAccount = accountService.getAccountByIBAN(transactionDto.getToAccount()).get();
+//            updateFromAndToAccountBalances(transactionDto.getAmount(), fromAccount, toAccount);
 
             // Save transaction
             Transaction transaction = transformTransaction(transactionDto);
