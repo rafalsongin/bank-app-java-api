@@ -81,6 +81,18 @@ public class CustomerController {
         return ResponseEntity.ok("Customer account closed");
     }
 
+    @GetMapping("/getIbanByCustomerName/{firstName}/{lastName}")
+    public ResponseEntity<String> getIbanByCustomerName(@PathVariable String firstName, @PathVariable String lastName) {
+        String iban = customerService.getIbanByCustomerName(firstName, lastName);
+        if (iban == null) {
+            return ResponseEntity.noContent().build();
+        }
+        if (iban.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        return ResponseEntity.ok(iban);
+    }
+
 
 //    @PutMapping
 //    public ResponseEntity<CustomerDto> updateCustomerDetails(@RequestBody CustomerDto customerDto){
