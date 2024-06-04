@@ -27,8 +27,6 @@ class CustomerControllerTest {
     @MockBean
     private CustomerService customerService;
 
-
-
     @Test
     //@WithMockUser
     void getAllCustomers() throws Exception {
