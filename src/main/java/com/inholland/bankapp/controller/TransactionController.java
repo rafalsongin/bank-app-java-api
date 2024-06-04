@@ -52,6 +52,18 @@ public class TransactionController {
         return ResponseEntity.ok(transactions);
     }
 
+    @GetMapping("/accountId/{accountId}")
+    public ResponseEntity<List<TransactionDto>> getAllTransactionsById(@PathVariable Integer accountId) {
+        List<TransactionDto> transactions = service.getAllTransactionsByAccountId(accountId);
+
+        // Check if the list is empty (not found)
+        if (transactions.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(transactions);
+    }
+
     /**
      Create Method - creating a transaction
      @param transactionDto  - parameter is an TransactionCreationDto type, that represents a transaction as DTO (Data Transfer Object)
