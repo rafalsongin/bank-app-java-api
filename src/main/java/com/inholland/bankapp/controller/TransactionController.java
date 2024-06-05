@@ -75,10 +75,17 @@ public class TransactionController {
     }
 
     @GetMapping("/accountId/{accountId}")
-    public ResponseEntity<List<TransactionDto>> getAllTransactionsById(@PathVariable Integer accountId) {
-        List<TransactionDto> transactions = service.getAllTransactionsByAccountId(accountId);
+    public ResponseEntity<List<TransactionDto>> getAllTransactionsById(
+            @PathVariable Integer accountId,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) String amountCondition,
+            @RequestParam(required = false) Float amountValue,
+            @RequestParam(required = false) String fromIban,
+            @RequestParam(required = false) String toIban) {
 
-        // Check if the list is empty (not found)
+        List<TransactionDto> transactions = service.getAllTransactionsByAccountId(accountId, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
+
         if (transactions.isEmpty()) {
             return ResponseEntity.noContent().build();
         }

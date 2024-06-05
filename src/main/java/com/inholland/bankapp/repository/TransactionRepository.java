@@ -42,4 +42,25 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             @Param("fromAccountId") Integer fromAccountId,
             @Param("toAccountId") Integer toAccountId,
             Pageable pageable);
+
+    @Query("SELECT t FROM Transaction t WHERE " +
+            "(t.fromAccount = :accountId OR t.toAccount = :accountId) " +
+            "AND (:startDate IS NULL OR DATE(t.timestamp) >= :startDate) " +
+            "AND (:endDate IS NULL OR DATE(t.timestamp) <= :endDate) " +
+            "AND (:amountValue IS NULL OR " +
+            "(CASE WHEN :amountCondition = 'equal' THEN t.amount = :amountValue " +
+            "WHEN :amountCondition = 'greaterThan' THEN t.amount > :amountValue " +
+            "WHEN :amountCondition = 'lessThan' THEN t.amount < :amountValue END)) " +
+            "AND (:fromAccountId IS NULL OR t.fromAccount = :fromAccountId) " +
+            "AND (:toAccountId IS NULL OR t.toAccount = :toAccountId) " +
+            "ORDER BY t.timestamp")
+    List<Transaction> findFilteredTransactionsByAccountId(
+            @Param("accountId") Integer accountId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("amountCondition") String amountCondition,
+            @Param("amountValue") Float amountValue,
+            @Param("fromAccountId") Integer fromAccountId,
+            @Param("toAccountId") Integer toAccountId);
+
 }

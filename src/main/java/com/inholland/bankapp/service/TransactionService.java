@@ -187,12 +187,28 @@ public class TransactionService {
         return transactionDtos;
     }
 
-    public List<TransactionDto> getAllTransactionsByAccountId(Integer accountId) {
-        List<Transaction> transactions = repository.findTransactionsByAccountId(accountId);
+    public List<TransactionDto> getAllTransactionsByAccountId(Integer accountId, LocalDate startDate, LocalDate endDate, String amountCondition, Float amountValue, String fromIban, String toIban) {
+        List<Transaction> transactions;
+
+        if (startDate != null || endDate != null || amountCondition != null || amountValue != null || fromIban != null || toIban != null) {
+            Integer fromAccountId = null;
+            Integer toAccountId = null;
+            if (fromIban != null) {
+                Account fromAccount = accountService.findByIban(fromIban);
+                fromAccountId = fromAccount.getAccountId();
+            }
+
+            if (toIban != null) {
+                Account toAccount = accountService.findByIban(toIban);
+                toAccountId = toAccount.getAccountId();
+            }
+            transactions = repository.findFilteredTransactionsByAccountId(accountId, startDate, endDate, amountCondition, amountValue, fromAccountId, toAccountId);
+        } else {
+            transactions = repository.findTransactionsByAccountId(accountId);
+        }
 
         List<TransactionDto> transactionDtos = new ArrayList<>();
-        for (Transaction transaction:
-                transactions) {
+        for (Transaction transaction : transactions) {
             transactionDtos.add(this.transformTransactionDTO(transaction));
         }
 
