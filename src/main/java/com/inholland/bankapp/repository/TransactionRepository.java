@@ -32,7 +32,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             "WHEN :amountCondition = 'greaterThan' THEN t.amount > :amountValue " +
             "WHEN :amountCondition = 'lessThan' THEN t.amount < :amountValue END)) AND " +
             "(:fromAccountId IS NULL OR t.fromAccount = :fromAccountId) AND " +
-            "(:toAccountId IS NULL OR t.toAccount = :toAccountId)")
+            "(:toAccountId IS NULL OR t.toAccount = :toAccountId)" +
+            "ORDER BY t.timestamp")
     Page<Transaction> findByFilters(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
