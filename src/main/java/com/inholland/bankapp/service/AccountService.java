@@ -4,15 +4,16 @@ import com.inholland.bankapp.dto.AccountDto;
 import com.inholland.bankapp.model.Account;
 import com.inholland.bankapp.model.AccountType;
 import com.inholland.bankapp.model.Customer;
+import com.inholland.bankapp.model.Transaction;
 import com.inholland.bankapp.repository.AccountRepository;
 import com.inholland.bankapp.repository.CustomerRepository;
+import com.inholland.bankapp.repository.TransactionRepository;
 import jakarta.transaction.Transactional;
-import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +25,9 @@ public class AccountService {
 
     @Autowired
     private CustomerRepository customerRepository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
 
     private static final SecureRandom random = new SecureRandom();
     private static final String BANK_CODE = "INHO0"; // Your bank's code
@@ -161,12 +165,15 @@ public class AccountService {
     public double findCheckingAccountBalanceByEmail(String email) {
         return accountRepository.findCheckingAccountBalanceByEmail(email);
     }
-    
+
     @Transactional
     public void depositToCheckingAccount(String email, double amount) {
         if (amount <= 0) {
             throw new IllegalArgumentException("Deposit amount must be greater than zero");
         }
+
+        int accountId = accountRepository.getCheckingAccountIdByEmail(email);
+        transformAtmTransactionIntoTransaction(accountId, amount, "ATM DEPOSIT");
         
         accountRepository.depositToCheckingAccount(email, amount);
     }
@@ -182,8 +189,34 @@ public class AccountService {
             throw new IllegalArgumentException("Insufficient funds for withdrawal");
         }
 
+        int accountId = accountRepository.getCheckingAccountIdByEmail(email);
+        transformAtmTransactionIntoTransaction(accountId, amount, "ATM WITHDRAW");
+
         accountRepository.withdrawFromCheckingAccount(email, amount);
     }
+    
+    private void transformAtmTransactionIntoTransaction(int accountId, double amountTemp, String transactionType) {
+        Transaction transaction = new Transaction();
+
+        // convert amount into float
+        float amount = (float) amountTemp;
+        
+        // get user by account id
+        int userId = accountRepository.getUserIdByAccountId(accountId);
+
+        // Set transaction properties
+        transaction.setTransactionType(transactionType);
+        transaction.setAmount(amount);
+        transaction.setInitiatedByUser(userId);
+        // set current timestamp
+        transaction.setTimestamp(LocalDateTime.now());
+        // Retrieve and set account IDs
+        transaction.setFromAccount(accountId);
+        transaction.setToAccount(accountId);
+
+        transactionRepository.save(transaction);
+    }
+    
 
     public Account transformAccountDtoToAccount(AccountDto accountDto) {
         Account account = new Account();
