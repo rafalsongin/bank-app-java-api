@@ -12,8 +12,13 @@ Feature: Everything related to employee actions and their management
 
 
   #Cezar
-  Scenario: Transfer funds between customers accounts.
-
+  Scenario: Transfer funds between customers checking accounts.
+  Given The endpoint for "transactions" is available for method "POST" and the employee is logged in
+  When I transfer funds between customers accounts with the following details:
+    | fromAccount         | toAccount            | amount |
+    | NL00INHO0342486737  | NL00INHO0392819329   | 100    |
+  Then A new transaction is created
+    And I get http status 201
 
   #Cezar
   Scenario: Set daily transfer limit for customer
