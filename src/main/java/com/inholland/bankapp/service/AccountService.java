@@ -139,6 +139,10 @@ public class AccountService {
         return accountRepository.findByIBAN(accountIban);
     }
 
+    public Account findByIban(String fromIban) {
+        return accountRepository.findByIBAN(fromIban).orElse(null);
+    }
+
     public Optional<Account> getAccountById(Integer accountId) {
         return accountRepository.findById(accountId);
     }
@@ -249,4 +253,3 @@ public class AccountService {
         return accountDto;
     }
 }
-
