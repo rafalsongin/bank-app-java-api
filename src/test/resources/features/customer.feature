@@ -1,5 +1,7 @@
 Feature: All that is related to customer service.
 
-  Scenario: Find user's IBAN by their first and last name.  # Cezar's scenario
+# Cezar's scenario
+  Scenario: Find user's IBAN by their first and last name.
 
-  Scenario: Search and filter transactions. # Mariia's scenario
+# Mariia's scenario
+  Scenario: Search and filter transactions.
