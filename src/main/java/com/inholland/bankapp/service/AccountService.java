@@ -29,6 +29,7 @@ public class AccountService {
     @Autowired
     private TransactionRepository transactionRepository;
 
+    // <editor-fold desc="finals for generatign IBAN.">
     private static final SecureRandom random = new SecureRandom();
     private static final String BANK_CODE = "INHO0"; // Your bank's code
     private static final String COUNTRY_CODE = "NL";
@@ -36,7 +37,9 @@ public class AccountService {
     private static final float DEFAULT_ABSOLUTE_TRANSFER_LIMIT = 0;
     private static final float DEFAULT_DAILY_TRANSFER_LIMIT = 1000;
     private static final int ACCOUNT_NUMBER_LENGTH = 9;
+    // </editor-fold>
 
+    // <editor-fold desc="Methods for creating the accounts and IBAN.">
     public String generateUniqueIBAN() {
         String baseIBAN = COUNTRY_CODE + "xx" + BANK_CODE; // Placeholder for check digits
         while (true) {
@@ -108,11 +111,7 @@ public class AccountService {
         createSavingsAccount(customerId);
         createCheckingAccount(customerId);
     }
-
-
-    public List<Account> getAccountsByCustomerId(int customer_id){
-        return accountRepository.getAccountsByCustomerId(customer_id);
-    }
+    // </editor-fold>
 
     public Account updateAccount(int accountId, Account updatedAccount) {
         Optional<Account> account = accountRepository.findById(accountId);
@@ -126,6 +125,7 @@ public class AccountService {
         return accountRepository.save(existingAccount);
     }
 
+    // <editor-fold desc="Get accounts methods.">
     public AccountDto getCheckingAccountByIBAN(String IBAN) {
         Optional<Account> account = accountRepository.findByIBAN(IBAN);
         if (account.isPresent() && account.get().getAccountType() == AccountType.CHECKING) {
@@ -146,6 +146,11 @@ public class AccountService {
     public Optional<Account> getAccountById(Integer accountId) {
         return accountRepository.findById(accountId);
     }
+
+    public List<Account> getAccountsByCustomerId(int customer_id){
+        return accountRepository.getAccountsByCustomerId(customer_id);
+    }
+    // </editor-fold>
 
     /**
      Update Method - update an account by passing an Account object
@@ -244,9 +249,6 @@ public class AccountService {
         Customer owner = customerRepository.findById(account.getCustomerId()).get();
 
         String ownerFullName = owner.getFirstName() + " " + owner.getLastName();
-        if (owner == null) {
-            ownerFullName = "Unknown";
-        }
 
         accountDto.setCustomerFullName(ownerFullName);
         accountDto.setAvailableDailyAmountForTransfer(account.getAvailableDailyAmountForTransfer());

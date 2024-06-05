@@ -14,6 +14,7 @@ import org.springframework.http.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class EmployeeStepDefinitions extends BaseStepDefinitions {
@@ -26,6 +27,7 @@ public class EmployeeStepDefinitions extends BaseStepDefinitions {
     private HttpHeaders httpHeaders = new HttpHeaders();
     private ResponseEntity<String> response;
 
+    // <editor-fold desc="Common functions.">
     @Given("The endpoint for {string} is available for method {string} and the employee is logged in")
     public void theEndpointForIsAvailableForMethodAndEmployeeIsLoggedIn(String endpoint, String method) {
         // Get a real JWT token for an employee
@@ -46,6 +48,15 @@ public class EmployeeStepDefinitions extends BaseStepDefinitions {
         Assertions.assertTrue(options.contains(method.toUpperCase()));
     }
 
+    @And("I get http status {int}")
+    public void iGetHttpStatus(int status) {
+        int actual = response.getStatusCode().value();
+        Assertions.assertEquals(status, actual);
+    }
+    // </editor-fold>
+
+    // <editor-fold desc="Testing Scenario: View all customer accounts.">
+
     @When("I retrieve all customers")
     public void iRetrieveAllCustomers() {
         response = restTemplate.exchange(
@@ -62,12 +73,10 @@ public class EmployeeStepDefinitions extends BaseStepDefinitions {
         int actual = JsonPath.read(body, "$.length()");
         Assertions.assertTrue(actual >= 1, "Expected at least 1 customer, but got " + actual);
     }
+    // </editor-fold>
 
-    @And("I get http status {int}")
-    public void iGetHttpStatus(int status) {
-        int actual = response.getStatusCode().value();
-        Assertions.assertEquals(status, actual);
-    }
+
+
 
     private String getEmployeeBearerToken() {
         // Logic to get a Bearer token for an employee
