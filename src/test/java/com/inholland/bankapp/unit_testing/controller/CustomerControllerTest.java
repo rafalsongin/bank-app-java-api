@@ -1,5 +1,6 @@
-package com.inholland.bankapp.controller;
+package com.inholland.bankapp.unit_testing.controller;
 
+import com.inholland.bankapp.controller.CustomerController;
 import com.inholland.bankapp.model.Customer;
 import com.inholland.bankapp.model.UserRole;
 import com.inholland.bankapp.service.CustomerService;
@@ -35,7 +36,7 @@ class CustomerControllerTest {
     private CustomerService customerService;
 
     @Test
-    @WithMockUser
+    @WithMockUser // Cezar
     void getAllCustomers_ReturnEmpty() throws Exception {
         when(customerService.getAllCustomers()).thenReturn(Collections.emptyList());
 
@@ -45,7 +46,7 @@ class CustomerControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser // Cezar
     void getAllCustomers() throws Exception {
         // Prepare test data
         Customer customer1 = new Customer();
@@ -98,6 +99,7 @@ class CustomerControllerTest {
 
     @Test
     void getCustomerById() {
+
     }
 
     @Test

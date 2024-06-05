@@ -1,5 +1,6 @@
-package com.inholland.bankapp.controller;
+package com.inholland.bankapp.unit_testing.controller;
 
+import com.inholland.bankapp.controller.AccountController;
 import com.inholland.bankapp.model.Account;
 import com.inholland.bankapp.service.AccountService;
 import org.junit.jupiter.api.Test;
