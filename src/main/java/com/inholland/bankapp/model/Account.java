@@ -1,5 +1,6 @@
 package com.inholland.bankapp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -44,6 +45,7 @@ public class Account {
     @Column (name = "daily_transfer_limit")
     private float dailyTransferLimit;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "fromAccount")
     private List<Transaction> outgoingTransactions = null;
 

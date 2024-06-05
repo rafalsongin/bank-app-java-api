@@ -1,7 +1,7 @@
 package com.inholland.bankapp.controller;
 
-import com.inholland.bankapp.dto.CustomerDto;
 import com.inholland.bankapp.model.Customer;
+import com.inholland.bankapp.model.Transaction;
 import com.inholland.bankapp.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,42 +19,44 @@ public class CustomerController {
     private CustomerService customerService;
 
     @GetMapping
-    public ResponseEntity<List<CustomerDto>> getAllCustomers() {
-        List<CustomerDto> customers = customerService.getAllCustomers();
+    public ResponseEntity<List<Customer>> getAllCustomers() {
+        List<Customer> customers = customerService.getAllCustomers();
         if (customers.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-
         return ResponseEntity.ok(customers);
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<CustomerDto> getCustomerByEmail(@PathVariable String email) {
+    public ResponseEntity<Customer> getCustomerById(@PathVariable String email) {
         System.out.println("Received request for email: " + email);
 
-        Optional<CustomerDto> optCustomerDto = customerService.getCustomerDtoByEmail(email);
-        if (!optCustomerDto.isPresent()) {
+        Optional<Customer> customerOpt = customerService.getCustomerByEmail(email);
+        if (!customerOpt.isPresent()) {
+            System.out.println("Customer not found for email: " + email);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
 
-        return ResponseEntity.ok(optCustomerDto.get());
+        Customer customer = customerOpt.get();
+        System.out.println("Customer found: " + customer.getUsername());
+        return ResponseEntity.ok(customer);
     }
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<CustomerDto> getCustomerById(@PathVariable Integer id) {
-        Optional<CustomerDto> customerDto = customerService.getCustomerDtoById(id);
+    public ResponseEntity<Customer> getCustomerById(@PathVariable Integer id) {
+        Customer customer = customerService.getCustomerById(id).orElse(null);
 
         // Check if the object was not found
-        if (!customerDto.isPresent()) {
+        if (customer == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
 
-        return ResponseEntity.ok(customerDto.get());
+        return ResponseEntity.ok(customer);
     }
 
     @GetMapping("/unverified")
-    public ResponseEntity<List<CustomerDto>> getUnverifiedCustomers() {
-        List<CustomerDto> customers = customerService.getCustomersWithUnverifiedAccounts();
+    public ResponseEntity<List<Customer>> getUnverifiedCustomers() {
+        List<Customer> customers = customerService.getCustomersWithUnverifiedAccounts();
         if (customers.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
@@ -79,13 +81,29 @@ public class CustomerController {
         return ResponseEntity.ok("Customer account closed");
     }
 
-    @PutMapping
-    public ResponseEntity<CustomerDto> updateCustomerDetails(@RequestBody CustomerDto customerDto){
-        Optional<CustomerDto> optCustomerDto = customerService.updateCustomerDetails(customerDto);
-
-        if(optCustomerDto.isEmpty()){
-            return ResponseEntity.badRequest().build();
+    @GetMapping("/getIbanByCustomerName/{firstName}/{lastName}")
+    public ResponseEntity<String> getIbanByCustomerName(@PathVariable String firstName, @PathVariable String lastName) {
+        String iban = customerService.getIbanByCustomerName(firstName, lastName);
+        if (iban == null) {
+            return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(optCustomerDto.get());
+        if (iban.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        return ResponseEntity.ok(iban);
     }
+
+
+//    @PutMapping
+//    public ResponseEntity<CustomerDto> updateCustomerDetails(@RequestBody CustomerDto customerDto){
+//        Optional<CustomerDto> optCustomerDto = customerService.updateCustomerDetails(customerDto);
+//
+//        if(optCustomerDto.isEmpty()){
+//            return ResponseEntity.badRequest().build();
+//        }
+//        return ResponseEntity.ok(optCustomerDto.get());
+//    }
 }
+
+
+

@@ -1,17 +1,10 @@
 package com.inholland.bankapp.service;
 
-import com.inholland.bankapp.dto.AccountDto;
-import com.inholland.bankapp.dto.CustomerDto;
 import com.inholland.bankapp.dto.TransactionDto;
 import com.inholland.bankapp.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.inholland.bankapp.repository.TransactionRepository;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 import java.util.*;
 import java.time.LocalDateTime;
@@ -32,11 +25,6 @@ public class TransactionService {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private CustomerService customerService;
-
-    private String errorMessageStart = "[Error] Transaction-";
-
     /**
      Get Method - gets all transactions
      @return    - returns all existing transactions
@@ -48,6 +36,7 @@ public class TransactionService {
         return transactions.map(this::transformTransactionDTO);
     }
 
+
     public List<Transaction> getTransactionsByAccountId(int accountId) {
         return repository.findTransactionsByAccountId(accountId);
     }
@@ -55,62 +44,28 @@ public class TransactionService {
     /**
      Save Method - saves transaction to the database
      @param transactionDto  - parameter is an transactionDto class, that represents a transaction as DTO (Data Transfer Object)
-     @return    - returns the created transactionDto with a timestamp from database, if incorrect returns 'null'
+     @return    - returns the created transaction
      */
     public TransactionDto saveTransaction(TransactionDto transactionDto) {
-        try{
-            if(!isTransactionValid(transactionDto)){
-                throw new RuntimeException("CreateTransaction: Transaction is not valid!");
-            }
 
-            // Update both account balances
-            AccountDto fromAccount = accountService.getCheckingAccountByIBAN(transactionDto.getFromAccount());
-            Account toAccount = accountService.getAccountByIBAN(transactionDto.getToAccount()).get();
-            updateFromAndToAccountBalances(transactionDto.getAmount(), fromAccount, toAccount);
-
-            // Save transaction
-            Transaction transaction = transformTransaction(transactionDto);
-            repository.save(transaction);
-
-            // Overwrite transactionDto with a transaction containing timestamp from Database
-            transactionDto = transformTransactionDTO(transaction);
-        }catch (Exception e){
-            System.out.println(errorMessageStart + e.getMessage());
-            return null;
+        Optional<Account> optFromAccount = accountService.getAccountByIBAN(transactionDto.getFromAccount());
+        Optional<Account> optToAccount = accountService.getAccountByIBAN(transactionDto.getToAccount());
+        if(!optFromAccount.isPresent() || !optToAccount.isPresent()){
+            throw new RuntimeException("[Error] CreateTransactionDTO: From or To accounts not found!");
         }
-        return transactionDto;
-    }
 
-    /**
-     Boolean Method - checks transaction validity
-     @param transactionDto  - parameter is an transactionDto class, that represents a transaction as DTO (Data Transfer Object)
-     @return    - returns 'true' if transaction is good/correct, 'false' if transaction is bad/incorrect
-     */
-    private boolean isTransactionValid(TransactionDto transactionDto) {
-        try{
-            Optional<Account> optFromAccount = accountService.getAccountByIBAN(transactionDto.getFromAccount());
-            Optional<Account> optToAccount = accountService.getAccountByIBAN(transactionDto.getToAccount());
-            // Check if both accounts exits
-            if(!optFromAccount.isPresent() || !optToAccount.isPresent()){
-                throw new RuntimeException("SaveValidation: Sender or Recipient accounts not found!");
-            }
-
-            float balanceAfterThisTransaction = optFromAccount.get().getBalance()-transactionDto.getAmount();
-            // Check if account has reached the absolute limit
-            if(balanceAfterThisTransaction < optFromAccount.get().getAbsoluteTransferLimit()){
-                throw new RuntimeException(errorMessageStart + "SaveValidation: Absolute Limit reached!");
-            }
-
-            // Check if account has reached daily transfer limit
-            Float dailyTransferTotal = repository.getAccountTotalDailyTransferAmount(optFromAccount.get().getAccountId());
-            if(dailyTransferTotal+transactionDto.getAmount() > optFromAccount.get().getDailyTransferLimit()){
-                throw new RuntimeException(errorMessageStart + "SaveValidation: Daily Transfer Limit reached!");
-            }
-        }catch (Exception e){
-            System.out.println(e.getMessage());
-            return false;
+        // Check if from_account has sufficient balance and update accounts, if it does
+        if (optFromAccount.get().getBalance() < transactionDto.getAmount()) {
+            throw new RuntimeException("Insufficient balance in the from account.");
         }
-        return true;
+
+        updateFromAndToAccountBalances(transactionDto.getAmount(), optFromAccount.get(), optToAccount.get());
+
+        // Create, save and return transaction
+        Transaction transaction = transformTransaction(transactionDto);
+        repository.save(transaction);
+
+        return transformTransactionDTO(transaction);
     }
 
     /**
@@ -131,11 +86,7 @@ public class TransactionService {
         // Set transaction properties
         transaction.setTransactionType(transactionDto.getTransactionType());
         transaction.setAmount(transactionDto.getAmount());
-
-        // Get customer by email and set customer Id
-        Customer customer = customerService.getCustomerByEmail(transactionDto.getInitiatorEmail()).get();
-        transaction.setInitiatedByUser(customer.getUserId());
-
+        transaction.setInitiatedByUser(transactionDto.getInitiatedByUser());
         // set current timestamp
         transaction.setTimestamp(LocalDateTime.now());
         // Retrieve and set account IDs
@@ -166,12 +117,10 @@ public class TransactionService {
         transactionDto.setTimestamp(transaction.getTimestamp().toString());
         transactionDto.setFromAccount(optFromAccount.get().getIBAN());
         transactionDto.setToAccount(optToAccount.get().getIBAN());
-
-
-        Customer customer = customerService.getCustomerById(transaction.getInitiatedByUser()).get();
-        transactionDto.setInitiatorEmail(customer.getEmail());
-        transactionDto.setInitiatorName(customer.getFirstName() + " " + customer.getLastName());
-        transactionDto.setInitiatorRole(customer.getUserRole().toString().toUpperCase());
+        transactionDto.setInitiatedByUser(transaction.getInitiatedByUser());
+        User user = userService.getUserById(transaction.getInitiatedByUser());
+        transactionDto.setInitiatorName(user.getFirstName() + " " + user.getLastName());
+        transactionDto.setInitiatorRole(user.getUserRole().toString().toLowerCase());
 
         return transactionDto;
     }
@@ -182,7 +131,7 @@ public class TransactionService {
      @param fromAccount   - parameter is an Account class, used for updating from_account balance
      @param toAccount   - parameter is an Account class, used for updating to_account balance
      */
-    private void updateFromAndToAccountBalances(Float amount, AccountDto fromAccount, Account toAccount){
+    private void updateFromAndToAccountBalances(Float amount, Account fromAccount, Account toAccount){
         // Update account balances
         fromAccount.setBalance(fromAccount.getBalance() - amount); // decrease from_account balance
         toAccount.setBalance(toAccount.getBalance() + amount); // increase to_account balance
@@ -205,15 +154,31 @@ public class TransactionService {
 
         List<Transaction> transactions = repository.findTransactionsByAccountId(account.get().getAccountId());
 
-        return transformTransactionListIntoDtoList(transactions);
+        List<TransactionDto> transactionDtos = new ArrayList<>();
+        for (Transaction transaction:
+             transactions) {
+            transactionDtos.add(this.transformTransactionDTO(transaction));
+        }
+
+        return transactionDtos;
     }
 
-    // Original Maria's method, - Ignas changed the customerId param to email
-    private List<TransactionDto> getCustomerTransactions(String email) {
-        Customer customer = customerService.getCustomerByEmail(email).get();
-        User user = userService.getUserById(customer.getUserId());
+    public List<TransactionDto> getAllTransactionsByAccountId(Integer accountId) {
+        List<Transaction> transactions = repository.findTransactionsByAccountId(accountId);
+
+        List<TransactionDto> transactionDtos = new ArrayList<>();
+        for (Transaction transaction:
+                transactions) {
+            transactionDtos.add(this.transformTransactionDTO(transaction));
+        }
+
+        return transactionDtos;
+    }
+
+    public List<TransactionDto> getCustomerTransactions(int customerID) {
+        User user = userService.getUserById(customerID);
         if (user!= null && user.getUserRole().equals(UserRole.CUSTOMER)) {
-            List<Account> accounts = accountService.getAccountsByCustomerId(customer.getUserId());
+            List<Account> accounts = accountService.getAccountsByCustomerId(customerID);
             if (accounts.isEmpty()) {
                 throw new IllegalArgumentException("Customer has no accounts");
             }
@@ -223,43 +188,16 @@ public class TransactionService {
             }
             transactions.sort(Comparator.comparing(Transaction::getTimestamp));
 
-            return transformTransactionListIntoDtoList(transactions);
+            List<TransactionDto> transactionDtos = new ArrayList<>();
+            for (Transaction transaction:
+                    transactions) {
+                transactionDtos.add(this.transformTransactionDTO(transaction));
+            }
+
+            return transactionDtos;
         }
         else {
             throw new IllegalArgumentException("Customer not found");
         }
-    }
-
-    /**
-     Get Method - gets all transactions by customer email
-     @param email  - parameter is a String type, which is used in get the transactions
-     @return    - returns a list of transactions where each transaction is an TransactionDto object
-     */
-    public List<TransactionDto> getAllTransactionsByEmail(String email) {
-        // Customer will be retrieved as the method checks if it exists, otherwise Exception
-        Optional<Customer> optCustomer = customerService.getCustomerByEmail(email);
-
-        List<TransactionDto> transactions = getCustomerTransactions(optCustomer.get().getEmail());
-        if(transactions.isEmpty()){
-            throw new RuntimeException("[Error] No transactions were found!");
-        }
-
-        return transactions;
-    }
-
-    /**
-     Transform Method - transforms a transaction list to a transactionDto list
-     @param transactions  - parameter is a list of transaction class
-     @return    - returns transactionDto list
-     */
-    private List<TransactionDto> transformTransactionListIntoDtoList(List<Transaction> transactions) {
-        List<TransactionDto> transactionDto = new ArrayList<>();
-
-        for (Transaction transaction:
-                transactions) {
-            transactionDto.add(transformTransactionDTO(transaction));
-        }
-
-        return transactionDto;
     }
 }
