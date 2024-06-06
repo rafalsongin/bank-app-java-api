@@ -84,8 +84,8 @@ public class CustomerStepDefinitions extends BaseStepDefinitions {
     // </editor-fold>
 
     // <editor-fold desc="Find user's IBAN by their first and last name.">
-    @When("The employee sends a request to the endpoint with the following parameters:")
-    public void theEmployeeSendsARequestToTheEndpointWithTheFollowingParameters(io.cucumber.datatable.DataTable dataTable) {
+    @When("The customer sends a request to the endpoint with the following parameters:")
+    public void theCustomerSendsARequestToTheEndpointWithTheFollowingParameters(io.cucumber.datatable.DataTable dataTable) {
         List<Map<String, String>> data = dataTable.asMaps(String.class, String.class);
         String firstName = data.get(0).get("firstName");
         String lastName = data.get(0).get("lastName");
@@ -106,13 +106,10 @@ public class CustomerStepDefinitions extends BaseStepDefinitions {
         String expectedIban = expectedData.get("iban");
 
         try {
-            // Parse the response body to get the IBAN
-            Map<String, String> responseBody = mapper.readValue(response.getBody(), Map.class);
-            String actualIban = responseBody.get("iban");
-
+            String actualIban = response.getBody();
             // Assert the IBAN in the response
             Assertions.assertEquals(expectedIban, actualIban);
-        } catch (IOException e) {
+        } catch (Exception e) {
             Assertions.fail("Failed to parse response body");
         }
     }
