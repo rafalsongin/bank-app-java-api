@@ -35,10 +35,6 @@ public class TransactionController {
 
         Page<TransactionDto> transactions = service.getAllTransactions(page, size, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
 
-        if (transactions.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-
         return ResponseEntity.ok(transactions);
     }
 
@@ -53,10 +49,6 @@ public class TransactionController {
             @RequestParam(required = false) String toIban) {
 
         List<TransactionDto> transactions = service.getAllTransactionsByIban(iban, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
-
-        if (transactions.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
 
         return ResponseEntity.ok(transactions);
     }
