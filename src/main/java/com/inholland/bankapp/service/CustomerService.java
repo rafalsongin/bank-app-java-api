@@ -101,6 +101,7 @@ public class CustomerService extends UserService {
         
         return user;
     }
+
     protected void validateRegistrationData(CustomerRegistrationDto registrationDto) {
         if (registrationDto.getEmail() == null || !registrationDto.getEmail().matches("[^@ ]+@[^@ ]+\\.[^@ ]+")) {
             System.out.println("1");
@@ -135,7 +136,6 @@ public class CustomerService extends UserService {
     private boolean isValidBSN(String bsn) {
         return bsn.length() >= 8 && bsn.length() <= 9 && bsn.matches("\\d+");
     }
-
 
     public void closeCustomerAccount(int customerID) {
         Customer customer = customerRepository.findById(customerID).orElse(null);
