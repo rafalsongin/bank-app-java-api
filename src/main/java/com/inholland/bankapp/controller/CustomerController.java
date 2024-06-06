@@ -1,7 +1,7 @@
 package com.inholland.bankapp.controller;
 
+import com.inholland.bankapp.dto.CustomerDto;
 import com.inholland.bankapp.model.Customer;
-import com.inholland.bankapp.model.Transaction;
 import com.inholland.bankapp.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -93,16 +93,15 @@ public class CustomerController {
         return ResponseEntity.ok(iban);
     }
 
+    @PutMapping
+    public ResponseEntity<CustomerDto> updateCustomerDetails(@RequestBody CustomerDto customerDto){
+        Optional<CustomerDto> optCustomerDto = customerService.updateCustomerDetails(customerDto);
 
-//    @PutMapping
-//    public ResponseEntity<CustomerDto> updateCustomerDetails(@RequestBody CustomerDto customerDto){
-//        Optional<CustomerDto> optCustomerDto = customerService.updateCustomerDetails(customerDto);
-//
-//        if(optCustomerDto.isEmpty()){
-//            return ResponseEntity.badRequest().build();
-//        }
-//        return ResponseEntity.ok(optCustomerDto.get());
-//    }
+        if(optCustomerDto.isEmpty()){
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(optCustomerDto.get());
+    }
 }
 
 
