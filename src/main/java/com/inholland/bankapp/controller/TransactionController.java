@@ -1,16 +1,13 @@
 package com.inholland.bankapp.controller;
 
 import com.inholland.bankapp.dto.TransactionDto;
-import com.inholland.bankapp.model.Transaction;
 import com.inholland.bankapp.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,19 +21,6 @@ public class TransactionController {
 
     @Autowired
     private TransactionService service;
-
-//    @GetMapping
-//    public ResponseEntity<Page<TransactionDto>> getAllTransactions(
-//            @RequestParam(defaultValue = "1") int page,
-//            @RequestParam(defaultValue = "10") int size) {
-//        Page<TransactionDto> transactions = service.getAllTransactions(page, size);
-//
-//        if (transactions.isEmpty()) {
-//            return ResponseEntity.noContent().build();
-//        }
-//
-//        return ResponseEntity.ok(transactions);
-//    }
 
     @GetMapping
     public ResponseEntity<Page<TransactionDto>> getAllTransactions(
@@ -58,15 +42,18 @@ public class TransactionController {
         return ResponseEntity.ok(transactions);
     }
 
-    /**
-     Create Method - creating a transaction
-     @param iban  - parameter is a String type, that represents iban received through path.
-     */
     @GetMapping("/account/{iban}")
-    public ResponseEntity<List<TransactionDto>> getAllTransactionsByIban(@PathVariable String iban) {
-        List<TransactionDto> transactions = service.getAllTransactionsByIban(iban);
+    public ResponseEntity<List<TransactionDto>> getAllTransactionsByIban(
+            @PathVariable String iban,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) String amountCondition,
+            @RequestParam(required = false) Float amountValue,
+            @RequestParam(required = false) String fromIban,
+            @RequestParam(required = false) String toIban) {
 
-        // Check if the list is empty (not found)
+        List<TransactionDto> transactions = service.getAllTransactionsByIban(iban, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
+
         if (transactions.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
@@ -74,8 +61,9 @@ public class TransactionController {
         return ResponseEntity.ok(transactions);
     }
 
+    // for customer panel temporary
     @GetMapping("/accountId/{accountId}")
-    public ResponseEntity<List<TransactionDto>> getAllTransactionsById(
+    public ResponseEntity<List<TransactionDto>> getTransactionsByAccountId(
             @PathVariable Integer accountId,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
@@ -101,11 +89,5 @@ public class TransactionController {
     public ResponseEntity<TransactionDto> createTransaction(@RequestBody TransactionDto transactionDto) {
         TransactionDto createdTransaction = service.saveTransaction(transactionDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTransaction);
-    }
-
-    @GetMapping("/{iban}")
-    public ResponseEntity<List<TransactionDto>> getTransactionsByIban(@PathVariable String iban) {
-        List<TransactionDto> transactions = service.getTransactionsByIban(iban);
-        return ResponseEntity.ok(transactions);
     }
 }
