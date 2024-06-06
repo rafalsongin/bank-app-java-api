@@ -36,8 +36,8 @@ public class AccountController {
     }
 
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<Account>> getAccountsByCustomerId(@PathVariable Integer customerId) {
-        List<Account> accounts = accountService.getAccountsByCustomerId(customerId);
+    public ResponseEntity<List<AccountDto>> getAccountsByCustomerId(@PathVariable Integer customerId) {
+        List<AccountDto> accounts = accountService.getAccountsByCustomerId(customerId);
 
         if (accounts.isEmpty()) {
             return ResponseEntity.noContent().build();
