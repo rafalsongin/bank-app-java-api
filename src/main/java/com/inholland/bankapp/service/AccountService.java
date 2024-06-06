@@ -113,8 +113,8 @@ public class AccountService {
     }
     // </editor-fold>
 
-    public Account updateAccount(int accountId, Account updatedAccount) {
-        Optional<Account> account = accountRepository.findById(accountId);
+    public AccountDto updateAccount(String accountIban, AccountDto updatedAccount) {
+        Optional<Account> account = accountRepository.findByIBAN(accountIban);
         if (account.isEmpty()) {
             return null;
         }
@@ -122,7 +122,7 @@ public class AccountService {
         existingAccount.setBalance(updatedAccount.getBalance());
         existingAccount.setAbsoluteTransferLimit(updatedAccount.getAbsoluteTransferLimit());
         existingAccount.setDailyTransferLimit(updatedAccount.getDailyTransferLimit());
-        return accountRepository.save(existingAccount);
+        return transformAccountToAccountDto(accountRepository.save(existingAccount));
     }
 
     // <editor-fold desc="Get accounts methods.">

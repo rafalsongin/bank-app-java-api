@@ -175,7 +175,7 @@ public class CustomerService extends UserService {
             List<AccountDto> accounts = accountService.getAccountsByCustomerId(customer.getUserId());
             if (accounts.size() > 0) {
                 AccountDto checkingAccount ;
-                checkingAccount = accounts.stream().filter(account -> account.getAccountType() == AccountType.CHECKING).max(Comparator.comparing(AccountDto::getAccountId)).get();
+                checkingAccount = accounts.stream().filter(account -> account.getAccountType() == AccountType.CHECKING).max(Comparator.comparing(AccountDto::getIBAN)).get();
                 checkingAccountIban = checkingAccount.getIBAN();
             }
         }
