@@ -29,7 +29,7 @@ public class AccountService {
     @Autowired
     private TransactionRepository transactionRepository;
 
-    // <editor-fold desc="finals for generatign IBAN.">
+    // <editor-fold desc="Finals for generating IBAN.">
     private static final SecureRandom random = new SecureRandom();
     private static final String BANK_CODE = "INHO0"; // Your bank's code
     private static final String COUNTRY_CODE = "NL";
@@ -113,8 +113,8 @@ public class AccountService {
     }
     // </editor-fold>
 
-    public Account updateAccount(int accountId, Account updatedAccount) {
-        Optional<Account> account = accountRepository.findById(accountId);
+    public AccountDto updateAccount(String accountIban, AccountDto updatedAccount) {
+        Optional<Account> account = accountRepository.findByIBAN(accountIban);
         if (account.isEmpty()) {
             return null;
         }
@@ -122,7 +122,7 @@ public class AccountService {
         existingAccount.setBalance(updatedAccount.getBalance());
         existingAccount.setAbsoluteTransferLimit(updatedAccount.getAbsoluteTransferLimit());
         existingAccount.setDailyTransferLimit(updatedAccount.getDailyTransferLimit());
-        return accountRepository.save(existingAccount);
+        return transformAccountToAccountDto(accountRepository.save(existingAccount));
     }
 
     // <editor-fold desc="Get accounts methods.">
@@ -133,7 +133,6 @@ public class AccountService {
         }
         return null;
     }
-
 
     public Optional<Account> getAccountByIBAN(String accountIban) {
         return accountRepository.findByIBAN(accountIban);
@@ -147,8 +146,10 @@ public class AccountService {
         return accountRepository.findById(accountId);
     }
 
-    public List<Account> getAccountsByCustomerId(int customer_id){
-        return accountRepository.getAccountsByCustomerId(customer_id);
+
+    public List<AccountDto> getAccountsByCustomerId(int customer_id){
+        List<Account> accounts = accountRepository.getAccountsByCustomerId(customer_id);
+        return transformAccountToAccountDtoLoop(accounts);
     }
     // </editor-fold>
 
@@ -171,6 +172,7 @@ public class AccountService {
         accountRepository.updateAccountBalances(fromAccount.getAccountId(), fromAccount.getBalance(), toAccount.getAccountId(), toAccount.getBalance());
     }
 
+    // <editor-fold desc="ATM methods.">
     public double findCheckingAccountBalanceByEmail(String email) {
         return accountRepository.findCheckingAccountBalanceByEmail(email);
     }
@@ -225,7 +227,17 @@ public class AccountService {
 
         transactionRepository.save(transaction);
     }
-    
+    // </editor-fold>
+
+    // <editor-fold desc="DTO transformation methods.">
+
+    private List<AccountDto> transformAccountToAccountDtoLoop(List<Account> accounts) {
+        List<AccountDto> accountsDto = new java.util.ArrayList<>();
+        for (Account account : accounts) {
+            accountsDto.add(transformAccountToAccountDto(account));
+        }
+        return accountsDto;
+    }
 
     public Account transformAccountDtoToAccount(AccountDto accountDto) {
         Account account = new Account();
@@ -254,4 +266,6 @@ public class AccountService {
         accountDto.setAvailableDailyAmountForTransfer(account.getAvailableDailyAmountForTransfer());
         return accountDto;
     }
+
+    // </editor-fold>
 }

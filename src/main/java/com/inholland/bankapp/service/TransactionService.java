@@ -1,5 +1,6 @@
 package com.inholland.bankapp.service;
 
+import com.inholland.bankapp.dto.AccountDto;
 import com.inholland.bankapp.dto.TransactionDto;
 import com.inholland.bankapp.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -218,12 +219,12 @@ public class TransactionService {
     public List<TransactionDto> getCustomerTransactions(int customerID) {
         User user = userService.getUserById(customerID);
         if (user!= null && user.getUserRole().equals(UserRole.CUSTOMER)) {
-            List<Account> accounts = accountService.getAccountsByCustomerId(customerID);
+            List<AccountDto> accounts = accountService.getAccountsByCustomerId(customerID);
             if (accounts.isEmpty()) {
                 throw new IllegalArgumentException("Customer has no accounts");
             }
             List<Transaction> transactions = new ArrayList<>();
-            for (Account account : accounts) {
+            for (AccountDto account : accounts) {
                 transactions.addAll(repository.findTransactionsByAccountId(account.getAccountId()));
             }
             transactions.sort(Comparator.comparing(Transaction::getTimestamp));

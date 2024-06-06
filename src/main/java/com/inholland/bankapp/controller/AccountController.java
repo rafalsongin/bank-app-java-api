@@ -17,9 +17,9 @@ public class AccountController {
     @Autowired
     private AccountService accountService;
 
-    @PutMapping("/changeAccount/{accountId}")
-    public ResponseEntity<Account> updateAccount(@PathVariable int accountId, @RequestBody Account updatedAccount) {
-        Account account = accountService.updateAccount(accountId, updatedAccount);
+    @PutMapping("/changeAccount/{accountIBAN}")
+    public ResponseEntity<AccountDto> updateAccount(@PathVariable String accountIBAN, @RequestBody AccountDto updatedAccount) {
+        AccountDto account = accountService.updateAccount(accountIBAN, updatedAccount);
         if (account == null) {
             return ResponseEntity.notFound().build();
         }
@@ -36,8 +36,8 @@ public class AccountController {
     }
 
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<Account>> getAccountsByCustomerId(@PathVariable Integer customerId) {
-        List<Account> accounts = accountService.getAccountsByCustomerId(customerId);
+    public ResponseEntity<List<AccountDto>> getAccountsByCustomerId(@PathVariable Integer customerId) {
+        List<AccountDto> accounts = accountService.getAccountsByCustomerId(customerId);
 
         if (accounts.isEmpty()) {
             return ResponseEntity.noContent().build();
