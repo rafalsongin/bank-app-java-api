@@ -18,7 +18,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
     Page<Transaction> findAll(Pageable pageable);
 
-    @Query("SELECT t FROM Transaction t WHERE t.fromAccount = :accountId OR t.toAccount = :accountId ORDER BY t.timestamp")
+    @Query("SELECT t FROM Transaction t WHERE t.fromAccount = :accountId OR t.toAccount = :accountId ORDER BY t.timestamp DESC")
     List<Transaction> findTransactionsByAccountId(@Param("accountId") Integer accountId);
 
     @Query("SELECT t FROM Transaction t WHERE " +
@@ -30,7 +30,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             "WHEN :amountCondition = 'lessThan' THEN t.amount < :amountValue END)) AND " +
             "(:fromAccountId IS NULL OR t.fromAccount = :fromAccountId) AND " +
             "(:toAccountId IS NULL OR t.toAccount = :toAccountId)" +
-            "ORDER BY t.timestamp")
+            "ORDER BY t.timestamp DESC")
     Page<Transaction> findAllByFilters(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
@@ -50,7 +50,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             "WHEN :amountCondition = 'lessThan' THEN t.amount < :amountValue END)) " +
             "AND (:fromAccountId IS NULL OR t.fromAccount = :fromAccountId) " +
             "AND (:toAccountId IS NULL OR t.toAccount = :toAccountId) " +
-            "ORDER BY t.timestamp")
+            "ORDER BY t.timestamp DESC")
     List<Transaction> findFilteredTransactionsByAccountId(
             @Param("accountId") Integer accountId,
             @Param("startDate") LocalDate startDate,
