@@ -1,5 +1,6 @@
-package com.inholland.bankapp.model;
+package com.inholland.bankapp.unit_testing.model;
 
+import com.inholland.bankapp.model.Account;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

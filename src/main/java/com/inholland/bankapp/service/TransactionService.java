@@ -1,11 +1,13 @@
 package com.inholland.bankapp.service;
 
+import com.inholland.bankapp.dto.AccountDto;
 import com.inholland.bankapp.dto.TransactionDto;
 import com.inholland.bankapp.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.inholland.bankapp.repository.TransactionRepository;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.time.LocalDateTime;
 
@@ -30,12 +32,35 @@ public class TransactionService {
      @return    - returns all existing transactions
      */
 
-    public Page<TransactionDto> getAllTransactions(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page-1, size);
-        Page<Transaction> transactions = repository.findAll(pageRequest);
+//    public Page<TransactionDto> getAllTransactions(int page, int size) {
+//        PageRequest pageRequest = PageRequest.of(page-1, size);
+//        Page<Transaction> transactions = repository.findAll(pageRequest);
+//        return transactions.map(this::transformTransactionDTO);
+//    }
+
+    public Page<TransactionDto> getAllTransactions(int page, int size, LocalDate startDate, LocalDate endDate, String amountCondition, Float amountValue, String fromIban, String toIban) {
+        PageRequest pageRequest = PageRequest.of(page - 1, size);
+        Page<Transaction> transactions;
+
+        if (startDate != null || endDate != null || amountCondition != null || amountValue != null || fromIban != null || toIban != null) {
+            Integer fromAccountId = null;
+            Integer toAccountId = null;
+            if (fromIban != null) {
+                Account fromAccount = accountService.findByIban(fromIban);
+                fromAccountId = fromAccount.getAccountId();
+            }
+
+            if (toIban != null) {
+                Account toAccount = accountService.findByIban(toIban);
+                toAccountId = toAccount.getAccountId();
+            }
+            transactions = repository.findByFilters(startDate, endDate, amountCondition, amountValue, fromAccountId, toAccountId, pageRequest);
+        } else {
+            transactions = repository.findAll(pageRequest);
+        }
+
         return transactions.map(this::transformTransactionDTO);
     }
-
 
     public List<Transaction> getTransactionsByAccountId(int accountId) {
         return repository.findTransactionsByAccountId(accountId);
@@ -163,15 +188,43 @@ public class TransactionService {
         return transactionDtos;
     }
 
+    public List<TransactionDto> getAllTransactionsByAccountId(Integer accountId, LocalDate startDate, LocalDate endDate, String amountCondition, Float amountValue, String fromIban, String toIban) {
+        List<Transaction> transactions;
+
+        if (startDate != null || endDate != null || amountCondition != null || amountValue != null || fromIban != null || toIban != null) {
+            Integer fromAccountId = null;
+            Integer toAccountId = null;
+            if (fromIban != null) {
+                Account fromAccount = accountService.findByIban(fromIban);
+                fromAccountId = fromAccount.getAccountId();
+            }
+
+            if (toIban != null) {
+                Account toAccount = accountService.findByIban(toIban);
+                toAccountId = toAccount.getAccountId();
+            }
+            transactions = repository.findFilteredTransactionsByAccountId(accountId, startDate, endDate, amountCondition, amountValue, fromAccountId, toAccountId);
+        } else {
+            transactions = repository.findTransactionsByAccountId(accountId);
+        }
+
+        List<TransactionDto> transactionDtos = new ArrayList<>();
+        for (Transaction transaction : transactions) {
+            transactionDtos.add(this.transformTransactionDTO(transaction));
+        }
+
+        return transactionDtos;
+    }
+
     public List<TransactionDto> getCustomerTransactions(int customerID) {
         User user = userService.getUserById(customerID);
         if (user!= null && user.getUserRole().equals(UserRole.CUSTOMER)) {
-            List<Account> accounts = accountService.getAccountsByCustomerId(customerID);
+            List<AccountDto> accounts = accountService.getAccountsByCustomerId(customerID);
             if (accounts.isEmpty()) {
                 throw new IllegalArgumentException("Customer has no accounts");
             }
             List<Transaction> transactions = new ArrayList<>();
-            for (Account account : accounts) {
+            for (AccountDto account : accounts) {
                 transactions.addAll(repository.findTransactionsByAccountId(account.getAccountId()));
             }
             transactions.sort(Comparator.comparing(Transaction::getTimestamp));

@@ -4,6 +4,7 @@ import com.inholland.bankapp.dto.TransactionDto;
 import com.inholland.bankapp.model.Transaction;
 import com.inholland.bankapp.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -23,11 +25,31 @@ public class TransactionController {
     @Autowired
     private TransactionService service;
 
+//    @GetMapping
+//    public ResponseEntity<Page<TransactionDto>> getAllTransactions(
+//            @RequestParam(defaultValue = "1") int page,
+//            @RequestParam(defaultValue = "10") int size) {
+//        Page<TransactionDto> transactions = service.getAllTransactions(page, size);
+//
+//        if (transactions.isEmpty()) {
+//            return ResponseEntity.noContent().build();
+//        }
+//
+//        return ResponseEntity.ok(transactions);
+//    }
+
     @GetMapping
     public ResponseEntity<Page<TransactionDto>> getAllTransactions(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Page<TransactionDto> transactions = service.getAllTransactions(page, size);
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String amountCondition,
+            @RequestParam(required = false) Float amountValue,
+            @RequestParam(required = false) String fromIban,
+            @RequestParam(required = false) String toIban) {
+
+        Page<TransactionDto> transactions = service.getAllTransactions(page, size, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
 
         if (transactions.isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -45,6 +67,25 @@ public class TransactionController {
         List<TransactionDto> transactions = service.getAllTransactionsByIban(iban);
 
         // Check if the list is empty (not found)
+        if (transactions.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(transactions);
+    }
+
+    @GetMapping("/accountId/{accountId}")
+    public ResponseEntity<List<TransactionDto>> getAllTransactionsById(
+            @PathVariable Integer accountId,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) String amountCondition,
+            @RequestParam(required = false) Float amountValue,
+            @RequestParam(required = false) String fromIban,
+            @RequestParam(required = false) String toIban) {
+
+        List<TransactionDto> transactions = service.getAllTransactionsByAccountId(accountId, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
+
         if (transactions.isEmpty()) {
             return ResponseEntity.noContent().build();
         }

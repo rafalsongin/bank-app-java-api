@@ -1,5 +1,6 @@
 package com.inholland.bankapp.service;
 
+import com.inholland.bankapp.dto.AccountDto;
 import com.inholland.bankapp.dto.CustomerRegistrationDto;
 import com.inholland.bankapp.exceptions.InvalidDataException;
 import com.inholland.bankapp.exceptions.UserAlreadyExistsException;
@@ -169,10 +170,10 @@ public class CustomerService extends UserService {
         Customer customer = customerRepository.findByFirstNameAndLastName(firstName, lastName);
         String checkingAccountIban = "";
         if (customer != null) {
-            List<Account> accounts = accountService.getAccountsByCustomerId(customer.getUserId());
+            List<AccountDto> accounts = accountService.getAccountsByCustomerId(customer.getUserId());
             if (accounts.size() > 0) {
-                Account checkingAccount ;
-                checkingAccount = accounts.stream().filter(account -> account.getAccountType() == AccountType.CHECKING).max(Comparator.comparing(Account::getAccountId)).get();
+                AccountDto checkingAccount ;
+                checkingAccount = accounts.stream().filter(account -> account.getAccountType() == AccountType.CHECKING).max(Comparator.comparing(AccountDto::getAccountId)).get();
                 checkingAccountIban = checkingAccount.getIBAN();
             }
         }
