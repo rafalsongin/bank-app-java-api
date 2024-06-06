@@ -18,9 +18,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
     Page<Transaction> findAll(Pageable pageable);
 
-    @Query("SELECT t FROM Transaction t WHERE (:minAmount IS NULL OR t.amount >= :minAmount) AND (:maxAmount IS NULL OR t.amount <= :maxAmount)")
-    Page<Transaction> findByAmountRange(@Param("minAmount") Float minAmount, @Param("maxAmount") Float maxAmount, Pageable pageable);
-
     @Query("SELECT t FROM Transaction t WHERE t.fromAccount = :accountId OR t.toAccount = :accountId ORDER BY t.timestamp")
     List<Transaction> findTransactionsByAccountId(@Param("accountId") Integer accountId);
 
@@ -34,7 +31,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             "(:fromAccountId IS NULL OR t.fromAccount = :fromAccountId) AND " +
             "(:toAccountId IS NULL OR t.toAccount = :toAccountId)" +
             "ORDER BY t.timestamp")
-    Page<Transaction> findByFilters(
+    Page<Transaction> findAllByFilters(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             @Param("amountCondition") String amountCondition,
@@ -62,5 +59,4 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             @Param("amountValue") Float amountValue,
             @Param("fromAccountId") Integer fromAccountId,
             @Param("toAccountId") Integer toAccountId);
-
 }
