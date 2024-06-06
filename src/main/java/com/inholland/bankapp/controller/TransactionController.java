@@ -1,13 +1,18 @@
 package com.inholland.bankapp.controller;
 
 import com.inholland.bankapp.dto.TransactionDto;
-import com.inholland.bankapp.model.Transaction;
 import com.inholland.bankapp.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -18,26 +23,49 @@ public class TransactionController {
     private TransactionService service;
 
     @GetMapping
-    public ResponseEntity<List<Transaction>> getAllTransactions() {
-        List<Transaction> transactions = service.getAllTransactions();
+    public ResponseEntity<Page<TransactionDto>> getAllTransactions(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String amountCondition,
+            @RequestParam(required = false) Float amountValue,
+            @RequestParam(required = false) String fromIban,
+            @RequestParam(required = false) String toIban) {
 
-        // Check if the list is empty (not found)
-        if (transactions.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
+        Page<TransactionDto> transactions = service.getAllTransactions(page, size, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
 
         return ResponseEntity.ok(transactions);
     }
 
-    /**
-     Create Method - creating a transaction
-     @param iban  - parameter is a String type, that represents iban received through path.
-     */
     @GetMapping("/account/{iban}")
-    public ResponseEntity<List<TransactionDto>> getAllTransactionsByIban(@PathVariable String iban) {
-        List<TransactionDto> transactions = service.getAllTransactionsByIban(iban);
+    public ResponseEntity<List<TransactionDto>> getAllTransactionsByIban(
+            @PathVariable String iban,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) String amountCondition,
+            @RequestParam(required = false) Float amountValue,
+            @RequestParam(required = false) String fromIban,
+            @RequestParam(required = false) String toIban) {
 
-        // Check if the list is empty (not found)
+        List<TransactionDto> transactions = service.getAllTransactionsByIban(iban, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
+
+        return ResponseEntity.ok(transactions);
+    }
+
+    // for customer panel temporary
+    @GetMapping("/accountId/{accountId}")
+    public ResponseEntity<List<TransactionDto>> getTransactionsByAccountId(
+            @PathVariable Integer accountId,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) String amountCondition,
+            @RequestParam(required = false) Float amountValue,
+            @RequestParam(required = false) String fromIban,
+            @RequestParam(required = false) String toIban) {
+
+        List<TransactionDto> transactions = service.getAllTransactionsByAccountId(accountId, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
+
         if (transactions.isEmpty()) {
             return ResponseEntity.noContent().build();
         }

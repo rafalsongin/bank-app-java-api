@@ -1,5 +1,6 @@
 package com.inholland.bankapp.controller;
 
+import com.inholland.bankapp.dto.AccountDto;
 import com.inholland.bankapp.model.Account;
 import com.inholland.bankapp.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +17,9 @@ public class AccountController {
     @Autowired
     private AccountService accountService;
 
-    @PutMapping("/changeAccount/{accountId}")
-    public ResponseEntity<Account> updateAccount(@PathVariable int accountId, @RequestBody Account updatedAccount) {
-        Account account = accountService.updateAccount(accountId, updatedAccount);
+    @PutMapping("/changeAccount/{accountIBAN}")
+    public ResponseEntity<AccountDto> updateAccount(@PathVariable String accountIBAN, @RequestBody AccountDto updatedAccount) {
+        AccountDto account = accountService.updateAccount(accountIBAN, updatedAccount);
         if (account == null) {
             return ResponseEntity.notFound().build();
         }
@@ -26,17 +27,17 @@ public class AccountController {
     }
 
     @GetMapping("/getCheckingAccount/{IBAN}")
-    public ResponseEntity<Account> getCheckingAccountByIBAN(@PathVariable String IBAN) {
-        Account account = accountService.getCheckingAccountByIBAN(IBAN);
+    public ResponseEntity<AccountDto> getCheckingAccountByIBAN(@PathVariable String IBAN) {
+        AccountDto account = accountService.getCheckingAccountByIBAN(IBAN);
         if (account == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(account);
     }
 
-    @GetMapping("/customer/{customerId}") //TODO: use this one to get accounts by customer id in frontend
-    public ResponseEntity<List<Account>> getAccountsByCustomerId(@PathVariable Integer customerId) {
-        List<Account> accounts = accountService.getAccountsByCustomerId(customerId);
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<List<AccountDto>> getAccountsByCustomerId(@PathVariable Integer customerId) {
+        List<AccountDto> accounts = accountService.getAccountsByCustomerId(customerId);
 
         if (accounts.isEmpty()) {
             return ResponseEntity.noContent().build();

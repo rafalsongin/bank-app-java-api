@@ -1,7 +1,7 @@
 package com.inholland.bankapp.controller;
 
+import com.inholland.bankapp.dto.CustomerDto;
 import com.inholland.bankapp.model.Customer;
-import com.inholland.bankapp.model.Transaction;
 import com.inholland.bankapp.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -81,9 +81,28 @@ public class CustomerController {
         return ResponseEntity.ok("Customer account closed");
     }
 
-    @GetMapping("/transactions/{customerID}")
-    public ResponseEntity<List<Transaction>> getCustomerTransactions(@PathVariable int customerID) {
-        List<Transaction> transactions = customerService.getCustomerTransactions(customerID);
-        return ResponseEntity.ok(transactions);
+    @GetMapping("/getIbanByCustomerName/{firstName}/{lastName}")
+    public ResponseEntity<String> getIbanByCustomerName(@PathVariable String firstName, @PathVariable String lastName) {
+        String iban = customerService.getIbanByCustomerName(firstName, lastName);
+        if (iban == null) {
+            return ResponseEntity.noContent().build();
+        }
+        if (iban.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        return ResponseEntity.ok(iban);
+    }
+
+    @PutMapping
+    public ResponseEntity<CustomerDto> updateCustomerDetails(@RequestBody CustomerDto customerDto){
+        Optional<CustomerDto> optCustomerDto = customerService.updateCustomerDetails(customerDto);
+
+        if(optCustomerDto.isEmpty()){
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(optCustomerDto.get());
     }
 }
+
+
+

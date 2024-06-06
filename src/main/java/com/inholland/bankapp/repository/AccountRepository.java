@@ -37,4 +37,10 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
     @Transactional
     @Query("UPDATE Account a SET a.balance = a.balance - :amount WHERE a.accountType = 0 AND a.customerId = (SELECT u.userId FROM User u WHERE u.email = :email)")
     void withdrawFromCheckingAccount(@Param("email") String email, @Param("amount") double amount);
+    
+    @Query("SELECT a.accountId FROM Account a JOIN Customer c ON a.customerId = c.userId JOIN User u ON c.userId = u.userId WHERE u.email = :email AND a.accountType = 0")
+    int getCheckingAccountIdByEmail(@Param("email") String email);
+
+    @Query("SELECT u.userId FROM User u JOIN Account a ON a.customerId = u.userId WHERE a.accountId = :accountId")
+    int getUserIdByAccountId(@Param("accountId") int accountId);
 }
