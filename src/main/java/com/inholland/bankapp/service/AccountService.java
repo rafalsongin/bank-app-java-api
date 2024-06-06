@@ -138,8 +138,8 @@ public class AccountService {
         return accountRepository.findByIBAN(accountIban);
     }
 
-    public Account findByIban(String fromIban) {
-        return accountRepository.findByIBAN(fromIban).orElse(null);
+    public Account findByIban(String iban) {
+        return accountRepository.findByIBAN(iban).orElse(null);
     }
 
     public Optional<Account> getAccountById(Integer accountId) {

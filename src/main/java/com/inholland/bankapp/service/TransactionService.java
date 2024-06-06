@@ -216,29 +216,19 @@ public class TransactionService {
         return transactionDtos;
     }
 
-    public List<TransactionDto> getCustomerTransactions(int customerID) {
-        User user = userService.getUserById(customerID);
-        if (user!= null && user.getUserRole().equals(UserRole.CUSTOMER)) {
-            List<AccountDto> accounts = accountService.getAccountsByCustomerId(customerID);
-            if (accounts.isEmpty()) {
-                throw new IllegalArgumentException("Customer has no accounts");
-            }
-            List<Transaction> transactions = new ArrayList<>();
-            for (AccountDto account : accounts) {
-                transactions.addAll(repository.findTransactionsByAccountId(account.getAccountId()));
-            }
-            transactions.sort(Comparator.comparing(Transaction::getTimestamp));
+    public List<TransactionDto> getTransactionsByIban(String iban) {
 
-            List<TransactionDto> transactionDtos = new ArrayList<>();
-            for (Transaction transaction:
-                    transactions) {
-                transactionDtos.add(this.transformTransactionDTO(transaction));
-            }
+        Account account = accountService.findByIban(iban);
 
-            return transactionDtos;
+        List<Transaction> transactions = new ArrayList<>();
+        if (account != null) {
+            transactions = repository.findTransactionsByAccountId(account.getAccountId());
         }
-        else {
-            throw new IllegalArgumentException("Customer not found");
+
+        List<TransactionDto> transactionDtos = new ArrayList<>();
+        for (Transaction transaction: transactions) {
+            transactionDtos.add(this.transformTransactionDTO(transaction));
         }
+        return transactionDtos;
     }
 }

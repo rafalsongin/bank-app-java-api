@@ -103,9 +103,9 @@ public class TransactionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTransaction);
     }
 
-    @GetMapping("/{customerID}")
-    public ResponseEntity<List<TransactionDto>> getCustomerTransactions(@PathVariable int customerID) {
-        List<TransactionDto> transactions = service.getCustomerTransactions(customerID);
+    @GetMapping("/{iban}")
+    public ResponseEntity<List<TransactionDto>> getTransactionsByIban(@PathVariable String iban) {
+        List<TransactionDto> transactions = service.getTransactionsByIban(iban);
         return ResponseEntity.ok(transactions);
     }
 }
