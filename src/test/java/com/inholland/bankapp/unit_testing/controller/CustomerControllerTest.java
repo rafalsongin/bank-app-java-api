@@ -21,19 +21,29 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(CustomerController.class)
 class CustomerControllerTest {
+
+    // <editor-fold desc="Test dummy variables">
+
+    private static final String FIRST_NAME = "John";
+    private static final String LAST_NAME = "Doe";
+    private static final String IBAN = "NL91ABNA0417164300";
+
+    // </editor-fold>
+
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
     private CustomerService customerService;
+
+    // <editor-fold desc="Test for get all customers">
 
     @Test
     @WithMockUser // Cezar
@@ -47,36 +57,10 @@ class CustomerControllerTest {
 
     @Test
     @WithMockUser // Cezar
-    void getAllCustomers() throws Exception {
-        // Prepare test data
-        Customer customer1 = new Customer();
-        customer1.setUserId(1);
-        customer1.setFirstName("John");
-        customer1.setLastName("Doe");
-        customer1.setUsername("john_doe");
-        customer1.setEmail("john.doe@example.com");
-        customer1.setPassword("password");
-        customer1.setBankId(1);
-        customer1.setUserRole(UserRole.CUSTOMER); // Assuming you have a UserRole enum with CUSTOMER
-        customer1.setBSN("123456789");
-        customer1.setPhoneNumber("123-456-7890");
-        customer1.setTransactionLimit(1000.0f);
+    void getAllCustomers() throws Exception
+    {
 
-        Customer customer2 = new Customer();
-        customer2.setUserId(2);
-        customer2.setFirstName("Jane");
-        customer2.setLastName("Doe");
-        customer2.setUsername("jane_doe");
-        customer2.setEmail("jane.doe@example.com");
-        customer2.setPassword("password");
-        customer2.setBankId(1);
-        customer2.setUserRole(UserRole.CUSTOMER);
-        customer2.setBSN("987654321");
-        customer2.setPhoneNumber("098-765-4321");
-        customer2.setTransactionLimit(2000.0f);
-
-        List<Customer> customers = Arrays.asList(customer1, customer2);
-
+        List<Customer> customers = createCustomers();
         // Mock the service layer
         when(customerService.getAllCustomers()).thenReturn(customers);
 
@@ -96,6 +80,47 @@ class CustomerControllerTest {
                 .andExpect(jsonPath("$[1].email", is("jane.doe@example.com")));
 
     }
+
+    // </editor-fold>
+
+    // <editor-fold desc="Test for getting IBAN by customer name">
+    @Test
+    @WithMockUser // Cezar
+    void getIbanByCustomerName_ReturnsIban() throws Exception {
+        when(customerService.getIbanByCustomerName(FIRST_NAME,LAST_NAME)).thenReturn(IBAN);
+
+        this.mockMvc.perform(get("/api/customers/getIbanByCustomerName/{firstName}/{lastName}", FIRST_NAME,LAST_NAME))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string(is(IBAN)));
+    }
+
+    @Test
+    @WithMockUser // Cezar
+    void getIbanByCustomerName_ReturnsNoContent() throws Exception {
+
+        when(customerService.getIbanByCustomerName(FIRST_NAME,LAST_NAME)).thenReturn(null);
+
+        this.mockMvc.perform(get("/api/customers/getIbanByCustomerName/{firstName}/{lastName}", FIRST_NAME,LAST_NAME))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser // Cezar
+    void getIbanByCustomerName_ReturnsNotFound() throws Exception {
+
+        when(customerService.getIbanByCustomerName(FIRST_NAME,LAST_NAME)).thenReturn("");
+
+        this.mockMvc.perform(get("/api/customers/getIbanByCustomerName/{firstName}/{lastName}", FIRST_NAME,LAST_NAME))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(""));
+    }
+
+    // </editor-fold>
+
+    
 
     @Test
     void getCustomerById() {
@@ -124,5 +149,37 @@ class CustomerControllerTest {
 
     @Test
     void updateCustomerDetails() {
+    }
+
+    private List<Customer> createCustomers() {
+        // probably will have to change to dto
+        // Prepare test data
+        Customer customer1 = new Customer();
+        customer1.setUserId(1);
+        customer1.setFirstName("John");
+        customer1.setLastName("Doe");
+        customer1.setUsername("john_doe");
+        customer1.setEmail("john.doe@example.com");
+        customer1.setPassword("password");
+        customer1.setBankId(1);
+        customer1.setUserRole(UserRole.CUSTOMER); // Assuming you have a UserRole enum with CUSTOMER
+        customer1.setBSN("123456789");
+        customer1.setPhoneNumber("123-456-7890");
+        customer1.setTransactionLimit(1000.0f);
+
+        Customer customer2 = new Customer();
+        customer2.setUserId(2);
+        customer2.setFirstName("Jane");
+        customer2.setLastName("Doe");
+        customer2.setUsername("jane_doe");
+        customer2.setEmail("jane.doe@example.com");
+        customer2.setPassword("password");
+        customer2.setBankId(1);
+        customer2.setUserRole(UserRole.CUSTOMER);
+        customer2.setBSN("987654321");
+        customer2.setPhoneNumber("098-765-4321");
+        customer2.setTransactionLimit(2000.0f);
+
+        return Arrays.asList(customer1, customer2);
     }
 }
