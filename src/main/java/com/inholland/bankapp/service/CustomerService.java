@@ -31,8 +31,17 @@ public class CustomerService extends UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public List<Customer> getAllCustomers() {
-        return customerRepository.findAll();
+    public List<CustomerDto> getAllCustomers() {
+
+        List<Customer> customers = customerRepository.findAll();
+
+        List<CustomerDto> customerDtos = new ArrayList<>();
+        for (Customer customer : customers) {
+            CustomerDto customerDto = transformCustomerIntoDto(customer);
+            customerDtos.add(customerDto);
+        }
+
+        return customerDtos;
     }
   
     /**
@@ -266,6 +275,7 @@ public class CustomerService extends UserService {
 
         Optional<Bank> optBank = bankService.getBankById(customer.getBankId());
 
+        customerDto.setUserId(customer.getUserId());
         customerDto.setUsername(customer.getUsername());
         customerDto.setEmail(customer.getEmail());
         customerDto.setFirstName(customer.getFirstName());

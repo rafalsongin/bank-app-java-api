@@ -18,7 +18,7 @@ public class AccountController {
     @Autowired
     private AccountService accountService;
 
-    @PutMapping("/changeAccount/{accountIBAN}")
+    @PutMapping("/{accountIBAN}")
     public ResponseEntity<?> updateAccount(@PathVariable String accountIBAN, @RequestBody AccountDto updatedAccount) {
         try{
             AccountDto account = accountService.updateAccount(accountIBAN, updatedAccount);
@@ -34,7 +34,7 @@ public class AccountController {
         }
     }
 
-    @GetMapping("/getCheckingAccount/{IBAN}")
+    @GetMapping("/checking/{IBAN}")
     public ResponseEntity<?> getCheckingAccountByIBAN(@PathVariable String IBAN) {
         try {
             AccountDto account = accountService.getCheckingAccountByIBAN(IBAN);
