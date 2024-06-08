@@ -53,7 +53,12 @@ public class CustomerService extends UserService {
         if (customer != null) {
             customer.setAccountApprovalStatus(AccountApprovalStatus.VERIFIED);
             customerRepository.save(customer);
-            accountService.createAccounts(customer.getUserId());
+            try {
+                accountService.createAccounts(customer.getUserId());
+            }
+            catch (Exception e) {
+                throw new IllegalArgumentException("Error creating accounts for customer!");
+            }
         }
         else {
             throw new IllegalArgumentException("Customer not found");

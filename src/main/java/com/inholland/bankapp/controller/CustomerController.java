@@ -18,6 +18,8 @@ public class CustomerController {
     @Autowired
     private CustomerService customerService;
 
+    // <editor-fold desc="Get customer accounts methods">
+
     @GetMapping
     public ResponseEntity<List<Customer>> getAllCustomers() {
         try {
@@ -74,11 +76,38 @@ public class CustomerController {
         }
     }
 
+    // this one gets only IBAN of account not the whole account
+    @GetMapping("/getIbanByCustomerName/{firstName}/{lastName}")
+    public ResponseEntity<String> getIbanByCustomerName(@PathVariable String firstName, @PathVariable String lastName) {
+        try {
+            String iban = customerService.getIbanByCustomerName(firstName, lastName);
+            if (iban == null) {
+                return ResponseEntity.noContent().build();
+            }
+            if (iban.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+            return ResponseEntity.ok(iban);
+        }catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    // </editor-fold>
+
+    // <editor-fold desc="Change status of customer account">
+
     @PostMapping("/approve/{customerID}")
     public ResponseEntity<String> approveCustomer(@PathVariable int customerID) {
         try {
             customerService.approveCustomer(customerID);
             return ResponseEntity.ok("Customer approved");
+        }
+        catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
         catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
@@ -111,24 +140,8 @@ public class CustomerController {
         }
     }
 
-    @GetMapping("/getIbanByCustomerName/{firstName}/{lastName}")
-    public ResponseEntity<String> getIbanByCustomerName(@PathVariable String firstName, @PathVariable String lastName) {
-        try {
-            String iban = customerService.getIbanByCustomerName(firstName, lastName);
-            if (iban == null) {
-                return ResponseEntity.noContent().build();
-            }
-            if (iban.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-            }
-            return ResponseEntity.ok(iban);
-        }catch (IllegalArgumentException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-        catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
+    // </editor-fold>
+
 
     @PutMapping
     public ResponseEntity<CustomerDto> updateCustomerDetails(@RequestBody CustomerDto customerDto){

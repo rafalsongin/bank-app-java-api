@@ -4,6 +4,7 @@ import com.inholland.bankapp.dto.AccountDto;
 import com.inholland.bankapp.model.Account;
 import com.inholland.bankapp.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -18,21 +19,35 @@ public class AccountController {
     private AccountService accountService;
 
     @PutMapping("/changeAccount/{accountIBAN}")
-    public ResponseEntity<AccountDto> updateAccount(@PathVariable String accountIBAN, @RequestBody AccountDto updatedAccount) {
-        AccountDto account = accountService.updateAccount(accountIBAN, updatedAccount);
-        if (account == null) {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<?> updateAccount(@PathVariable String accountIBAN, @RequestBody AccountDto updatedAccount) {
+        try{
+            AccountDto account = accountService.updateAccount(accountIBAN, updatedAccount);
+            if (account == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(account);
+        } catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
-        return ResponseEntity.ok(account);
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     @GetMapping("/getCheckingAccount/{IBAN}")
-    public ResponseEntity<AccountDto> getCheckingAccountByIBAN(@PathVariable String IBAN) {
-        AccountDto account = accountService.getCheckingAccountByIBAN(IBAN);
-        if (account == null) {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<?> getCheckingAccountByIBAN(@PathVariable String IBAN) {
+        try {
+            AccountDto account = accountService.getCheckingAccountByIBAN(IBAN);
+            if (account == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(account);
+        } catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
-        return ResponseEntity.ok(account);
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     @GetMapping("/customer/{customerId}")
