@@ -1,7 +1,9 @@
 package com.inholland.bankapp.controller;
 
 import com.inholland.bankapp.dto.TransactionDto;
+import com.inholland.bankapp.model.UserRole;
 import com.inholland.bankapp.service.TransactionService;
+import com.inholland.bankapp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,9 @@ public class TransactionController {
     @Autowired
     private TransactionService service;
 
+    @Autowired
+    private UserService userService;
+
     @GetMapping
     public ResponseEntity<Page<TransactionDto>> getAllTransactions(
             @RequestParam(defaultValue = "1") int page,
@@ -31,11 +36,21 @@ public class TransactionController {
             @RequestParam(required = false) String amountCondition,
             @RequestParam(required = false) Float amountValue,
             @RequestParam(required = false) String fromIban,
-            @RequestParam(required = false) String toIban) {
-
-        Page<TransactionDto> transactions = service.getAllTransactions(page, size, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
-
-        return ResponseEntity.ok(transactions);
+            @RequestParam(required = false) String toIban,
+            @RequestParam String username,
+            @RequestParam String role) {
+        try {
+            if (UserRole.valueOf(role.toUpperCase()) != UserRole.EMPLOYEE || !userService.userExists(username)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
+            Page<TransactionDto> transactions = service.getAllTransactions(page, size, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
+            return ResponseEntity.ok(transactions);}
+        catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     @GetMapping("/account/{iban}")
@@ -46,11 +61,27 @@ public class TransactionController {
             @RequestParam(required = false) String amountCondition,
             @RequestParam(required = false) Float amountValue,
             @RequestParam(required = false) String fromIban,
-            @RequestParam(required = false) String toIban) {
+            @RequestParam(required = false) String toIban,
+            @RequestParam String username,
+            @RequestParam String role) {
+        try {
+            UserRole userRole = UserRole.valueOf(role.toUpperCase());
 
-        List<TransactionDto> transactions = service.getAllTransactionsByIban(iban, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
+            if (userRole == UserRole.EMPLOYEE && !userService.userExists(username)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
+            else if (userRole == UserRole.CUSTOMER && !userService.userExists(username) && !userService.isAccountOwner(username, iban)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
 
-        return ResponseEntity.ok(transactions);
+            List<TransactionDto> transactions = service.getAllTransactionsByIban(iban, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
+            return ResponseEntity.ok(transactions);
+        } catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     // for customer panel temporary
