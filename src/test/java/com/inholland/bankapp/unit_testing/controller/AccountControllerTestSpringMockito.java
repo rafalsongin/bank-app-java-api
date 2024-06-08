@@ -37,7 +37,7 @@ import java.util.List;
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(AccountController.class)
 @Import(TestSecurityConfig.class)
-class AccountControllerTest {
+class AccountControllerTestSpringMockito {
 
     // use mockMvc to simulate HTTP requests to a controller class
     @Autowired
