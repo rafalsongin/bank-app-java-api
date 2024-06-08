@@ -113,16 +113,21 @@ public class AccountService {
     }
     // </editor-fold>
 
-    public Account updateAccount(int accountId, Account updatedAccount) {
-        Optional<Account> account = accountRepository.findById(accountId);
+    public AccountDto updateAccount(String accountIban, AccountDto updatedAccount) {
+        Optional<Account> account = accountRepository.findByIBAN(accountIban);
         if (account.isEmpty()) {
-            return null;
+            throw new IllegalArgumentException("Account not found");
         }
         Account existingAccount = account.get();
         existingAccount.setBalance(updatedAccount.getBalance());
         existingAccount.setAbsoluteTransferLimit(updatedAccount.getAbsoluteTransferLimit());
         existingAccount.setDailyTransferLimit(updatedAccount.getDailyTransferLimit());
-        return accountRepository.save(existingAccount);
+        try {
+            return transformAccountToAccountDto(accountRepository.save(existingAccount));
+        }
+        catch (Exception e) {
+            throw new IllegalArgumentException("Error updating account");
+        }
     }
 
     // <editor-fold desc="Get accounts methods.">
@@ -131,6 +136,9 @@ public class AccountService {
         if (account.isPresent() && account.get().getAccountType() == AccountType.CHECKING) {
             return transformAccountToAccountDto(account.get());
         }
+        else if (account.isPresent() && account.get().getAccountType() == AccountType.SAVINGS) {
+           throw new IllegalArgumentException("Account is not a checking account");
+        }
         return null;
     }
 
@@ -138,8 +146,8 @@ public class AccountService {
         return accountRepository.findByIBAN(accountIban);
     }
 
-    public Account findByIban(String fromIban) {
-        return accountRepository.findByIBAN(fromIban).orElse(null);
+    public Account findByIban(String iban) {
+        return accountRepository.findByIBAN(iban).orElse(null);
     }
 
     public Optional<Account> getAccountById(Integer accountId) {
