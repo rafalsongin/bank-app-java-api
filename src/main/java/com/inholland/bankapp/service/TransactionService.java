@@ -52,11 +52,12 @@ public class TransactionService {
         return transactions.map(this::transformTransactionDTO);
     }
 
-    public List<TransactionDto> getAllTransactionsByIban(String iban, LocalDate startDate, LocalDate endDate, String amountCondition, Float amountValue, String fromIban, String toIban) {
+    public Page<TransactionDto> getAllTransactionsByIban(int page, int size, String iban, LocalDate startDate, LocalDate endDate, String amountCondition, Float amountValue, String fromIban, String toIban) {
 
         Account account = accountService.findByIban(iban);
 
-        List<Transaction> transactions;
+        PageRequest pageRequest = PageRequest.of(page - 1, size);
+        Page<Transaction> transactions;
 
         if (startDate != null || endDate != null || amountCondition != null || amountValue != null || fromIban != null || toIban != null) {
             Integer fromAccountId = null;
@@ -70,17 +71,12 @@ public class TransactionService {
                 Account toAccount = accountService.findByIban(toIban);
                 toAccountId = toAccount.getAccountId();
             }
-            transactions = repository.findFilteredTransactionsByAccountId(account.getAccountId(), startDate, endDate, amountCondition, amountValue, fromAccountId, toAccountId);
+            transactions = repository.findFilteredTransactionsByAccountId(account.getAccountId(), startDate, endDate, amountCondition, amountValue, fromAccountId, toAccountId, pageRequest);
         } else {
-            transactions = repository.findTransactionsByAccountId(account.getAccountId());
+            transactions = repository.findTransactionsByAccountId(account.getAccountId(), pageRequest);
         }
 
-        List<TransactionDto> transactionDtos = new ArrayList<>();
-        for (Transaction transaction : transactions) {
-            transactionDtos.add(this.transformTransactionDTO(transaction));
-        }
-
-        return transactionDtos;
+        return transactions.map(this::transformTransactionDTO);
     }
     // </editor-fold>
 
@@ -100,9 +96,9 @@ public class TransactionService {
                 Account toAccount = accountService.findByIban(toIban);
                 toAccountId = toAccount.getAccountId();
             }
-            transactions = repository.findFilteredTransactionsByAccountId(accountId, startDate, endDate, amountCondition, amountValue, fromAccountId, toAccountId);
+            transactions = repository.findFilteredTransactionsByAccount(accountId, startDate, endDate, amountCondition, amountValue, fromAccountId, toAccountId);
         } else {
-            transactions = repository.findTransactionsByAccountId(accountId);
+            transactions = repository.findTransactionsByAccount(accountId);
         }
 
         List<TransactionDto> transactionDtos = new ArrayList<>();

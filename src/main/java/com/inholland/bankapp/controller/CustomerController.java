@@ -111,7 +111,7 @@ public class CustomerController {
         }
     }
 
-    @PutMapping("/closeAccount/{customerID}")
+    @PutMapping("/close/{customerID}")
     public ResponseEntity<String> closeCustomerAccount(@PathVariable int customerID) {
         try {
             customerService.closeCustomerAccount(customerID);
@@ -137,6 +137,3 @@ public class CustomerController {
         return ResponseEntity.ok(optCustomerDto.get());
     }
 }
-
-
-
