@@ -106,8 +106,16 @@ public class CustomerController {
 
     @PutMapping("/close/{customerID}")
     public ResponseEntity<String> closeCustomerAccount(@PathVariable int customerID) {
-        customerService.closeCustomerAccount(customerID);
-        return ResponseEntity.ok("Customer account closed");
+        try {
+            customerService.closeCustomerAccount(customerID);
+            return ResponseEntity.ok("Customer account closed");
+        }catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+
     }
 
     // </editor-fold>
