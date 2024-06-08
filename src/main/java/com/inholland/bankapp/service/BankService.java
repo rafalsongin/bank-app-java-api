@@ -1,15 +1,12 @@
 package com.inholland.bankapp.service;
 
-import com.inholland.bankapp.model.User;
 import com.inholland.bankapp.repository.BankRepository;
-import com.inholland.bankapp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.inholland.bankapp.model.Bank;
 
 import java.util.List;
 import java.util.Optional;
-
 
 @Service
 public class BankService {
@@ -22,4 +19,18 @@ public class BankService {
         }
 
 
+    /**
+     Get Method - gets a bank by bankId
+     @param bankId  - parameter is an Integer type, which is used to get the bank
+     @return    - returns an existing bank
+     */
+    public Optional<Bank> getBankById(Integer bankId){
+        Optional<Bank> bank = bankRepository.findById(bankId);
+
+        if(!bank.isPresent()){
+            throw new RuntimeException("[Error] Bank not found!");
+        }
+
+        return bank;
+    }
 }

@@ -1,12 +1,15 @@
 package com.inholland.bankapp.controller;
 
+import com.inholland.bankapp.model.Customer;
 import com.inholland.bankapp.model.Employee;
 import com.inholland.bankapp.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/employees")
@@ -19,13 +22,11 @@ public class EmployeeController {
         this.employeeService = employeeService;
     }
 
-    // GET endpoint for retrieving all employees
     @GetMapping
     public List<Employee> getAllEmployees() {
         return employeeService.findAllEmployees();
     }
 
-    // GET endpoint for retrieving an employee by their ID
     @GetMapping("/{id}")
     public ResponseEntity<Employee> getEmployeeById(@PathVariable int id) {
         return employeeService.findEmployeeById(id)
@@ -33,16 +34,28 @@ public class EmployeeController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // POST endpoint for creating a new employee
     @PostMapping
     public Employee createEmployee(@RequestBody Employee employee) {
-        return employeeService.saveOrUpdateEmployee(employee);
+        return employeeService.saveEmployee(employee);
     }
 
-    // DELETE endpoint for deleting an employee
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEmployee(@PathVariable int id) {
         employeeService.deleteEmployee(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<Employee> getEmployeeByEmail(@PathVariable String email) {
+
+        Optional<Employee> employeeOpt = employeeService.getEmployeeByEmail(email);
+        if (!employeeOpt.isPresent()) {
+            System.out.println("Customer not found for email: " + email);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+
+        Employee employee = employeeOpt.get();
+
+        return ResponseEntity.ok(employee);
     }
 }

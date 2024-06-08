@@ -17,19 +17,24 @@ public class User {
     @Column(name = "user_id")
     private int userId;
 
+    @Column(name = "username")
     private String username;
+
+    @Column(name = "email")
     private String email;
+
+    @Column(name = "password")
     private String password;
-    private String JWT;
 
     @Column(name = "first_name")
     private String firstName;
 
     @Column(name = "last_name")
     private String lastName;
+
+    @Column(name = "bank_id")
     private int bankId;
+
+    @Column(name = "user_role")
     private UserRole userRole;
-
 }
-
-

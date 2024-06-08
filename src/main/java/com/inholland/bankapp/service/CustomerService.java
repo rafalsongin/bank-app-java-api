@@ -1,26 +1,32 @@
 package com.inholland.bankapp.service;
 
+
+import com.inholland.bankapp.dto.AccountDto;
+import com.inholland.bankapp.dto.CustomerDto;
 import com.inholland.bankapp.dto.CustomerRegistrationDto;
 import com.inholland.bankapp.exceptions.InvalidDataException;
 import com.inholland.bankapp.exceptions.UserAlreadyExistsException;
-import com.inholland.bankapp.model.AccountApprovalStatus;
-import com.inholland.bankapp.model.Customer;
-import com.inholland.bankapp.model.UserRole;
+import com.inholland.bankapp.model.*;
 import com.inholland.bankapp.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class CustomerService {
+public class CustomerService extends UserService {
     @Autowired
     private CustomerRepository customerRepository;
 
     @Autowired
     private AccountService accountService;
+
+    @Autowired
+    private BankService bankService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -65,16 +71,16 @@ public class CustomerService {
         }
     }
 
-    public Customer registerNewCustomer(CustomerRegistrationDto registrationDto) {
+    public void registerNewCustomer(CustomerRegistrationDto registrationDto) {
         validateRegistrationData(registrationDto);
         
-        if (customerExists(registrationDto.getEmail())) {
+        if (userExists(registrationDto.getEmail())) {
             throw new UserAlreadyExistsException("Customer with " + registrationDto.getEmail() + " email already exists.");
         }
         
         Customer user = createCustomer(registrationDto);
-        
-        return customerRepository.save(user);
+
+        customerRepository.save(user);
     }
     
     private Customer createCustomer(CustomerRegistrationDto registrationDto) {
@@ -94,10 +100,6 @@ public class CustomerService {
         user.setAccountApprovalStatus(AccountApprovalStatus.UNVERIFIED);
         
         return user;
-    }
-
-    private boolean customerExists(String email) {
-        return customerRepository.findByEmail(email).isPresent();
     }
 
     protected void validateRegistrationData(CustomerRegistrationDto registrationDto) {
@@ -133,5 +135,139 @@ public class CustomerService {
 
     private boolean isValidBSN(String bsn) {
         return bsn.length() >= 8 && bsn.length() <= 9 && bsn.matches("\\d+");
+    }
+
+    public void closeCustomerAccount(int customerID) {
+        Customer customer = customerRepository.findById(customerID).orElse(null);
+        if (customer != null) {
+            customer.setAccountApprovalStatus(AccountApprovalStatus.CLOSED);
+            customerRepository.save(customer);
+        }
+        else {
+            throw new IllegalArgumentException("Customer not found");
+        }
+    }
+
+    /**
+     Get Method - getting the customer by email
+     @param email  - parameter is of String type, that represents the email of the customer
+     @return    - returns the customer, if email parameter is provided.
+     */
+    public Optional<Customer> getCustomerByEmail(String email) {
+        Optional<Customer> customer = customerRepository.getCustomerByEmail(email);
+        System.out.println("Customer fetched from repository: " + customer.get().getUsername());
+        return customer;
+    }
+
+    /**
+     Check Method - check if customer exists by using the email
+     @param email  - parameter is of String type, that represents the email of the customer
+     @return    - returns a boolean value
+     */
+    private boolean checkCustomerExists(String email) {
+        return customerRepository.getCustomerByEmail(email).isPresent();
+    }
+
+    public String getIbanByCustomerName(String firstName, String lastName) {
+        Customer customer = customerRepository.findByFirstNameAndLastName(firstName, lastName);
+        String checkingAccountIban = "";
+        if (customer != null) {
+            List<AccountDto> accounts = accountService.getAccountsByCustomerId(customer.getUserId());
+            if (accounts.size() > 0) {
+                AccountDto checkingAccount ;
+                checkingAccount = accounts.stream().filter(account -> account.getAccountType() == AccountType.CHECKING).max(Comparator.comparing(AccountDto::getIBAN)).get();
+                checkingAccountIban = checkingAccount.getIBAN();
+            }
+        }
+        return checkingAccountIban;
+    }
+
+    /**
+     Update Method - checks if the customerDto has changes from the original customer
+     @param customerDto  - parameter is a customerDto class, that represents a customer as DTO (Data Transfer Object)
+     @return    - returns a boolean, 'true' if changes were made and 'false' if there are no changes.
+     */
+    public Optional<CustomerDto> updateCustomerDetails(CustomerDto customerDto) {
+        try {
+            Customer customer = getCustomerByEmail(customerDto.getEmail()).get();
+
+            if(!isCustomerModified(customerDto, customer)){
+                System.out.println("[Warning] Customer details were not modified!");
+                return Optional.empty();
+            }
+
+            changeCustomerDetailsWithModified(customerDto, customer);
+            Customer updatedCustomer = customerRepository.save(customer);
+
+            return Optional.of(transformCustomerIntoDto(updatedCustomer));
+        }catch (Exception e){
+            System.out.println("[Error] Updating customer: " + e);
+            return Optional.empty();
+        }
+    }
+
+    private void changeCustomerDetailsWithModified(CustomerDto customerDto, Customer customer) {
+        customer.setUsername(customerDto.getUsername());
+        customer.setFirstName(customerDto.getFirstName());
+        customer.setLastName(customerDto.getLastName());
+        customer.setPhoneNumber(customerDto.getPhoneNumber());
+        customer.setBSN(customerDto.getBsn());
+    }
+
+    /**
+     Check Method - checks if the customerDto has changes from the original customer
+     @param customerDto  - parameter is a customerDto class, that represents a customer as DTO (Data Transfer Object)
+     @param customer    - parameter is a customer class, that represents the customer as an object
+     @return    - returns a boolean, 'true' if changes were made and 'false' if there are no changes.
+     */
+    private boolean isCustomerModified(CustomerDto customerDto, Customer customer) {
+        boolean result = false;
+        System.out.printf("Checking if customer is modified: ");
+        if(!customerDto.getUsername().equals(customer.getUsername())) {
+            System.out.printf("Username modified; ");
+            result = true;
+        }
+        if(!customerDto.getFirstName().equals(customer.getFirstName())) {
+            System.out.printf("FirstName modified; ");
+            result = true;
+        }
+        if(!customerDto.getLastName().equals(customer.getLastName())) {
+            System.out.printf("LastName modified; ");
+            result = true;
+        }
+        if(!customerDto.getPhoneNumber().equals(customer.getPhoneNumber())) {
+            System.out.printf("PhoneNumber modified; ");
+            result = true;
+        }
+        if(!customerDto.getBsn().equals(customer.getBSN())) {
+            System.out.println("BSN modified; ");
+            result = true;
+        }
+
+        if(!result) System.out.println("no modifications found!");
+        return result;
+    }
+
+    /**
+     Transform Method - transforms a customer object to a customerDto object
+     @param customer  - parameter is a customer class, which is used in the back end for customers
+     @return    - returns customerDto object
+     */
+    private CustomerDto transformCustomerIntoDto(Customer customer){
+        CustomerDto customerDto = new CustomerDto();
+
+        Optional<Bank> optBank = bankService.getBankById(customer.getBankId());
+
+        customerDto.setUsername(customer.getUsername());
+        customerDto.setEmail(customer.getEmail());
+        customerDto.setFirstName(customer.getFirstName());
+        customerDto.setLastName(customer.getLastName());
+        customerDto.setBankName(optBank.get().getName());
+        customerDto.setUserRole(customer.getUserRole());
+        customerDto.setBsn(customer.getBSN());
+        customerDto.setPhoneNumber(customer.getPhoneNumber());
+        customerDto.setAccountApprovalStatus(customer.getAccountApprovalStatus());
+
+        return customerDto;
     }
 }

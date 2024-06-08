@@ -6,8 +6,6 @@ import com.inholland.bankapp.dto.EmployeeRegistrationDto;
 import com.inholland.bankapp.dto.LoginDto;
 import com.inholland.bankapp.exceptions.UserAlreadyExistsException;
 import com.inholland.bankapp.exceptions.InvalidDataException;
-import com.inholland.bankapp.model.Customer;
-import com.inholland.bankapp.model.Employee;
 import com.inholland.bankapp.security.JwtTokenUtil;
 import com.inholland.bankapp.service.CustomerService;
 import com.inholland.bankapp.service.EmployeeService;
@@ -15,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin("http://localhost:5173")
 public class AuthController {
   
     @Autowired
@@ -40,7 +38,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> registerCustomer(@RequestBody CustomerRegistrationDto registrationDto) {
         try {
-            Customer customer = customerService.registerNewCustomer(registrationDto);
+            customerService.registerNewCustomer(registrationDto);
             return ResponseEntity.status(HttpStatus.OK).body("Customer registration form submitted successfully"); // returning 200 OK
         } catch (UserAlreadyExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage()); // returning 409 Conflict
@@ -55,7 +53,7 @@ public class AuthController {
     @PostMapping("/register-employee")
     public ResponseEntity<?> registerEmployee(@RequestBody EmployeeRegistrationDto registrationDto) {
         try {
-            Employee employee = employeeService.registerNewEmployee(registrationDto);
+            employeeService.registerNewEmployee(registrationDto);
             return ResponseEntity.ok("Employee registered successfully");
         } catch (UserAlreadyExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage()); // returning 409 Conflict
@@ -68,17 +66,47 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginDto loginDto) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword())
-        );
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtTokenUtil.generateToken(authentication);
-        return ResponseEntity.status(HttpStatus.OK).body(jwt);
+        return authenticateUserMethod(loginDto);
     }
-    
-    @GetMapping("/test")
-    public ResponseEntity<?> test() {
-        return ResponseEntity.ok("Testing message");
+
+    private ResponseEntity<String> authenticateUserMethod(LoginDto loginDto) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword())
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtTokenUtil.generateToken(authentication);
+            return ResponseEntity.ok(jwt);
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
+        }
+    }
+
+    @PostMapping("/login-atm") // only for customers
+    public ResponseEntity<?> authenticateCustomer(@RequestBody LoginDto loginDto) {
+        
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword())
+            );
+            
+            if (customerService.getCustomerByEmail(loginDto.getUsername()).isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not a customer");
+            }
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtTokenUtil.generateToken(authentication);
+            return ResponseEntity.ok(jwt);
+        } catch (BadCredentialsException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
+        }
     }
 }

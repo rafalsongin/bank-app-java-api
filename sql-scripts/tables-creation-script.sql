@@ -60,6 +60,8 @@ CREATE TABLE `transaction` (
                                FOREIGN KEY (`initiated_by_user`) REFERENCES `user` (`user_id`)
 );
 
+
+
 DROP TABLE IF EXISTS `user`;
 DROP TABLE IF EXISTS `customer`;
 DROP TABLE IF EXISTS `employee`;

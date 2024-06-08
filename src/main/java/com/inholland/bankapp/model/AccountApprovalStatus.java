@@ -3,5 +3,6 @@ package com.inholland.bankapp.model;
 public enum AccountApprovalStatus {
     UNVERIFIED,
     VERIFIED,
-    DECLINED
+    DECLINED,
+    CLOSED
 }

@@ -1,17 +1,19 @@
 package com.inholland.bankapp.controller;
 
-import com.inholland.bankapp.model.Transaction;
+import com.inholland.bankapp.dto.TransactionDto;
 import com.inholland.bankapp.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("api/transactions")
@@ -21,10 +23,49 @@ public class TransactionController {
     private TransactionService service;
 
     @GetMapping
-    public ResponseEntity<List<Transaction>> getAllTransactions() {
-        List<Transaction> transactions = service.getAllTransactions();
+    public ResponseEntity<Page<TransactionDto>> getAllTransactions(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String amountCondition,
+            @RequestParam(required = false) Float amountValue,
+            @RequestParam(required = false) String fromIban,
+            @RequestParam(required = false) String toIban) {
 
-        // Check if the list is empty (not found)
+        Page<TransactionDto> transactions = service.getAllTransactions(page, size, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
+
+        return ResponseEntity.ok(transactions);
+    }
+
+    @GetMapping("/account/{iban}")
+    public ResponseEntity<List<TransactionDto>> getAllTransactionsByIban(
+            @PathVariable String iban,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) String amountCondition,
+            @RequestParam(required = false) Float amountValue,
+            @RequestParam(required = false) String fromIban,
+            @RequestParam(required = false) String toIban) {
+
+        List<TransactionDto> transactions = service.getAllTransactionsByIban(iban, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
+
+        return ResponseEntity.ok(transactions);
+    }
+
+    // for customer panel temporary
+    @GetMapping("/accountId/{accountId}")
+    public ResponseEntity<List<TransactionDto>> getTransactionsByAccountId(
+            @PathVariable Integer accountId,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) String amountCondition,
+            @RequestParam(required = false) Float amountValue,
+            @RequestParam(required = false) String fromIban,
+            @RequestParam(required = false) String toIban) {
+
+        List<TransactionDto> transactions = service.getAllTransactionsByAccountId(accountId, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
+
         if (transactions.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
@@ -32,15 +73,13 @@ public class TransactionController {
         return ResponseEntity.ok(transactions);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Transaction> getTransactionById(@PathVariable Integer id){
-        Transaction transaction = service.getTransactionById(id).orElse(null);
-
-        // Check if the object was not found
-        if (transaction == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-
-        return ResponseEntity.ok(transaction);
+    /**
+     Create Method - creating a transaction
+     @param transactionDto  - parameter is an TransactionCreationDto type, that represents a transaction as DTO (Data Transfer Object)
+     */
+    @PostMapping
+    public ResponseEntity<TransactionDto> createTransaction(@RequestBody TransactionDto transactionDto) {
+        TransactionDto createdTransaction = service.saveTransaction(transactionDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdTransaction);
     }
 }
