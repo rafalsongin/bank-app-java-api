@@ -48,14 +48,18 @@ public class EmployeeController {
     @GetMapping("/email/{email}")
     public ResponseEntity<Employee> getEmployeeByEmail(@PathVariable String email) {
 
-        Optional<Employee> employeeOpt = employeeService.getEmployeeByEmail(email);
-        if (!employeeOpt.isPresent()) {
-            System.out.println("Customer not found for email: " + email);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        try {
+            Optional<Employee> employeeOpt = employeeService.getEmployeeByEmail(email);
+            if (!employeeOpt.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+
+            Employee employee = employeeOpt.get();
+
+            return ResponseEntity.ok(employee);
         }
-
-        Employee employee = employeeOpt.get();
-
-        return ResponseEntity.ok(employee);
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 }
