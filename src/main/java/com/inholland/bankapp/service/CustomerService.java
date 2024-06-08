@@ -179,6 +179,9 @@ public class CustomerService extends UserService {
                 checkingAccountIban = checkingAccount.getIBAN();
             }
         }
+        else {
+            throw new IllegalArgumentException("Customer not found");
+        }
         return checkingAccountIban;
     }
 
