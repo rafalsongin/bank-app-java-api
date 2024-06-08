@@ -77,7 +77,7 @@ public class CustomerController {
 //    }
 
     // this one gets only IBAN of account not the whole account
-    @GetMapping("/getIbanByCustomerName/{firstName}/{lastName}")
+    @GetMapping("/iban/{firstName}/{lastName}")
     public ResponseEntity<String> getIbanByCustomerName(@PathVariable String firstName, @PathVariable String lastName) {
         try {
             String iban = customerService.getIbanByCustomerName(firstName, lastName);
