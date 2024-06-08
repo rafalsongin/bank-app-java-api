@@ -60,22 +60,6 @@ public class CustomerController {
         return ResponseEntity.ok(customer);
     }
 
-    // TODO: IS THIS METHOD NEEDED ANYWHERE?
-//    @GetMapping("/unverified")
-//    public ResponseEntity<List<Customer>> getUnverifiedCustomers()
-//    {
-//        try {
-//            List<Customer> customers = customerService.getCustomersWithUnverifiedAccounts();
-//            if (customers.isEmpty()) {
-//                return ResponseEntity.noContent().build();
-//            }
-//            return ResponseEntity.ok(customers);
-//        }
-//        catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-//        }
-//    }
-
     // this one gets only IBAN of account not the whole account
     @GetMapping("/iban/{firstName}/{lastName}")
     public ResponseEntity<String> getIbanByCustomerName(@PathVariable String firstName, @PathVariable String lastName) {
