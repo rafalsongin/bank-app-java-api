@@ -25,8 +25,6 @@ import com.inholland.bankapp.repository.AccountRepository;
 import java.util.*;
 import com.inholland.bankapp.cucumber_testing.BaseStepDefinitions;
 
-
-
 public class EmployeeStepDefinitions extends BaseStepDefinitions{
 
     // <editor-fold desc="Variables">

@@ -1,6 +1,8 @@
 package com.inholland.bankapp.unit_testing.controller;
 
 import com.inholland.bankapp.controller.CustomerController;
+import com.inholland.bankapp.dto.CustomerDto;
+import com.inholland.bankapp.model.Bank;
 import com.inholland.bankapp.model.Customer;
 import com.inholland.bankapp.model.UserRole;
 import com.inholland.bankapp.service.CustomerService;
@@ -16,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
@@ -59,8 +62,7 @@ class CustomerControllerTest {
     @WithMockUser // Cezar
     void getAllCustomers() throws Exception
     {
-
-        List<Customer> customers = createCustomers();
+        List<CustomerDto> customers = createCustomers();
         // Mock the service layer
         when(customerService.getAllCustomers()).thenReturn(customers);
 
@@ -151,35 +153,27 @@ class CustomerControllerTest {
     void updateCustomerDetails() {
     }
 
-    private List<Customer> createCustomers() {
-        // probably will have to change to dto
+    private List<CustomerDto> createCustomers() {
         // Prepare test data
-        Customer customer1 = new Customer();
+        CustomerDto customer1 = new CustomerDto();
         customer1.setUserId(1);
         customer1.setFirstName("John");
         customer1.setLastName("Doe");
         customer1.setUsername("john_doe");
         customer1.setEmail("john.doe@example.com");
-        customer1.setPassword("password");
-        customer1.setBankId(1);
         customer1.setUserRole(UserRole.CUSTOMER); // Assuming you have a UserRole enum with CUSTOMER
-        customer1.setBSN("123456789");
         customer1.setPhoneNumber("123-456-7890");
-        customer1.setTransactionLimit(1000.0f);
 
-        Customer customer2 = new Customer();
+        CustomerDto customer2 = new CustomerDto();
         customer2.setUserId(2);
         customer2.setFirstName("Jane");
         customer2.setLastName("Doe");
         customer2.setUsername("jane_doe");
         customer2.setEmail("jane.doe@example.com");
-        customer2.setPassword("password");
-        customer2.setBankId(1);
         customer2.setUserRole(UserRole.CUSTOMER);
-        customer2.setBSN("987654321");
         customer2.setPhoneNumber("098-765-4321");
-        customer2.setTransactionLimit(2000.0f);
 
         return Arrays.asList(customer1, customer2);
     }
+
 }
