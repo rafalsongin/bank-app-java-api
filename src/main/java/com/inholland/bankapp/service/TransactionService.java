@@ -123,12 +123,28 @@ public class TransactionService {
         Optional<Account> optFromAccount = accountService.getAccountByIBAN(transactionDto.getFromAccount());
         Optional<Account> optToAccount = accountService.getAccountByIBAN(transactionDto.getToAccount());
         if(!optFromAccount.isPresent() || !optToAccount.isPresent()){
-            throw new RuntimeException("[Error] CreateTransactionDTO: From or To accounts not found!");
+            throw new IllegalArgumentException("[Error] CreateTransactionDTO: From or To accounts not found!");
         }
-
         // Check if from_account has sufficient balance and update accounts, if it does
         if (optFromAccount.get().getBalance() < transactionDto.getAmount()) {
-            throw new RuntimeException("Insufficient balance in the from account.");
+            throw new IllegalArgumentException("[Error] CreateTransactionDTO: Insufficient balance in from_account!");
+        }
+        if (transactionDto.getAmount() <= 0) {
+            throw new IllegalArgumentException("[Error] CreateTransactionDTO: Amount must be greater than 0!");
+        }
+        if (transactionDto.getAmount() > optFromAccount.get().getAvailableDailyAmountForTransfer()) {
+            throw new IllegalArgumentException("[Error] CreateTransactionDTO: Amount exceeds daily limit!");
+        }
+        //check for absolute limit
+        float newBalance =0;
+        newBalance = optFromAccount.get().getAvailableDailyAmountForTransfer() - transactionDto.getAmount();
+        if (newBalance < optFromAccount.get().getAbsoluteTransferLimit())
+        {
+            throw new IllegalArgumentException("[Error] CreateTransactionDTO: Amount exceeds absolute limit!");
+        }
+
+        if (optFromAccount.get().getAccountId() == optToAccount.get().getAccountId()) {
+            throw new IllegalArgumentException("[Error] CreateTransactionDTO: From and To accounts are the same!");
         }
 
         updateFromAndToAccountBalances(transactionDto.getAmount(), optFromAccount.get(), optToAccount.get());

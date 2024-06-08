@@ -78,8 +78,16 @@ public class TransactionController {
      @param transactionDto  - parameter is an TransactionCreationDto type, that represents a transaction as DTO (Data Transfer Object)
      */
     @PostMapping
-    public ResponseEntity<TransactionDto> createTransaction(@RequestBody TransactionDto transactionDto) {
-        TransactionDto createdTransaction = service.saveTransaction(transactionDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdTransaction);
+    public ResponseEntity<?> createTransaction(@RequestBody TransactionDto transactionDto) {
+        try {
+            TransactionDto createdTransaction = service.saveTransaction(transactionDto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdTransaction);
+        }
+        catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 }

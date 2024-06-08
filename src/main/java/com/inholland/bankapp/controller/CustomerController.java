@@ -18,13 +18,20 @@ public class CustomerController {
     @Autowired
     private CustomerService customerService;
 
+    // <editor-fold desc="Get customer accounts methods">
+
     @GetMapping
     public ResponseEntity<List<Customer>> getAllCustomers() {
-        List<Customer> customers = customerService.getAllCustomers();
-        if (customers.isEmpty()) {
-            return ResponseEntity.noContent().build();
+        try {
+            List<Customer> customers = customerService.getAllCustomers();
+            if (customers.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(customers);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
-        return ResponseEntity.ok(customers);
+
     }
 
     @GetMapping("/email/{email}")
@@ -55,43 +62,86 @@ public class CustomerController {
     }
 
     @GetMapping("/unverified")
-    public ResponseEntity<List<Customer>> getUnverifiedCustomers() {
-        List<Customer> customers = customerService.getCustomersWithUnverifiedAccounts();
-        if (customers.isEmpty()) {
-            return ResponseEntity.noContent().build();
+    public ResponseEntity<List<Customer>> getUnverifiedCustomers()
+    {
+        try {
+            List<Customer> customers = customerService.getCustomersWithUnverifiedAccounts();
+            if (customers.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(customers);
         }
-        return ResponseEntity.ok(customers);
+        catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
+
+    // this one gets only IBAN of account not the whole account
+    @GetMapping("/getIbanByCustomerName/{firstName}/{lastName}")
+    public ResponseEntity<String> getIbanByCustomerName(@PathVariable String firstName, @PathVariable String lastName) {
+        try {
+            String iban = customerService.getIbanByCustomerName(firstName, lastName);
+            if (iban == null) {
+                return ResponseEntity.noContent().build();
+            }
+            if (iban.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+            return ResponseEntity.ok(iban);
+        }catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    // </editor-fold>
+
+    // <editor-fold desc="Change status of customer account">
 
     @PostMapping("/approve/{customerID}")
     public ResponseEntity<String> approveCustomer(@PathVariable int customerID) {
-        customerService.approveCustomer(customerID);
-        return ResponseEntity.ok("Customer approved");
+        try {
+            customerService.approveCustomer(customerID);
+            return ResponseEntity.ok("Customer approved");
+        }
+        catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     @PostMapping("/decline/{customerID}")
     public ResponseEntity<String> declineCustomer(@PathVariable int customerID) {
-        customerService.declineCustomer(customerID);
-        return ResponseEntity.ok("Customer declined");
+        try {
+            customerService.declineCustomer(customerID);
+            return ResponseEntity.ok("Customer declined");
+        }catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     @PutMapping("/closeAccount/{customerID}")
     public ResponseEntity<String> closeCustomerAccount(@PathVariable int customerID) {
-        customerService.closeCustomerAccount(customerID);
-        return ResponseEntity.ok("Customer account closed");
+        try {
+            customerService.closeCustomerAccount(customerID);
+            return ResponseEntity.ok("Customer account closed");
+        }catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
-    @GetMapping("/getIbanByCustomerName/{firstName}/{lastName}")
-    public ResponseEntity<String> getIbanByCustomerName(@PathVariable String firstName, @PathVariable String lastName) {
-        String iban = customerService.getIbanByCustomerName(firstName, lastName);
-        if (iban == null) {
-            return ResponseEntity.noContent().build();
-        }
-        if (iban.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-        return ResponseEntity.ok(iban);
-    }
+    // </editor-fold>
+
 
     @PutMapping
     public ResponseEntity<CustomerDto> updateCustomerDetails(@RequestBody CustomerDto customerDto){
