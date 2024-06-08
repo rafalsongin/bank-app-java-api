@@ -52,13 +52,17 @@ public class AccountController {
 
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<List<AccountDto>> getAccountsByCustomerId(@PathVariable Integer customerId) {
-        List<AccountDto> accounts = accountService.getAccountsByCustomerId(customerId);
+        try {
+            List<AccountDto> accounts = accountService.getAccountsByCustomerId(customerId);
 
-        if (accounts.isEmpty()) {
-            return ResponseEntity.noContent().build();
+            if (accounts.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+
+            return ResponseEntity.ok(accounts);
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
-
-        return ResponseEntity.ok(accounts);
     }
 
     @GetMapping("/iban/{accountIban}")
