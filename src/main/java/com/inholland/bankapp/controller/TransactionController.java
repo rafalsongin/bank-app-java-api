@@ -54,7 +54,9 @@ public class TransactionController {
     }
 
     @GetMapping("/account/{iban}")
-    public ResponseEntity<List<TransactionDto>> getAllTransactionsByIban(
+    public ResponseEntity<Page<TransactionDto>> getAllTransactionsByIban(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
             @PathVariable String iban,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
@@ -74,7 +76,7 @@ public class TransactionController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
             }
 
-            List<TransactionDto> transactions = service.getAllTransactionsByIban(iban, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
+            Page<TransactionDto> transactions = service.getAllTransactionsByIban(page, size, iban, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
             return ResponseEntity.ok(transactions);
         } catch (IllegalArgumentException e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
