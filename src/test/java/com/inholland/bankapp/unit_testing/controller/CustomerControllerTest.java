@@ -2,15 +2,15 @@ package com.inholland.bankapp.unit_testing.controller;
 
 import com.inholland.bankapp.controller.CustomerController;
 import com.inholland.bankapp.dto.CustomerDto;
-import com.inholland.bankapp.model.Bank;
-import com.inholland.bankapp.model.Customer;
 import com.inholland.bankapp.model.UserRole;
 import com.inholland.bankapp.service.CustomerService;
+import com.inholland.bankapp.unit_testing.TestSecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -18,17 +18,18 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(CustomerController.class)
+@Import(TestSecurityConfig.class)
 class CustomerControllerTest {
 
     // <editor-fold desc="Test dummy variables">
@@ -36,6 +37,7 @@ class CustomerControllerTest {
     private static final String FIRST_NAME = "John";
     private static final String LAST_NAME = "Doe";
     private static final String IBAN = "NL91ABNA0417164300";
+    private static final int CUSTOMER_ID = 30;
 
     // </editor-fold>
 
@@ -45,6 +47,7 @@ class CustomerControllerTest {
 
     @MockBean
     private CustomerService customerService;
+
 
     // <editor-fold desc="Test for get all customers">
 
@@ -122,8 +125,78 @@ class CustomerControllerTest {
 
     // </editor-fold>
 
+    // <editor-fold desc="Test for approve customer">
+    @Test
+    @WithMockUser // Cezar
+    void approveCustomer_ReturnsOk() throws Exception {
+        doNothing().when(customerService).approveCustomer(CUSTOMER_ID);
 
+        this.mockMvc.perform(post("/api/customers/approve/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string("Customer approved"));
+    }
 
+    @Test
+    @WithMockUser // Cezar
+    void approveCustomer_ReturnsBadRequest() throws Exception {
+        doThrow(new IllegalArgumentException("Invalid customer ID")).when(customerService).approveCustomer(CUSTOMER_ID);
+
+        this.mockMvc.perform(post("/api/customers/approve/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Invalid customer ID"));
+    }
+
+    @Test
+    @WithMockUser // Cezar
+    void approveCustomer_ReturnsInternalServerError() throws Exception {
+        doThrow(new RuntimeException("Internal server error")).when(customerService).approveCustomer(CUSTOMER_ID);
+
+        this.mockMvc.perform(post("/api/customers/approve/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(""));
+    }
+
+    // </editor-fold>
+
+    // <editor-fold desc="Test for decline customer">
+
+    @Test
+    @WithMockUser
+    void declineCustomer_ReturnsOk() throws Exception {
+        doNothing().when(customerService).declineCustomer(CUSTOMER_ID);
+
+        this.mockMvc.perform(post("/api/customers/decline/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string("Customer declined"));
+    }
+
+    @Test
+    @WithMockUser
+    void declineCustomer_ReturnsBadRequest() throws Exception {
+        doThrow(new IllegalArgumentException("Invalid customer ID")).when(customerService).declineCustomer(CUSTOMER_ID);
+
+        this.mockMvc.perform(post("/api/customers/decline/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Invalid customer ID"));
+    }
+
+    @Test
+    @WithMockUser
+    void declineCustomer_ReturnsInternalServerError() throws Exception {
+        doThrow(new RuntimeException("Internal server error")).when(customerService).declineCustomer(CUSTOMER_ID);
+
+        this.mockMvc.perform(post("/api/customers/decline/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(""));
+    }
+
+    // </editor-fold>
 
     private List<CustomerDto> createCustomers() {
         // Prepare test data
