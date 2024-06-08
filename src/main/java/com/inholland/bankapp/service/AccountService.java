@@ -95,7 +95,7 @@ public class AccountService {
             String uniqueIBAN = generateUniqueIBAN();
             createAccount(customerID, uniqueIBAN, typeOfAccount, DEFAULT_BALANCE, DEFAULT_ABSOLUTE_TRANSFER_LIMIT, DEFAULT_DAILY_TRANSFER_LIMIT);
         } catch (Exception e) {
-            //e.printStackTrace();
+            throw new IllegalArgumentException("Error creating savings account");
         }
     }
 
@@ -105,7 +105,7 @@ public class AccountService {
             String uniqueIBAN = generateUniqueIBAN();
             createAccount(customerID, uniqueIBAN, typeOfAccount, DEFAULT_BALANCE, DEFAULT_ABSOLUTE_TRANSFER_LIMIT, DEFAULT_DAILY_TRANSFER_LIMIT);
         } catch (Exception e) {
-            //e.printStackTrace();
+            throw new IllegalArgumentException("Error creating checking account");
         }
     }
 
