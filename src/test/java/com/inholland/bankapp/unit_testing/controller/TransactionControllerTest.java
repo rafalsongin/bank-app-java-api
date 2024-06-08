@@ -39,6 +39,7 @@ public class TransactionControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    // <editor-fold desc="Test for createTransaction">
     @Test
     @WithMockUser
     void createTransaction_ReturnsCreated() throws Exception {
@@ -85,6 +86,8 @@ public class TransactionControllerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string(""));
     }
+
+    // </editor-fold>
 
 
 }
