@@ -91,7 +91,7 @@ class CustomerControllerTest {
     void getIbanByCustomerName_ReturnsIban() throws Exception {
         when(customerService.getIbanByCustomerName(FIRST_NAME,LAST_NAME)).thenReturn(IBAN);
 
-        this.mockMvc.perform(get("/api/customers/getIbanByCustomerName/{firstName}/{lastName}", FIRST_NAME,LAST_NAME))
+        this.mockMvc.perform(get("/api/customers/iban/{firstName}/{lastName}", FIRST_NAME,LAST_NAME))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().string(is(IBAN)));
@@ -103,7 +103,7 @@ class CustomerControllerTest {
 
         when(customerService.getIbanByCustomerName(FIRST_NAME,LAST_NAME)).thenReturn(null);
 
-        this.mockMvc.perform(get("/api/customers/getIbanByCustomerName/{firstName}/{lastName}", FIRST_NAME,LAST_NAME))
+        this.mockMvc.perform(get("/api/customers/iban/{firstName}/{lastName}", FIRST_NAME,LAST_NAME))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
@@ -114,7 +114,7 @@ class CustomerControllerTest {
 
         when(customerService.getIbanByCustomerName(FIRST_NAME,LAST_NAME)).thenReturn("");
 
-        this.mockMvc.perform(get("/api/customers/getIbanByCustomerName/{firstName}/{lastName}", FIRST_NAME,LAST_NAME))
+        this.mockMvc.perform(get("/api/customers/iban/{firstName}/{lastName}", FIRST_NAME,LAST_NAME))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(""));
@@ -124,34 +124,6 @@ class CustomerControllerTest {
 
 
 
-    @Test
-    void getCustomerById() {
-
-    }
-
-    @Test
-    void testGetCustomerById() {
-    }
-
-    @Test
-    void getUnverifiedCustomers() {
-    }
-
-    @Test
-    void approveCustomer() {
-    }
-
-    @Test
-    void declineCustomer() {
-    }
-
-    @Test
-    void closeCustomerAccount() {
-    }
-
-    @Test
-    void updateCustomerDetails() {
-    }
 
     private List<CustomerDto> createCustomers() {
         // Prepare test data

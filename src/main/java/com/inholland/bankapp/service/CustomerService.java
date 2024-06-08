@@ -53,10 +53,6 @@ public class CustomerService extends UserService {
         return customerRepository.findById(id);
     }
 
-    public List<Customer> getCustomersWithUnverifiedAccounts() {
-        return customerRepository.findByAccountApprovalStatus(AccountApprovalStatus.UNVERIFIED);
-    }
-
     public void approveCustomer(int customerId) {
         Customer customer = customerRepository.findById(customerId).orElse(null);
         if (customer != null) {
