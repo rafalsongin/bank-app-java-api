@@ -22,29 +22,6 @@ public class EmployeeController {
         this.employeeService = employeeService;
     }
 
-    @GetMapping
-    public List<Employee> getAllEmployees() {
-        return employeeService.findAllEmployees();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable int id) {
-        return employeeService.findEmployeeById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @PostMapping
-    public Employee createEmployee(@RequestBody Employee employee) {
-        return employeeService.saveEmployee(employee);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEmployee(@PathVariable int id) {
-        employeeService.deleteEmployee(id);
-        return ResponseEntity.ok().build();
-    }
-
     @GetMapping("/email/{email}")
     public ResponseEntity<Employee> getEmployeeByEmail(@PathVariable String email) {
 

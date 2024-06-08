@@ -1,6 +1,7 @@
 package com.inholland.bankapp.service;
 
 import com.inholland.bankapp.dto.TransactionDto;
+import com.inholland.bankapp.exceptions.AccountNotFoundException;
 import com.inholland.bankapp.model.Account;
 import com.inholland.bankapp.model.Transaction;
 import com.inholland.bankapp.model.User;
@@ -33,7 +34,9 @@ public class TransactionService {
     }
 
     public Page<TransactionDto> getAllTransactionsByIban(int page, int size, String iban, LocalDate startDate, LocalDate endDate, String amountCondition, Float amountValue, String fromIban, String toIban) {
-        Account account = accountService.findByIban(iban);
+        Account account = accountService.getAccountByIBAN(iban)
+                .orElseThrow(() -> new AccountNotFoundException(iban));
+
         return fetchTransactions(account.getAccountId(), page, size, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
     }
 
@@ -45,12 +48,14 @@ public class TransactionService {
         Integer toAccountId = null;
 
         if (fromIban != null) {
-            Account fromAccount = accountService.findByIban(fromIban);
+            Account fromAccount = accountService.getAccountByIBAN(fromIban)
+                    .orElseThrow(() -> new AccountNotFoundException(fromIban));
             fromAccountId = fromAccount.getAccountId();
         }
 
         if (toIban != null) {
-            Account toAccount = accountService.findByIban(toIban);
+            Account toAccount = accountService.getAccountByIBAN(toIban)
+                    .orElseThrow(() -> new AccountNotFoundException(toIban));
             toAccountId = toAccount.getAccountId();
         }
 
@@ -80,12 +85,14 @@ public class TransactionService {
             Integer fromAccountId = null;
             Integer toAccountId = null;
             if (fromIban != null) {
-                Account fromAccount = accountService.findByIban(fromIban);
+                Account fromAccount = accountService.getAccountByIBAN(fromIban)
+                        .orElseThrow(() -> new AccountNotFoundException(fromIban));
                 fromAccountId = fromAccount.getAccountId();
             }
 
             if (toIban != null) {
-                Account toAccount = accountService.findByIban(toIban);
+                Account toAccount = accountService.getAccountByIBAN(toIban)
+                        .orElseThrow(() -> new AccountNotFoundException(toIban));
                 toAccountId = toAccount.getAccountId();
             }
             transactions = repository.findFilteredTransactionsByAccount(accountId, startDate, endDate, amountCondition, amountValue, fromAccountId, toAccountId);

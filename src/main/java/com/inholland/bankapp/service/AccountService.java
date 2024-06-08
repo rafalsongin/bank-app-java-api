@@ -70,7 +70,6 @@ public class AccountService {
         return sb.toString();
     }
 
-    // Dummy implementation - replace this with the actual check digit computation
     private String computeCheckDigits(String iban) {
         // Replace 'xx' with computed check digits based on the IBAN standard
         return iban.replace("xx", "00"); // Simplified for example purposes
@@ -126,19 +125,13 @@ public class AccountService {
         return null;
     }
 
-    // TODO: either remove this or the one below since both do the same thing just a bit differently.
     public Optional<Account> getAccountByIBAN(String accountIban) {
         return accountRepository.findByIBAN(accountIban);
-    }
-
-    public Account findByIban(String iban) {
-        return accountRepository.findByIBAN(iban).orElse(null);
     }
 
     public Optional<Account> getAccountById(Integer accountId) {
         return accountRepository.findById(accountId);
     }
-
 
     public List<AccountDto> getAccountsByCustomerId(int customerId) {
         Optional<Customer> customer = customerRepository.findById(customerId);
@@ -248,17 +241,6 @@ public class AccountService {
             accountsDto.add(transformAccountToAccountDto(account));
         }
         return accountsDto;
-    }
-
-    public Account transformAccountDtoToAccount(AccountDto accountDto) {
-        Account account = new Account();
-        account.setAccountId(accountDto.getAccountId());
-        account.setIBAN(accountDto.getIBAN());
-        account.setAccountType(accountDto.getAccountType());
-        account.setBalance(accountDto.getBalance());
-        account.setAbsoluteTransferLimit(accountDto.getAbsoluteTransferLimit());
-        account.setDailyTransferLimit(accountDto.getDailyTransferLimit());
-        return account;
     }
 
     public AccountDto transformAccountToAccountDto(Account account) {

@@ -100,28 +100,14 @@ public class CustomerController {
 
     @PostMapping("/decline/{customerID}")
     public ResponseEntity<String> declineCustomer(@PathVariable int customerID) {
-        try {
             customerService.declineCustomer(customerID);
             return ResponseEntity.ok("Customer declined");
-        }catch (IllegalArgumentException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-        catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
     }
 
     @PutMapping("/close/{customerID}")
     public ResponseEntity<String> closeCustomerAccount(@PathVariable int customerID) {
-        try {
-            customerService.closeCustomerAccount(customerID);
-            return ResponseEntity.ok("Customer account closed");
-        }catch (IllegalArgumentException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-        catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+        customerService.closeCustomerAccount(customerID);
+        return ResponseEntity.ok("Customer account closed");
     }
 
     // </editor-fold>
