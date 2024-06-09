@@ -30,16 +30,6 @@ Press [ CTRL + F2 ] keys in IntelliJ IDE
 Clicking [ Stop ] button at the top right of IntelliJ IDE when the application is running
 ```
 
-#### Probable issues to start
-
-<p>When you clone the project for the first time, sometimes the IDE will not automatically recognise the startup file.</p>
-- All you need to do in IDE is to navigate to:
-
-```
-src/main/java/com/inholland/bankapp
-```
-- Select the file
-
 - Then you should be able to use either option to start the app provided in __Startup Steps__
 
 ### API Documentation
@@ -50,12 +40,8 @@ API documentation can be accessed by running this application and accessing eith
 
 ### Available Authorized Logins
 
-### SQL file location:
-
-SQL files are located in a directory in the root of the project under the name **sql-scripts**.
-
-Table Creation file:
-
+- Customer: igmas@gmail.com / igmas12345
+- Employee: rafal.songin@gmail.com / rafalsongin
 
 ## Authors and Credits
 
