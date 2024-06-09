@@ -86,24 +86,6 @@ public class TransactionController {
         }
     }
 
-    // for customer panel temporary
-    @GetMapping("/accountId/{accountId}")
-    public ResponseEntity<List<TransactionDto>> getTransactionsByAccountId(
-            @PathVariable Integer accountId,
-            @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate,
-            @RequestParam(required = false) String amountCondition,
-            @RequestParam(required = false) Float amountValue,
-            @RequestParam(required = false) String fromIban,
-            @RequestParam(required = false) String toIban) {
-
-        List<TransactionDto> transactions = service.getAllTransactionsByAccountId(accountId, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
-        if (transactions.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(transactions);
-    }
-
     /**
      Create Method - creating a transaction
      @param transactionDto  - parameter is an TransactionCreationDto type, that represents a transaction as DTO (Data Transfer Object)

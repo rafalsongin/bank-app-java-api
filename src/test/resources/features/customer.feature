@@ -10,6 +10,3 @@ Feature: All that is related to customer service.
       | iban |
       | NL00INHO0342486737 |
     And Customer gets http status 200
-
-# Mariia's scenario
-  Scenario: Search and filter transactions.
