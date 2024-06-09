@@ -4,8 +4,9 @@ package com.inholland.bankapp.controller;
 import com.inholland.bankapp.dto.CustomerRegistrationDto;
 import com.inholland.bankapp.dto.EmployeeRegistrationDto;
 import com.inholland.bankapp.dto.LoginDto;
-import com.inholland.bankapp.exceptions.UserAlreadyExistsException;
+import com.inholland.bankapp.exceptions.CustomerNotFoundException;
 import com.inholland.bankapp.exceptions.InvalidDataException;
+import com.inholland.bankapp.exceptions.UserAlreadyExistsException;
 import com.inholland.bankapp.security.JwtTokenUtil;
 import com.inholland.bankapp.service.CustomerService;
 import com.inholland.bankapp.service.EmployeeService;
@@ -17,21 +18,24 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-  
+
     @Autowired
     private CustomerService customerService;
-    
+
     @Autowired
     private EmployeeService employeeService;
-    
+
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
-    
+
     @Autowired
     private AuthenticationManager authenticationManager;
 
@@ -88,19 +92,22 @@ public class AuthController {
 
     @PostMapping("/login-atm") // only for customers
     public ResponseEntity<?> authenticateCustomer(@RequestBody LoginDto loginDto) {
-        
+
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword())
             );
-            
+
             if (customerService.getCustomerByEmail(loginDto.getUsername()).isEmpty()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not a customer");
+                throw new CustomerNotFoundException(loginDto.getUsername());
             }
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = jwtTokenUtil.generateToken(authentication);
             return ResponseEntity.ok(jwt);
+        } catch (CustomerNotFoundException customerNFEx) {
+            customerNFEx.printStackTrace();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found!");
         } catch (BadCredentialsException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");

@@ -1,7 +1,7 @@
 package com.inholland.bankapp.controller;
 
 import com.inholland.bankapp.dto.CustomerDto;
-import com.inholland.bankapp.model.Customer;
+import com.inholland.bankapp.exceptions.CustomerNotFoundException;
 import com.inholland.bankapp.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,7 +18,7 @@ public class CustomerController {
     @Autowired
     private CustomerService customerService;
 
-    // <editor-fold desc="Get customer accounts methods">
+    // <editor-fold desc="Get customer methods">
 
     @GetMapping
     public ResponseEntity<List<CustomerDto>> getAllCustomers() {
@@ -34,30 +34,27 @@ public class CustomerController {
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<Customer> getCustomerById(@PathVariable String email) {
-        System.out.println("Received request for email: " + email);
-
-        Optional<Customer> customerOpt = customerService.getCustomerByEmail(email);
-        if (!customerOpt.isPresent()) {
-            System.out.println("Customer not found for email: " + email);
+    public ResponseEntity<CustomerDto> getCustomerByEmail(@PathVariable String email) {
+        try {
+            Optional<CustomerDto> optCustomerDto = customerService.getCustomerDtoByEmail(email);
+            return ResponseEntity.ok(optCustomerDto.get());
+        } catch (CustomerNotFoundException customerNFEx) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
-
-        Customer customer = customerOpt.get();
-        System.out.println("Customer found: " + customer.getUsername());
-        return ResponseEntity.ok(customer);
     }
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<Customer> getCustomerById(@PathVariable Integer id) {
-        Customer customer = customerService.getCustomerById(id).orElse(null);
-
-        // Check if the object was not found
-        if (customer == null) {
+    public ResponseEntity<CustomerDto> getCustomerById(@PathVariable Integer id) {
+        try {
+            Optional<CustomerDto> optCustomerDto = customerService.getCustomerDtoById(id);
+            return ResponseEntity.ok(optCustomerDto.get());
+        } catch (CustomerNotFoundException customerNFEx) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
-
-        return ResponseEntity.ok(customer);
     }
 
     // this one gets only IBAN of account not the whole account
@@ -72,10 +69,9 @@ public class CustomerController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
             return ResponseEntity.ok(iban);
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -89,11 +85,9 @@ public class CustomerController {
         try {
             customerService.approveCustomer(customerID);
             return ResponseEntity.ok("Customer approved");
-        }
-        catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -103,10 +97,9 @@ public class CustomerController {
         try {
             customerService.declineCustomer(customerID);
             return ResponseEntity.ok("Customer declined");
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -116,10 +109,9 @@ public class CustomerController {
         try {
             customerService.closeCustomerAccount(customerID);
             return ResponseEntity.ok("Customer account closed");
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -128,10 +120,10 @@ public class CustomerController {
 
 
     @PutMapping
-    public ResponseEntity<CustomerDto> updateCustomerDetails(@RequestBody CustomerDto customerDto){
+    public ResponseEntity<CustomerDto> updateCustomerDetails(@RequestBody CustomerDto customerDto) {
         Optional<CustomerDto> optCustomerDto = customerService.updateCustomerDetails(customerDto);
 
-        if(optCustomerDto.isEmpty()){
+        if (optCustomerDto.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(optCustomerDto.get());
