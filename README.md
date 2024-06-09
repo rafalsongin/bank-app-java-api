@@ -3,6 +3,7 @@
 ## Project Details
 
 [GitHub Repository](https://github.com/rafalsongin/bank-app-java-api)
+[Frontend bank-app-vue-api](https://github.com/rafalsongin/bank-app-vue-api)
 
 ### Startup steps
 
