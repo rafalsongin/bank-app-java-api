@@ -154,6 +154,12 @@ public class AccountService {
         if (account.isEmpty()) {
             throw new IllegalArgumentException("Account not found");
         }
+        if(updatedAccount.getAbsoluteTransferLimit() < -1000) {
+            throw new IllegalArgumentException("Absolute transfer limit cannot be less than -1000");
+        }
+        if(updatedAccount.getDailyTransferLimit() < 100) {
+            throw new IllegalArgumentException("Daily transfer limit cannot be less than 100");
+        }
         Account existingAccount = account.get();
         existingAccount.setBalance(updatedAccount.getBalance());
         existingAccount.setAbsoluteTransferLimit(updatedAccount.getAbsoluteTransferLimit());
