@@ -100,8 +100,15 @@ public class CustomerController {
 
     @PostMapping("/decline/{customerID}")
     public ResponseEntity<String> declineCustomer(@PathVariable int customerID) {
+        try {
             customerService.declineCustomer(customerID);
             return ResponseEntity.ok("Customer declined");
+        }catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     @PutMapping("/close/{customerID}")
@@ -115,7 +122,6 @@ public class CustomerController {
         catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
-
     }
 
     // </editor-fold>
