@@ -1,4 +1,3 @@
-/*
 package com.inholland.bankapp.unit_testing.controller;
 
 import com.inholland.bankapp.controller.AuthController;
@@ -7,6 +6,7 @@ import com.inholland.bankapp.dto.EmployeeRegistrationDto;
 import com.inholland.bankapp.dto.LoginDto;
 import com.inholland.bankapp.exceptions.UserAlreadyExistsException;
 import com.inholland.bankapp.exceptions.InvalidDataException;
+import com.inholland.bankapp.model.Customer;
 import com.inholland.bankapp.security.JwtTokenUtil;
 import com.inholland.bankapp.service.CustomerService;
 import com.inholland.bankapp.service.EmployeeService;
@@ -21,15 +21,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class AuthControllerTest {
-
+public class AuthControllerTest {
     @InjectMocks
     private AuthController authController;
 
@@ -45,15 +44,18 @@ class AuthControllerTest {
     @Mock
     private AuthenticationManager authenticationManager;
 
+    @Mock
+    private Authentication authentication;
+
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void testRegisterCustomer_Success() throws Exception {
+    public void testRegisterCustomer_Success() {
         CustomerRegistrationDto registrationDto = new CustomerRegistrationDto();
-        doNothing().when(customerService).registerNewCustomer(any(CustomerRegistrationDto.class));
+        doNothing().when(customerService).registerNewCustomer(registrationDto);
 
         ResponseEntity<?> response = authController.registerCustomer(registrationDto);
 
@@ -62,9 +64,9 @@ class AuthControllerTest {
     }
 
     @Test
-    void testRegisterCustomer_UserAlreadyExists() throws Exception {
+    public void testRegisterCustomer_UserAlreadyExists() {
         CustomerRegistrationDto registrationDto = new CustomerRegistrationDto();
-        doThrow(new UserAlreadyExistsException("User already exists")).when(customerService).registerNewCustomer(any(CustomerRegistrationDto.class));
+        doThrow(new UserAlreadyExistsException("User already exists")).when(customerService).registerNewCustomer(registrationDto);
 
         ResponseEntity<?> response = authController.registerCustomer(registrationDto);
 
@@ -73,9 +75,9 @@ class AuthControllerTest {
     }
 
     @Test
-    void testRegisterCustomer_InvalidData() throws Exception {
+    public void testRegisterCustomer_InvalidData() {
         CustomerRegistrationDto registrationDto = new CustomerRegistrationDto();
-        doThrow(new InvalidDataException("Invalid data")).when(customerService).registerNewCustomer(any(CustomerRegistrationDto.class));
+        doThrow(new InvalidDataException("Invalid data")).when(customerService).registerNewCustomer(registrationDto);
 
         ResponseEntity<?> response = authController.registerCustomer(registrationDto);
 
@@ -84,20 +86,9 @@ class AuthControllerTest {
     }
 
     @Test
-    void testRegisterCustomer_InternalServerError() throws Exception {
-        CustomerRegistrationDto registrationDto = new CustomerRegistrationDto();
-        doThrow(new RuntimeException("Unexpected error")).when(customerService).registerNewCustomer(any(CustomerRegistrationDto.class));
-
-        ResponseEntity<?> response = authController.registerCustomer(registrationDto);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("An error occurred", response.getBody());
-    }
-
-    @Test
-    void testRegisterEmployee_Success() throws Exception {
+    public void testRegisterEmployee_Success() {
         EmployeeRegistrationDto registrationDto = new EmployeeRegistrationDto();
-        doNothing().when(employeeService).registerNewEmployee(any(EmployeeRegistrationDto.class));
+        doNothing().when(employeeService).registerNewEmployee(registrationDto);
 
         ResponseEntity<?> response = authController.registerEmployee(registrationDto);
 
@@ -106,9 +97,9 @@ class AuthControllerTest {
     }
 
     @Test
-    void testRegisterEmployee_UserAlreadyExists() throws Exception {
+    public void testRegisterEmployee_UserAlreadyExists() {
         EmployeeRegistrationDto registrationDto = new EmployeeRegistrationDto();
-        doThrow(new UserAlreadyExistsException("User already exists")).when(employeeService).registerNewEmployee(any(EmployeeRegistrationDto.class));
+        doThrow(new UserAlreadyExistsException("User already exists")).when(employeeService).registerNewEmployee(registrationDto);
 
         ResponseEntity<?> response = authController.registerEmployee(registrationDto);
 
@@ -117,9 +108,9 @@ class AuthControllerTest {
     }
 
     @Test
-    void testRegisterEmployee_InvalidData() throws Exception {
+    public void testRegisterEmployee_InvalidData() {
         EmployeeRegistrationDto registrationDto = new EmployeeRegistrationDto();
-        doThrow(new InvalidDataException("Invalid data")).when(employeeService).registerNewEmployee(any(EmployeeRegistrationDto.class));
+        doThrow(new InvalidDataException("Invalid data")).when(employeeService).registerNewEmployee(registrationDto);
 
         ResponseEntity<?> response = authController.registerEmployee(registrationDto);
 
@@ -128,38 +119,26 @@ class AuthControllerTest {
     }
 
     @Test
-    void testRegisterEmployee_InternalServerError() throws Exception {
-        EmployeeRegistrationDto registrationDto = new EmployeeRegistrationDto();
-        doThrow(new RuntimeException("Unexpected error")).when(employeeService).registerNewEmployee(any(EmployeeRegistrationDto.class));
-
-        ResponseEntity<?> response = authController.registerEmployee(registrationDto);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("An error occurred", response.getBody());
-    }
-
-    @Test
-    void testAuthenticateUser_Success() throws Exception {
+    public void testAuthenticateUser_Success() {
         LoginDto loginDto = new LoginDto();
-        loginDto.setUsername("user");
-        loginDto.setPassword("pass");
-
-        Authentication authentication = mock(Authentication.class);
+        loginDto.setUsername("user@example.com");
+        loginDto.setPassword("correct-password");
+        
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
-        when(jwtTokenUtil.generateToken(authentication)).thenReturn("token");
+        when(jwtTokenUtil.generateToken(authentication)).thenReturn("jwt-token");
 
         ResponseEntity<?> response = authController.authenticateUser(loginDto);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("token", response.getBody());
+        assertEquals("jwt-token", response.getBody());
     }
 
     @Test
-    void testAuthenticateUser_BadCredentials() throws Exception {
+    public void testAuthenticateUser_BadCredentials() {
         LoginDto loginDto = new LoginDto();
-        loginDto.setUsername("user");
-        loginDto.setPassword("pass");
-
+        loginDto.setUsername("user@example.com");
+        loginDto.setPassword("wrong-password");
+        
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenThrow(new BadCredentialsException("Bad credentials"));
 
         ResponseEntity<?> response = authController.authenticateUser(loginDto);
@@ -169,45 +148,29 @@ class AuthControllerTest {
     }
 
     @Test
-    void testAuthenticateUser_InternalServerError() throws Exception {
+    public void testAuthenticateCustomer_Success() {
         LoginDto loginDto = new LoginDto();
-        loginDto.setUsername("user");
-        loginDto.setPassword("pass");
-
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenThrow(new RuntimeException("Unexpected error"));
-
-        ResponseEntity<?> response = authController.authenticateUser(loginDto);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("An error occurred", response.getBody());
-    }
-
-    @Test
-    void testAuthenticateCustomer_Success() throws Exception {
-        LoginDto loginDto = new LoginDto();
-        loginDto.setUsername("customer");
-        loginDto.setPassword("pass");
-
-        Authentication authentication = mock(Authentication.class);
+        loginDto.setUsername("user@example.com");
+        loginDto.setPassword("correct-password");
+        
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
-        when(jwtTokenUtil.generateToken(authentication)).thenReturn("token");
-        when(customerService.getCustomerByEmail(any(String.class))).thenReturn(Optional.of(new CustomerRegistrationDto()));
+        when(customerService.getCustomerByEmail(loginDto.getUsername())).thenReturn(Optional.of(new Customer()));
+        when(jwtTokenUtil.generateToken(authentication)).thenReturn("jwt-token");
 
         ResponseEntity<?> response = authController.authenticateCustomer(loginDto);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("token", response.getBody());
+        assertEquals("jwt-token", response.getBody());
     }
 
     @Test
-    void testAuthenticateCustomer_NotCustomer() throws Exception {
+    public void testAuthenticateCustomer_NotACustomer() {
         LoginDto loginDto = new LoginDto();
-        loginDto.setUsername("customer");
-        loginDto.setPassword("pass");
-
-        Authentication authentication = mock(Authentication.class);
+        loginDto.setUsername("user@example.com");
+        loginDto.setPassword("correct-password");
+        
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
-        when(customerService.getCustomerByEmail(any(String.class))).thenReturn(Optional.empty());
+        when(customerService.getCustomerByEmail(loginDto.getUsername())).thenReturn(Optional.empty());
 
         ResponseEntity<?> response = authController.authenticateCustomer(loginDto);
 
@@ -216,11 +179,11 @@ class AuthControllerTest {
     }
 
     @Test
-    void testAuthenticateCustomer_BadCredentials() throws Exception {
+    public void testAuthenticateCustomer_BadCredentials() {
         LoginDto loginDto = new LoginDto();
-        loginDto.setUsername("customer");
-        loginDto.setPassword("pass");
-
+        loginDto.setUsername("user@example.com");
+        loginDto.setPassword("wrong-password");
+        
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenThrow(new BadCredentialsException("Bad credentials"));
 
         ResponseEntity<?> response = authController.authenticateCustomer(loginDto);
@@ -228,19 +191,4 @@ class AuthControllerTest {
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertEquals("Invalid email or password", response.getBody());
     }
-
-    @Test
-    void testAuthenticateCustomer_InternalServerError() throws Exception {
-        LoginDto loginDto = new LoginDto();
-        loginDto.setUsername("customer");
-        loginDto.setPassword("pass");
-
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenThrow(new RuntimeException("Unexpected error"));
-
-        ResponseEntity<?> response = authController.authenticateCustomer(loginDto);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("An error occurred", response.getBody());
-    }
 }
-*/

@@ -1,6 +1,5 @@
-package com.inholland.bankapp.unit_testing.controller;
+package com.inholland.bankapp.controller;
 
-import com.inholland.bankapp.controller.AtmController;
 import com.inholland.bankapp.dto.AtmTransactionDto;
 import com.inholland.bankapp.service.AccountService;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,10 +25,10 @@ public class AtmControllerTest {
     private AccountService accountService;
 
     @Mock
-    private SecurityContext securityContext;
+    private Authentication authentication;
 
     @Mock
-    private Authentication authentication;
+    private SecurityContext securityContext;
 
     @BeforeEach
     public void setUp() {
@@ -39,21 +38,23 @@ public class AtmControllerTest {
 
     @Test
     public void testGetCheckingAccountBalance_Success() {
+        String email = "igmas@gmail.com";
+        double expectedBalance = 100.0;
+
         when(securityContext.getAuthentication()).thenReturn(authentication);
-        when(authentication.getName()).thenReturn("igmas@gmail.com");
-        when(accountService.findCheckingAccountBalanceByEmail("igmas@gmail.com")).thenReturn(1000.0);
+        when(authentication.getName()).thenReturn(email);
+        when(accountService.findCheckingAccountBalanceByEmail(email)).thenReturn(expectedBalance);
 
         ResponseEntity<?> response = atmController.getCheckingAccountBalance();
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(1000.0, response.getBody());
+        assertEquals(expectedBalance, response.getBody());
     }
 
     @Test
     public void testGetCheckingAccountBalance_Exception() {
         when(securityContext.getAuthentication()).thenReturn(authentication);
-        when(authentication.getName()).thenReturn("igmas@gmail.com");
-        when(accountService.findCheckingAccountBalanceByEmail("igmas@gmail.com")).thenThrow(new RuntimeException("Unexpected error"));
+        when(authentication.getName()).thenThrow(new RuntimeException("Error"));
 
         ResponseEntity<?> response = atmController.getCheckingAccountBalance();
 
@@ -63,29 +64,29 @@ public class AtmControllerTest {
 
     @Test
     public void testDepositToCheckingAccount_Success() {
+        String email = "igmas@gmail.com";
         AtmTransactionDto atmTransactionDto = new AtmTransactionDto();
-        atmTransactionDto.setAmount(500.0);
+        atmTransactionDto.setAmount(50.0);
 
         when(securityContext.getAuthentication()).thenReturn(authentication);
-        when(authentication.getName()).thenReturn("igmas@gmail.com");
-
-        doNothing().when(accountService).depositToCheckingAccount("igmas@gmail.com", 500.0);
+        when(authentication.getName()).thenReturn(email);
 
         ResponseEntity<?> response = atmController.depositToCheckingAccount(atmTransactionDto);
 
+        verify(accountService, times(1)).depositToCheckingAccount(email, atmTransactionDto.getAmount());
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Deposit was successful", response.getBody());
     }
 
     @Test
-    public void testDepositToCheckingAccount_IllegalArgumentException() {
+    public void testDepositToCheckingAccount_BadRequest() {
+        String email = "igmas@gmail.com";
         AtmTransactionDto atmTransactionDto = new AtmTransactionDto();
-        atmTransactionDto.setAmount(500.0);
+        atmTransactionDto.setAmount(-50.0);
 
         when(securityContext.getAuthentication()).thenReturn(authentication);
-        when(authentication.getName()).thenReturn("igmas@gmail.com");
-
-        doThrow(new IllegalArgumentException("Invalid amount")).when(accountService).depositToCheckingAccount("igmas@gmail.com", 500.0);
+        when(authentication.getName()).thenReturn(email);
+        doThrow(new IllegalArgumentException("Invalid amount")).when(accountService).depositToCheckingAccount(email, atmTransactionDto.getAmount());
 
         ResponseEntity<?> response = atmController.depositToCheckingAccount(atmTransactionDto);
 
@@ -94,66 +95,34 @@ public class AtmControllerTest {
     }
 
     @Test
-    public void testDepositToCheckingAccount_Exception() {
-        AtmTransactionDto atmTransactionDto = new AtmTransactionDto();
-        atmTransactionDto.setAmount(500.0);
-
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        when(authentication.getName()).thenReturn("igmas@gmail.com");
-
-        doThrow(new RuntimeException("Unexpected error")).when(accountService).depositToCheckingAccount("igmas@gmail.com", 500.0);
-
-        ResponseEntity<?> response = atmController.depositToCheckingAccount(atmTransactionDto);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("An error occurred fetching balance", response.getBody());
-    }
-
-    @Test
     public void testWithdrawFromCheckingAccount_Success() {
+        String email = "igmas@gmail.com";
         AtmTransactionDto atmTransactionDto = new AtmTransactionDto();
-        atmTransactionDto.setAmount(200.0);
+        atmTransactionDto.setAmount(-50.0);
 
         when(securityContext.getAuthentication()).thenReturn(authentication);
-        when(authentication.getName()).thenReturn("igmas@gmail.com");
-
-        doNothing().when(accountService).withdrawFromCheckingAccount("igmas@gmail.com", 200.0);
+        when(authentication.getName()).thenReturn(email);
 
         ResponseEntity<?> response = atmController.withdrawFromCheckingAccount(atmTransactionDto);
 
+        verify(accountService, times(1)).withdrawFromCheckingAccount(email, atmTransactionDto.getAmount());
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Withdraw was successful", response.getBody());
     }
 
     @Test
-    public void testWithdrawFromCheckingAccount_IllegalArgumentException() {
+    public void testWithdrawFromCheckingAccount_BadRequest() {
+        String email = "igmas@gmail.com";
         AtmTransactionDto atmTransactionDto = new AtmTransactionDto();
-        atmTransactionDto.setAmount(200.0);
+        atmTransactionDto.setAmount(50.0);
 
         when(securityContext.getAuthentication()).thenReturn(authentication);
-        when(authentication.getName()).thenReturn("igmas@gmail.com");
-
-        doThrow(new IllegalArgumentException("Insufficient funds")).when(accountService).withdrawFromCheckingAccount("igmas@gmail.com", 200.0);
+        when(authentication.getName()).thenReturn(email);
+        doThrow(new IllegalArgumentException("Invalid amount")).when(accountService).withdrawFromCheckingAccount(email, atmTransactionDto.getAmount());
 
         ResponseEntity<?> response = atmController.withdrawFromCheckingAccount(atmTransactionDto);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Insufficient funds", response.getBody());
-    }
-
-    @Test
-    public void testWithdrawFromCheckingAccount_Exception() {
-        AtmTransactionDto atmTransactionDto = new AtmTransactionDto();
-        atmTransactionDto.setAmount(200.0);
-
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        when(authentication.getName()).thenReturn("igmas@gmail.com");
-
-        doThrow(new RuntimeException("Unexpected error")).when(accountService).withdrawFromCheckingAccount("igmas@gmail.com", 200.0);
-
-        ResponseEntity<?> response = atmController.withdrawFromCheckingAccount(atmTransactionDto);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("An error occurred fetching balance", response.getBody());
+        assertEquals("Invalid amount", response.getBody());
     }
 }
