@@ -25,22 +25,6 @@ public class EmployeeService extends UserService {
         this.employeeRepository = employeeRepository;
     }
 
-    public List<Employee> findAllEmployees() {
-        return employeeRepository.findAll();
-    }
-
-    public Optional<Employee> findEmployeeById(int id) {
-        return employeeRepository.findById(id);
-    }
-
-    public Employee saveEmployee(Employee employee) {
-        return employeeRepository.save(employee);
-    }
-
-    public void deleteEmployee(int id) {
-        employeeRepository.deleteById(id);
-    }
-
     public void registerNewEmployee(EmployeeRegistrationDto registrationDto) {
 
         if (userExists(registrationDto.getEmail())) {

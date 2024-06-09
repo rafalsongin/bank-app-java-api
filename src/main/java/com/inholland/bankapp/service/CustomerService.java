@@ -31,8 +31,17 @@ public class CustomerService extends UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public List<Customer> getAllCustomers() {
-        return customerRepository.findAll();
+    public List<CustomerDto> getAllCustomers() {
+
+        List<Customer> customers = customerRepository.findAll();
+
+        List<CustomerDto> customerDtos = new ArrayList<>();
+        for (Customer customer : customers) {
+            CustomerDto customerDto = transformCustomerIntoDto(customer);
+            customerDtos.add(customerDto);
+        }
+
+        return customerDtos;
     }
   
     /**
@@ -44,16 +53,17 @@ public class CustomerService extends UserService {
         return customerRepository.findById(id);
     }
 
-    public List<Customer> getCustomersWithUnverifiedAccounts() {
-        return customerRepository.findByAccountApprovalStatus(AccountApprovalStatus.UNVERIFIED);
-    }
-
     public void approveCustomer(int customerId) {
         Customer customer = customerRepository.findById(customerId).orElse(null);
         if (customer != null) {
             customer.setAccountApprovalStatus(AccountApprovalStatus.VERIFIED);
             customerRepository.save(customer);
-            accountService.createAccounts(customer.getUserId());
+            try {
+                accountService.createAccounts(customer.getUserId());
+            }
+            catch (Exception e) {
+                throw new IllegalArgumentException("Error creating accounts for customer!");
+            }
         }
         else {
             throw new IllegalArgumentException("Customer not found");
@@ -179,6 +189,9 @@ public class CustomerService extends UserService {
                 checkingAccountIban = checkingAccount.getIBAN();
             }
         }
+        else {
+            throw new IllegalArgumentException("Customer not found");
+        }
         return checkingAccountIban;
     }
 
@@ -258,6 +271,7 @@ public class CustomerService extends UserService {
 
         Optional<Bank> optBank = bankService.getBankById(customer.getBankId());
 
+        customerDto.setUserId(customer.getUserId());
         customerDto.setUsername(customer.getUsername());
         customerDto.setEmail(customer.getEmail());
         customerDto.setFirstName(customer.getFirstName());
