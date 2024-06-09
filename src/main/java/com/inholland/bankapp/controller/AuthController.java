@@ -19,6 +19,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.NoSuchElementException;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -93,18 +95,20 @@ public class AuthController {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword())
             );
-            
-            if (customerService.getCustomerByEmail(loginDto.getUsername()).isEmpty()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not a customer");
-            }
 
+            customerService.getCustomerByEmail(loginDto.getUsername());
+                    
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = jwtTokenUtil.generateToken(authentication);
             return ResponseEntity.ok(jwt);
         } catch (BadCredentialsException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
-        } catch (Exception e) {
+        } catch (NoSuchElementException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not a customer");
+        }
+        catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
         }
