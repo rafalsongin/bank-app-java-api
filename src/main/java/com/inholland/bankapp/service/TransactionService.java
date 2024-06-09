@@ -69,7 +69,7 @@ public class TransactionService {
             } else {
                 transactions = repository.findAllByFilters(startDate, endDate, amountCondition, amountValue, fromAccountId, toAccountId, pageRequest);
             }
-        } else {
+        } else { // No filters
             if (accountId != null) {
                 transactions = repository.findTransactionsByAccountId(accountId, pageRequest);
             } else {
@@ -104,37 +104,6 @@ public class TransactionService {
         }
     }
     // </editor-fold>
-
-    // this is for customer panel temporary
-    public List<TransactionDto> getAllTransactionsByAccountId(Integer accountId, LocalDate startDate, LocalDate endDate, String amountCondition, Float amountValue, String fromIban, String toIban) {
-        List<Transaction> transactions;
-
-        if (startDate != null || endDate != null || amountCondition != null || amountValue != null || fromIban != null || toIban != null) {
-            Integer fromAccountId = null;
-            Integer toAccountId = null;
-            if (fromIban != null) {
-                Account fromAccount = accountService.getAccountByIBAN(fromIban)
-                        .orElseThrow(() -> new AccountNotFoundException(fromIban));
-                fromAccountId = fromAccount.getAccountId();
-            }
-
-            if (toIban != null) {
-                Account toAccount = accountService.getAccountByIBAN(toIban)
-                        .orElseThrow(() -> new AccountNotFoundException(toIban));
-                toAccountId = toAccount.getAccountId();
-            }
-            transactions = repository.findFilteredTransactionsByAccount(accountId, startDate, endDate, amountCondition, amountValue, fromAccountId, toAccountId);
-        } else {
-            transactions = repository.findTransactionsByAccount(accountId);
-        }
-
-        List<TransactionDto> transactionDtos = new ArrayList<>();
-        for (Transaction transaction : transactions) {
-            transactionDtos.add(this.transformTransactionDTO(transaction));
-        }
-
-        return transactionDtos;
-    }
 
     /**
      Save Method - saves transaction to the database

@@ -21,8 +21,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -220,5 +219,41 @@ class CustomerControllerTest {
 
         return Arrays.asList(customer1, customer2);
     }
+
+    // <editor-fold desc="Test for closing customer account">
+    @Test
+    @WithMockUser // Mariia
+    void closeCustomerAccount_ReturnsOk() throws Exception {
+        doNothing().when(customerService).closeCustomerAccount(CUSTOMER_ID);
+
+        this.mockMvc.perform(put("/api/customers/close/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string("Customer account closed"));
+    }
+
+    @Test
+    @WithMockUser // Mariia
+    void closeCustomerAccount_ReturnsBadRequest() throws Exception {
+        doThrow(new IllegalArgumentException("Invalid customer ID")).when(customerService).closeCustomerAccount(CUSTOMER_ID);
+
+        this.mockMvc.perform(put("/api/customers/close/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Invalid customer ID"));
+    }
+
+    @Test
+    @WithMockUser // Mariia
+    void closeCustomerAccount_ReturnsInternalServerError() throws Exception {
+        doThrow(new RuntimeException("Internal server error")).when(customerService).closeCustomerAccount(CUSTOMER_ID);
+
+        this.mockMvc.perform(put("/api/customers/close/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(""));
+    }
+    // </editor-fold>
+
 
 }
