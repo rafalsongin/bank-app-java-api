@@ -4,10 +4,6 @@
 
 [GitHub Repository](https://github.com/rafalsongin/bank-app-java-api)
 
-### Recommended IDE
-
-- [IntelliJ](https://www.jetbrains.com/idea/) _( this was developed in IntelliJ )_
-
 ### Startup steps
 
 - Clone the project from [Repository](https://github.com/rafalsongin/bank-app-java-api).
@@ -44,31 +40,21 @@ src/main/java/com/inholland/bankapp
 ```
 - Select the file
 
-```
-BankappApplication
-```
 - Then you should be able to use either option to start the app provided in __Startup Steps__
+
+### API Documentation
+
+API documentation can be accessed by running this application and accessing either:
+- [http://localhost:8080/api-docs](http://localhost:8080/api-docs) - plain JSON
+- [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html) - built-in Swagger UI
 
 ### Available Authorized Logins
 
 ### SQL file location:
 
-<p>SQL files are located in a directory in root of the project under the name <b>sql-scripts</b></p>
+SQL files are located in a directory in the root of the project under the name **sql-scripts**.
 
-<p>Table Creation file:</p>
-
-```
-tables-creation-script.sql
-```
-<p>Table Population file:</p>
-
-```
-add-data.sql
-```
-
-
-## API Endpoints
-
+Table Creation file:
 
 
 ## Authors and Credits
