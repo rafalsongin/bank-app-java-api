@@ -1,6 +1,7 @@
 package com.inholland.bankapp.service;
 
 import com.inholland.bankapp.dto.TransactionDto;
+import com.inholland.bankapp.exceptions.AccountNotFoundException;
 import com.inholland.bankapp.model.Account;
 import com.inholland.bankapp.model.Transaction;
 import com.inholland.bankapp.model.User;
@@ -15,6 +16,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
+
 @Service
 public class TransactionService {
 
@@ -27,91 +30,80 @@ public class TransactionService {
     @Autowired
     private UserService userService;
 
-    // <editor-fold desc="Retrieving transactions.">
+    private static final Pattern IBAN_PATTERN = Pattern.compile("^NL\\d{2}[A-Z]{4}\\d{10}$");
+
+    // <editor-fold desc="Retrieving transactions - Mariia">
     public Page<TransactionDto> getAllTransactions(int page, int size, LocalDate startDate, LocalDate endDate, String amountCondition, Float amountValue, String fromIban, String toIban) {
+        return fetchTransactions(null, page, size, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
+    }
+
+    public Page<TransactionDto> getAllTransactionsByIban(int page, int size, String iban, LocalDate startDate, LocalDate endDate, String amountCondition, Float amountValue, String fromIban, String toIban) {
+        Account account = accountService.getAccountByIBAN(iban)
+                .orElseThrow(() -> new AccountNotFoundException(iban));
+
+        return fetchTransactions(account.getAccountId(), page, size, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
+    }
+
+    private Page<TransactionDto> fetchTransactions(Integer accountId, int page, int size, LocalDate startDate, LocalDate endDate, String amountCondition, Float amountValue, String fromIban, String toIban) {
         PageRequest pageRequest = PageRequest.of(page - 1, size);
         Page<Transaction> transactions;
 
+        Integer fromAccountId = null;
+        Integer toAccountId = null;
+
         if (startDate != null || endDate != null || amountCondition != null || amountValue != null || fromIban != null || toIban != null) {
-            Integer fromAccountId = null;
-            Integer toAccountId = null;
-            if (fromIban != null) {
-                Account fromAccount = accountService.findByIban(fromIban);
-                fromAccountId = fromAccount.getAccountId();
+            if(fromIban != null) {
+                fromAccountId = findAccountId(fromIban);
             }
-
-            if (toIban != null) {
-                Account toAccount = accountService.findByIban(toIban);
-                toAccountId = toAccount.getAccountId();
+            if(toIban != null){
+                toAccountId = findAccountId(toIban);
             }
-            transactions = repository.findAllByFilters(startDate, endDate, amountCondition, amountValue, fromAccountId, toAccountId, pageRequest);
-        } else {
-            transactions = repository.findAll(pageRequest);
+            if(amountValue != null) {
+                validateAmount(amountValue);
+            }
+            if(endDate != null && startDate != null) {
+                validateDates(startDate, endDate);
+            }
+            if (accountId != null) {
+                transactions = repository.findFilteredTransactionsByAccountId(accountId, startDate, endDate, amountCondition, amountValue, fromAccountId , toAccountId, pageRequest);
+            } else {
+                transactions = repository.findAllByFilters(startDate, endDate, amountCondition, amountValue, fromAccountId, toAccountId, pageRequest);
+            }
+        } else { // No filters
+            if (accountId != null) {
+                transactions = repository.findTransactionsByAccountId(accountId, pageRequest);
+            } else {
+                transactions = repository.findAll(pageRequest);
+            }
         }
-
         return transactions.map(this::transformTransactionDTO);
     }
 
-    public List<TransactionDto> getAllTransactionsByIban(String iban, LocalDate startDate, LocalDate endDate, String amountCondition, Float amountValue, String fromIban, String toIban) {
-
-        Account account = accountService.findByIban(iban);
-
-        List<Transaction> transactions;
-
-        if (startDate != null || endDate != null || amountCondition != null || amountValue != null || fromIban != null || toIban != null) {
-            Integer fromAccountId = null;
-            Integer toAccountId = null;
-            if (fromIban != null) {
-                Account fromAccount = accountService.findByIban(fromIban);
-                fromAccountId = fromAccount.getAccountId();
-            }
-
-            if (toIban != null) {
-                Account toAccount = accountService.findByIban(toIban);
-                toAccountId = toAccount.getAccountId();
-            }
-            transactions = repository.findFilteredTransactionsByAccountId(account.getAccountId(), startDate, endDate, amountCondition, amountValue, fromAccountId, toAccountId);
-        } else {
-            transactions = repository.findTransactionsByAccountId(account.getAccountId());
+    private void validateIban(String iban) {
+        if (!IBAN_PATTERN.matcher(iban).matches()) {
+            throw new IllegalArgumentException("Invalid IBAN format");
         }
+    }
 
-        List<TransactionDto> transactionDtos = new ArrayList<>();
-        for (Transaction transaction : transactions) {
-            transactionDtos.add(this.transformTransactionDTO(transaction));
+    private void validateAmount(Float amount) {
+        if (amount <= 0 || amount.isInfinite()) {
+            throw new IllegalArgumentException("Amount can't be negative, 0 or infinite");
         }
+    }
 
-        return transactionDtos;
+    private int findAccountId(String iban) {
+        validateIban(iban);
+        Account account = accountService.getAccountByIBAN(iban)
+                .orElseThrow(() -> new AccountNotFoundException(iban));
+        return account.getAccountId();
+    }
+
+    private void validateDates(LocalDate startDate, LocalDate endDate) {
+        if (endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("End date must be after start date");
+        }
     }
     // </editor-fold>
-
-    // this is for customer panel temporary
-    public List<TransactionDto> getAllTransactionsByAccountId(Integer accountId, LocalDate startDate, LocalDate endDate, String amountCondition, Float amountValue, String fromIban, String toIban) {
-        List<Transaction> transactions;
-
-        if (startDate != null || endDate != null || amountCondition != null || amountValue != null || fromIban != null || toIban != null) {
-            Integer fromAccountId = null;
-            Integer toAccountId = null;
-            if (fromIban != null) {
-                Account fromAccount = accountService.findByIban(fromIban);
-                fromAccountId = fromAccount.getAccountId();
-            }
-
-            if (toIban != null) {
-                Account toAccount = accountService.findByIban(toIban);
-                toAccountId = toAccount.getAccountId();
-            }
-            transactions = repository.findFilteredTransactionsByAccountId(accountId, startDate, endDate, amountCondition, amountValue, fromAccountId, toAccountId);
-        } else {
-            transactions = repository.findTransactionsByAccountId(accountId);
-        }
-
-        List<TransactionDto> transactionDtos = new ArrayList<>();
-        for (Transaction transaction : transactions) {
-            transactionDtos.add(this.transformTransactionDTO(transaction));
-        }
-
-        return transactionDtos;
-    }
 
     /**
      Save Method - saves transaction to the database
@@ -123,12 +115,28 @@ public class TransactionService {
         Optional<Account> optFromAccount = accountService.getAccountByIBAN(transactionDto.getFromAccount());
         Optional<Account> optToAccount = accountService.getAccountByIBAN(transactionDto.getToAccount());
         if(!optFromAccount.isPresent() || !optToAccount.isPresent()){
-            throw new RuntimeException("[Error] CreateTransactionDTO: From or To accounts not found!");
+            throw new IllegalArgumentException("[Error] CreateTransactionDTO: From or To accounts not found!");
         }
-
         // Check if from_account has sufficient balance and update accounts, if it does
         if (optFromAccount.get().getBalance() < transactionDto.getAmount()) {
-            throw new RuntimeException("Insufficient balance in the from account.");
+            throw new IllegalArgumentException("[Error] CreateTransactionDTO: Insufficient balance in from_account!");
+        }
+        if (transactionDto.getAmount() <= 0) {
+            throw new IllegalArgumentException("[Error] CreateTransactionDTO: Amount must be greater than 0!");
+        }
+        if (transactionDto.getAmount() > optFromAccount.get().getAvailableDailyAmountForTransfer()) {
+            throw new IllegalArgumentException("[Error] CreateTransactionDTO: Amount exceeds daily limit!");
+        }
+        //check for absolute limit
+        float newBalance =0;
+        newBalance = optFromAccount.get().getAvailableDailyAmountForTransfer() - transactionDto.getAmount();
+        if (newBalance < optFromAccount.get().getAbsoluteTransferLimit())
+        {
+            throw new IllegalArgumentException("[Error] CreateTransactionDTO: Amount exceeds absolute limit!");
+        }
+
+        if (optFromAccount.get().getAccountId() == optToAccount.get().getAccountId()) {
+            throw new IllegalArgumentException("[Error] CreateTransactionDTO: From and To accounts are the same!");
         }
 
         updateFromAndToAccountBalances(transactionDto.getAmount(), optFromAccount.get(), optToAccount.get());
