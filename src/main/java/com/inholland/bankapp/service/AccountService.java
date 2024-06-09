@@ -1,6 +1,8 @@
 package com.inholland.bankapp.service;
 
 import com.inholland.bankapp.dto.AccountDto;
+import com.inholland.bankapp.exceptions.CustomerAccountsNotFoundException;
+import com.inholland.bankapp.exceptions.CustomerNotFoundException;
 import com.inholland.bankapp.model.Account;
 import com.inholland.bankapp.model.AccountType;
 import com.inholland.bankapp.model.Customer;
@@ -20,6 +22,7 @@ import java.util.Optional;
 @Service
 public class AccountService {
 
+    // <editor-fold desc="Initialization components">
     @Autowired
     private AccountRepository accountRepository;
 
@@ -28,6 +31,7 @@ public class AccountService {
 
     @Autowired
     private TransactionRepository transactionRepository;
+    // </editor-fold
 
     // <editor-fold desc="Finals for generating IBAN.">
     private static final SecureRandom random = new SecureRandom();
@@ -66,7 +70,6 @@ public class AccountService {
         return sb.toString();
     }
 
-    // Dummy implementation - replace this with the actual check digit computation
     private String computeCheckDigits(String iban) {
         // Replace 'xx' with computed check digits based on the IBAN standard
         return iban.replace("xx", "00"); // Simplified for example purposes
@@ -80,30 +83,28 @@ public class AccountService {
         account.setBalance(balance);
         account.setAbsoluteTransferLimit(absoluteTransferLimit);
         account.setDailyTransferLimit(dailyTransferLimit);
-        
+
         // Save the new account
         accountRepository.save(account);
     }
 
-    private void createSavingsAccount(int customerID){
-        try{
+    private void createSavingsAccount(int customerID) {
+        try {
             AccountType typeOfAccount = AccountType.SAVINGS;
             String uniqueIBAN = generateUniqueIBAN();
             createAccount(customerID, uniqueIBAN, typeOfAccount, DEFAULT_BALANCE, DEFAULT_ABSOLUTE_TRANSFER_LIMIT, DEFAULT_DAILY_TRANSFER_LIMIT);
-        }
-        catch (Exception e){
-            //e.printStackTrace();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error creating savings account");
         }
     }
 
-    private void createCheckingAccount(int customerID){
-        try{
+    private void createCheckingAccount(int customerID) {
+        try {
             AccountType typeOfAccount = AccountType.CHECKING;
-            String uniqueIBAN =generateUniqueIBAN();
+            String uniqueIBAN = generateUniqueIBAN();
             createAccount(customerID, uniqueIBAN, typeOfAccount, DEFAULT_BALANCE, DEFAULT_ABSOLUTE_TRANSFER_LIMIT, DEFAULT_DAILY_TRANSFER_LIMIT);
-        }
-        catch (Exception e) {
-            //e.printStackTrace();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error creating checking account");
         }
     }
 
@@ -113,6 +114,41 @@ public class AccountService {
     }
     // </editor-fold>
 
+    // <editor-fold desc="Get accounts methods.">
+    public AccountDto getCheckingAccountByIBAN(String IBAN) {
+        Optional<Account> account = accountRepository.findByIBAN(IBAN);
+        if (account.isPresent() && account.get().getAccountType() == AccountType.CHECKING) {
+            return transformAccountToAccountDto(account.get());
+        } else if (account.isPresent() && account.get().getAccountType() == AccountType.SAVINGS) {
+            throw new IllegalArgumentException("Account is not a checking account");
+        }
+        return null;
+    }
+
+    public Optional<Account> getAccountByIBAN(String accountIban) {
+        return accountRepository.findByIBAN(accountIban);
+    }
+
+    public Optional<Account> getAccountById(Integer accountId) {
+        return accountRepository.findById(accountId);
+    }
+
+    public List<AccountDto> getAccountsByCustomerId(int customerId) {
+        Optional<Customer> customer = customerRepository.findById(customerId);
+        if (customer.isEmpty()) {
+            throw new CustomerNotFoundException(customerId);
+        }
+
+        List<Account> accounts = accountRepository.getAccountsByCustomerId(customerId);
+        if (accounts.isEmpty()) {
+            throw new CustomerAccountsNotFoundException(customerId);
+        }
+
+        return transformAccountToAccountDtoLoop(accounts);
+    }
+    // </editor-fold>
+
+    // <editor-fold desc="Update Methods">
     public AccountDto updateAccount(String accountIban, AccountDto updatedAccount) {
         Optional<Account> account = accountRepository.findByIBAN(accountIban);
         if (account.isEmpty()) {
@@ -124,61 +160,22 @@ public class AccountService {
         existingAccount.setDailyTransferLimit(updatedAccount.getDailyTransferLimit());
         try {
             return transformAccountToAccountDto(accountRepository.save(existingAccount));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new IllegalArgumentException("Error updating account");
         }
     }
 
-    // <editor-fold desc="Get accounts methods.">
-    public AccountDto getCheckingAccountByIBAN(String IBAN) {
-        Optional<Account> account = accountRepository.findByIBAN(IBAN);
-        if (account.isPresent() && account.get().getAccountType() == AccountType.CHECKING) {
-            return transformAccountToAccountDto(account.get());
-        }
-        else if (account.isPresent() && account.get().getAccountType() == AccountType.SAVINGS) {
-           throw new IllegalArgumentException("Account is not a checking account");
-        }
-        return null;
-    }
-
-    public Optional<Account> getAccountByIBAN(String accountIban) {
-        return accountRepository.findByIBAN(accountIban);
-    }
-
-    public Account findByIban(String iban) {
-        return accountRepository.findByIBAN(iban).orElse(null);
-    }
-
-    public Optional<Account> getAccountById(Integer accountId) {
-        return accountRepository.findById(accountId);
-    }
-
-
-    public List<AccountDto> getAccountsByCustomerId(int customer_id){
-        List<Account> accounts = accountRepository.getAccountsByCustomerId(customer_id);
-        return transformAccountToAccountDtoLoop(accounts);
-    }
-    // </editor-fold>
-
     /**
-     Update Method - update an account by passing an Account object
-     @param account  - parameter is of Account class, that represents the account of the customer
-     @return    - returns the account, if account parameter is provided.
-     */
-    public Account updateAccount(Account account){
-        return accountRepository.save(account);
-    }
-
-    /**
-     Update Method - update balances of 'sender' and 'retriever' accounts
-     @param fromAccount  - parameter is of Account class, that represents the account of the customer
-     @param toAccount  - parameter is of Account class, that represents the account of the customer
+     * Update Method - update balances of 'sender' and 'retriever' accounts
+     *
+     * @param fromAccount - parameter is of Account class, that represents the account of the customer
+     * @param toAccount   - parameter is of Account class, that represents the account of the customer
      */
     @Transactional
     public void updateTransferBalances(Account fromAccount, Account toAccount) {
         accountRepository.updateAccountBalances(fromAccount.getAccountId(), fromAccount.getBalance(), toAccount.getAccountId(), toAccount.getBalance());
     }
+    // </editor-fold>
 
     // <editor-fold desc="ATM methods.">
     public double findCheckingAccountBalanceByEmail(String email) {
@@ -193,7 +190,7 @@ public class AccountService {
 
         int accountId = accountRepository.getCheckingAccountIdByEmail(email);
         transformAtmTransactionIntoTransaction(accountId, amount, "ATM DEPOSIT");
-        
+
         accountRepository.depositToCheckingAccount(email, amount);
     }
 
@@ -213,13 +210,13 @@ public class AccountService {
 
         accountRepository.withdrawFromCheckingAccount(email, amount);
     }
-    
+
     private void transformAtmTransactionIntoTransaction(int accountId, double amountTemp, String transactionType) {
         Transaction transaction = new Transaction();
 
         // convert amount into float
         float amount = (float) amountTemp;
-        
+
         // get user by account id
         int userId = accountRepository.getUserIdByAccountId(accountId);
 
@@ -238,24 +235,12 @@ public class AccountService {
     // </editor-fold>
 
     // <editor-fold desc="DTO transformation methods.">
-
     private List<AccountDto> transformAccountToAccountDtoLoop(List<Account> accounts) {
         List<AccountDto> accountsDto = new java.util.ArrayList<>();
         for (Account account : accounts) {
             accountsDto.add(transformAccountToAccountDto(account));
         }
         return accountsDto;
-    }
-
-    public Account transformAccountDtoToAccount(AccountDto accountDto) {
-        Account account = new Account();
-        account.setAccountId(accountDto.getAccountId());
-        account.setIBAN(accountDto.getIBAN());
-        account.setAccountType(accountDto.getAccountType());
-        account.setBalance(accountDto.getBalance());
-        account.setAbsoluteTransferLimit(accountDto.getAbsoluteTransferLimit());
-        account.setDailyTransferLimit(accountDto.getDailyTransferLimit());
-        return account;
     }
 
     public AccountDto transformAccountToAccountDto(Account account) {
@@ -274,6 +259,5 @@ public class AccountService {
         accountDto.setAvailableDailyAmountForTransfer(account.getAvailableDailyAmountForTransfer());
         return accountDto;
     }
-
     // </editor-fold>
 }

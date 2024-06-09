@@ -1,189 +1,138 @@
 package com.inholland.bankapp.unit_testing.controller;
 
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inholland.bankapp.controller.AccountController;
 import com.inholland.bankapp.dto.AccountDto;
+import com.inholland.bankapp.exceptions.CustomerAccountsNotFoundException;
+import com.inholland.bankapp.exceptions.CustomerNotFoundException;
+import com.inholland.bankapp.model.AccountType;
 import com.inholland.bankapp.service.AccountService;
-import com.inholland.bankapp.unit_testing.TestSecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-
-
-
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
-@WebMvcTest(AccountController.class)
-@Import(TestSecurityConfig.class)
+@ExtendWith(MockitoExtension.class)
 class AccountControllerTest {
 
-    // use mockMvc to simulate HTTP requests to a controller class
-    @Autowired
-    private MockMvc mockMvc;
-   @MockBean
+    // <editor-fold desc="Initialization components">
+    @Mock
     private AccountService accountService;
-    @Autowired
-    private ObjectMapper objectMapper;
 
-    // <editor-fold desc="Test for updateAccount">
-
-    @Test
-    @WithMockUser
-    void updateAccount_ReturnsOk() throws Exception {
-        String accountIBAN = "NL91ABNA0417164300";
-        AccountDto updatedAccount = new AccountDto();
-        // Set fields on updatedAccount as necessary
-        when(accountService.updateAccount(eq(accountIBAN), any(AccountDto.class))).thenReturn(updatedAccount);
-
-        this.mockMvc.perform(put("/api/accounts/{accountIBAN}", accountIBAN)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updatedAccount)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(updatedAccount)));
-    }
-
-    @Test
-    @WithMockUser
-    void updateAccount_ReturnsBadRequest() throws Exception {
-        String accountIBAN = "NL91ABNA0417164300";
-        AccountDto updatedAccount = new AccountDto();
-        when(accountService.updateAccount(eq(accountIBAN), any(AccountDto.class)))
-                .thenThrow(new IllegalArgumentException("Invalid account data"));
-
-        this.mockMvc.perform(put("/api/accounts/{accountIBAN}", accountIBAN)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updatedAccount)))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Invalid account data"));
-    }
-
-    @Test
-    @WithMockUser
-    void updateAccount_ReturnsInternalServerError() throws Exception {
-        String accountIBAN = "NL91ABNA0417164300";
-        AccountDto updatedAccount = new AccountDto();
-        when(accountService.updateAccount(eq(accountIBAN), any(AccountDto.class)))
-                .thenThrow(new RuntimeException("Internal server error"));
-
-        this.mockMvc.perform(put("/api/accounts/{accountIBAN}", accountIBAN)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updatedAccount)))
-                .andDo(print())
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().string(""));
-    }
-
+    @InjectMocks
+    private AccountController accountController;
     // </editor-fold>
 
-    // <editor-fold desc="Test for getCheckingAccountByIBAN">
+    // <editor-fold desc="Global Test Details">
+    final private String apiBaseEndpoint = "http://localhost:8080/api/accounts/";
+    /*String apiEndpoint = apiBaseEndpoint + "parameter/value"; */ // copy and replace, for tests requiring API
 
+    //</editor-fold>
+
+    // <editor-fold desc="Test getAccountsByCustomerId">
     @Test
-    @WithMockUser
-    void getCheckingAccountByIBAN_ReturnsOk() throws Exception {
-        String IBAN = "NL91ABNA0417164300";
-        AccountDto account = new AccountDto();
-        // Set fields on account as necessary
-        when(accountService.getCheckingAccountByIBAN(IBAN)).thenReturn(account);
+    // Ignas
+    void testGetAccountsByCustomerId() throws Exception {
+        // Given customerId and data about accounts
+        final Integer customerId = 34;
 
-        this.mockMvc.perform(get("/api/accounts/checking/{IBAN}", IBAN))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(account)));
-    }
+        // ! Some values might change depending on the current state of the accounts in the database.
+        AccountDto account1 = this.makeAccountDto(73,
+                "NL00INHO0766828063", AccountType.SAVINGS,
+                0.0f, 0.0f, 1000.0f,
+                "tester testington", 1000.0f);
+        AccountDto account2 = this.makeAccountDto(74,
+                "NL00INHO0368456732", AccountType.CHECKING,
+                762.0f, 0.0f, 1000.0f,
+                "tester testington", -10.0f);
+        List<AccountDto> accounts = new ArrayList<>();
+        accounts.add(account1);
+        accounts.add(account2);
 
-    @Test
-    @WithMockUser
-    void getCheckingAccountByIBAN_ReturnsNotFound() throws Exception {
-        String IBAN = "NL91ABNA0417164300";
-        when(accountService.getCheckingAccountByIBAN(IBAN)).thenReturn(null);
-
-        this.mockMvc.perform(get("/api/accounts/checking/{IBAN}", IBAN))
-                .andDo(print())
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @WithMockUser
-    void getCheckingAccountByIBAN_ReturnsBadRequest() throws Exception {
-        String IBAN = "NL91ABNA0417164300";
-        when(accountService.getCheckingAccountByIBAN(IBAN))
-                .thenThrow(new IllegalArgumentException("Invalid IBAN"));
-
-        this.mockMvc.perform(get("/api/accounts/checking/{IBAN}", IBAN))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Invalid IBAN"));
-    }
-
-    // </editor-fold>
-
-    // <editor-fold desc="Test for getAccountsByCustomerId">
-
-    @Test
-    @WithMockUser
-    void getAccountsByCustomerId_ReturnsOk() throws Exception {
-        Integer customerId = 1;
-        List<AccountDto> accounts = Arrays.asList(new AccountDto(), new AccountDto());
-        // Set fields on accounts as necessary
+        // Mock the behavior of the accountService
         when(accountService.getAccountsByCustomerId(customerId)).thenReturn(accounts);
 
-        this.mockMvc.perform(get("/api/accounts/customer/{customerId}", customerId))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(accounts)));
+        // Begin the test:
+        // When
+        ResponseEntity<List<AccountDto>> response = accountController.getAccountsByCustomerId(customerId);
+
+        // Then
+        assertEquals(200, response.getStatusCode().value());
+        List<AccountDto> responseBody = response.getBody();
+        assertEquals(2, responseBody.size());
+
+        AccountDto responseAccount1 = responseBody.get(0);
+        assertEquals(account1.getAccountId(), responseAccount1.getAccountId());
+        assertEquals(account1.getIBAN(), responseAccount1.getIBAN());
+        assertEquals(account1.getAccountType(), responseAccount1.getAccountType());
+        assertEquals(account1.getBalance(), responseAccount1.getBalance());
+        assertEquals(account1.getAbsoluteTransferLimit(), responseAccount1.getAbsoluteTransferLimit());
+        assertEquals(account1.getDailyTransferLimit(), responseAccount1.getDailyTransferLimit());
+        assertEquals(account1.getCustomerFullName(), responseAccount1.getCustomerFullName());
+        assertEquals(account1.getAvailableDailyAmountForTransfer(), responseAccount1.getAvailableDailyAmountForTransfer());
+
+        AccountDto responseAccount2 = responseBody.get(1);
+        assertEquals(account2.getAccountId(), responseAccount2.getAccountId());
+        assertEquals(account2.getIBAN(), responseAccount2.getIBAN());
+        assertEquals(account2.getAccountType(), responseAccount2.getAccountType());
+        assertEquals(account2.getBalance(), responseAccount2.getBalance());
+        assertEquals(account2.getAbsoluteTransferLimit(), responseAccount2.getAbsoluteTransferLimit());
+        assertEquals(account2.getDailyTransferLimit(), responseAccount2.getDailyTransferLimit());
+        assertEquals(account2.getCustomerFullName(), responseAccount2.getCustomerFullName());
+        assertEquals(account2.getAvailableDailyAmountForTransfer(), responseAccount2.getAvailableDailyAmountForTransfer());
     }
 
     @Test
-    @WithMockUser
-    void getAccountsByCustomerId_ReturnsNoContent() throws Exception {
-        Integer customerId = 1;
-        when(accountService.getAccountsByCustomerId(customerId)).thenReturn(Collections.emptyList());
+        // Ignas
+    void testGetAccountsByCustomerId_noContent() {
+        // Given customerId that does not have accounts
+        final Integer customerId = 33;
+        // Mock the behavior of the accountService
+        when(accountService.getAccountsByCustomerId(customerId)).thenThrow(new CustomerAccountsNotFoundException(customerId));
 
-        this.mockMvc.perform(get("/api/accounts/customer/{customerId}", customerId))
-                .andDo(print())
-                .andExpect(status().isNoContent());
+        // When
+        ResponseEntity<List<AccountDto>> response = accountController.getAccountsByCustomerId(customerId);
+        // Then
+        assertEquals(200, response.getStatusCodeValue());
+        assertTrue(response.getBody().isEmpty());
     }
 
     @Test
-    @WithMockUser
-    void getAccountsByCustomerId_ReturnsInternalServerError() throws Exception {
-        Integer customerId = 1;
-        when(accountService.getAccountsByCustomerId(customerId)).thenThrow(new RuntimeException("Internal server error"));
+        // Ignas
+    void testGetAccountsByCustomerId_notFound() {
+        // Given customerId that doesn't exist
+        final Integer customerId = 1000;
+        // Mock the behavior of the accountService
+        when(accountService.getAccountsByCustomerId(customerId)).thenThrow(new CustomerNotFoundException(customerId));
 
-        this.mockMvc.perform(get("/api/accounts/customer/{customerId}", customerId))
-                .andDo(print())
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().string(""));
+        // When
+        ResponseEntity<List<AccountDto>> response = accountController.getAccountsByCustomerId(customerId);
+        // Then
+        assertEquals(404, response.getStatusCodeValue());
     }
-
     // </editor-fold>
 
+    // <editor-fold desc="Dto Constructors">
+    private AccountDto makeAccountDto(Integer accountId, String iban, AccountType type, Float balance, Float absoluteLimit, Float dailyLimit, String fullName, Float availableDailyAmountForTransfer) {
+        AccountDto accountDto = new AccountDto();
+        accountDto.setAccountId(2);
+        accountDto.setIBAN("AccountBan2");
+        accountDto.setAccountType(AccountType.SAVINGS);
+        accountDto.setBalance(0.0f);
+        accountDto.setAbsoluteTransferLimit(1.0f);
+        accountDto.setDailyTransferLimit(1002.0f);
+        accountDto.setCustomerFullName("Fname Lname");
+        accountDto.setAvailableDailyAmountForTransfer(1002.0f);
 
-
-
-
+        return accountDto;
+    }
+    // </editor-fold>
 }
