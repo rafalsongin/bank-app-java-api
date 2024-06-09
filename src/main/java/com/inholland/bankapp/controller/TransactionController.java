@@ -1,18 +1,16 @@
 package com.inholland.bankapp.controller;
 
 import com.inholland.bankapp.dto.TransactionDto;
+import com.inholland.bankapp.exceptions.AccountNotFoundException;
 import com.inholland.bankapp.model.UserRole;
 import com.inholland.bankapp.service.TransactionService;
 import com.inholland.bankapp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,7 +26,7 @@ public class TransactionController {
     private UserService userService;
 
     @GetMapping
-    public ResponseEntity<Page<TransactionDto>> getAllTransactions(
+    public ResponseEntity<?> getAllTransactions(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -41,20 +39,22 @@ public class TransactionController {
             @RequestParam String role) {
         try {
             if (UserRole.valueOf(role.toUpperCase()) != UserRole.EMPLOYEE || !userService.userExists(username)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
             }
             Page<TransactionDto> transactions = service.getAllTransactions(page, size, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
             return ResponseEntity.ok(transactions);}
         catch (IllegalArgumentException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (AccountNotFoundException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
         catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred while fetching transactions. Please try again later.");
         }
     }
 
     @GetMapping("/account/{iban}")
-    public ResponseEntity<Page<TransactionDto>> getAllTransactionsByIban(
+    public ResponseEntity<?> getAllTransactionsByIban(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @PathVariable String iban,
@@ -68,18 +68,18 @@ public class TransactionController {
             @RequestParam String role) {
         try {
             UserRole userRole = UserRole.valueOf(role.toUpperCase());
-
             if (userRole == UserRole.EMPLOYEE && !userService.userExists(username)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
             }
             else if (userRole == UserRole.CUSTOMER && !userService.userExists(username) && !userService.isAccountOwner(username, iban)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
             }
-
             Page<TransactionDto> transactions = service.getAllTransactionsByIban(page, size, iban, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
             return ResponseEntity.ok(transactions);
         } catch (IllegalArgumentException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (AccountNotFoundException e){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
         catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
@@ -98,11 +98,9 @@ public class TransactionController {
             @RequestParam(required = false) String toIban) {
 
         List<TransactionDto> transactions = service.getAllTransactionsByAccountId(accountId, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
-
         if (transactions.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-
         return ResponseEntity.ok(transactions);
     }
 

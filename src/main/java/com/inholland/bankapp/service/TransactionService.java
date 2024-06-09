@@ -1,6 +1,7 @@
 package com.inholland.bankapp.service;
 
 import com.inholland.bankapp.dto.TransactionDto;
+import com.inholland.bankapp.exceptions.AccountNotFoundException;
 import com.inholland.bankapp.model.Account;
 import com.inholland.bankapp.model.Transaction;
 import com.inholland.bankapp.model.User;
@@ -15,6 +16,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
+
 @Service
 public class TransactionService {
 
@@ -27,13 +30,17 @@ public class TransactionService {
     @Autowired
     private UserService userService;
 
+    private static final Pattern IBAN_PATTERN = Pattern.compile("^NL\\d{2}[A-Z]{4}\\d{10}$");
+
     // <editor-fold desc="Retrieving transactions - Mariia">
     public Page<TransactionDto> getAllTransactions(int page, int size, LocalDate startDate, LocalDate endDate, String amountCondition, Float amountValue, String fromIban, String toIban) {
         return fetchTransactions(null, page, size, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
     }
 
     public Page<TransactionDto> getAllTransactionsByIban(int page, int size, String iban, LocalDate startDate, LocalDate endDate, String amountCondition, Float amountValue, String fromIban, String toIban) {
-        Account account = accountService.findByIban(iban);
+        Account account = accountService.getAccountByIBAN(iban)
+                .orElseThrow(() -> new AccountNotFoundException(iban));
+
         return fetchTransactions(account.getAccountId(), page, size, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
     }
 
@@ -44,19 +51,21 @@ public class TransactionService {
         Integer fromAccountId = null;
         Integer toAccountId = null;
 
-        if (fromIban != null) {
-            Account fromAccount = accountService.findByIban(fromIban);
-            fromAccountId = fromAccount.getAccountId();
-        }
-
-        if (toIban != null) {
-            Account toAccount = accountService.findByIban(toIban);
-            toAccountId = toAccount.getAccountId();
-        }
-
         if (startDate != null || endDate != null || amountCondition != null || amountValue != null || fromIban != null || toIban != null) {
+            if(fromIban != null) {
+                fromAccountId = findAccountId(fromIban);
+            }
+            if(toIban != null){
+                toAccountId = findAccountId(toIban);
+            }
+            if(amountValue != null) {
+                validateAmount(amountValue);
+            }
+            if(endDate != null && startDate != null) {
+                validateDates(startDate, endDate);
+            }
             if (accountId != null) {
-                transactions = repository.findFilteredTransactionsByAccountId(accountId, startDate, endDate, amountCondition, amountValue, fromAccountId, toAccountId, pageRequest);
+                transactions = repository.findFilteredTransactionsByAccountId(accountId, startDate, endDate, amountCondition, amountValue, fromAccountId , toAccountId, pageRequest);
             } else {
                 transactions = repository.findAllByFilters(startDate, endDate, amountCondition, amountValue, fromAccountId, toAccountId, pageRequest);
             }
@@ -67,8 +76,32 @@ public class TransactionService {
                 transactions = repository.findAll(pageRequest);
             }
         }
-
         return transactions.map(this::transformTransactionDTO);
+    }
+
+    private void validateIban(String iban) {
+        if (!IBAN_PATTERN.matcher(iban).matches()) {
+            throw new IllegalArgumentException("Invalid IBAN format");
+        }
+    }
+
+    private void validateAmount(Float amount) {
+        if (amount <= 0 || amount.isInfinite()) {
+            throw new IllegalArgumentException("Amount can't be negative, 0 or infinite");
+        }
+    }
+
+    private int findAccountId(String iban) {
+        validateIban(iban);
+        Account account = accountService.getAccountByIBAN(iban)
+                .orElseThrow(() -> new AccountNotFoundException(iban));
+        return account.getAccountId();
+    }
+
+    private void validateDates(LocalDate startDate, LocalDate endDate) {
+        if (endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("End date must be after start date");
+        }
     }
     // </editor-fold>
 
@@ -80,12 +113,14 @@ public class TransactionService {
             Integer fromAccountId = null;
             Integer toAccountId = null;
             if (fromIban != null) {
-                Account fromAccount = accountService.findByIban(fromIban);
+                Account fromAccount = accountService.getAccountByIBAN(fromIban)
+                        .orElseThrow(() -> new AccountNotFoundException(fromIban));
                 fromAccountId = fromAccount.getAccountId();
             }
 
             if (toIban != null) {
-                Account toAccount = accountService.findByIban(toIban);
+                Account toAccount = accountService.getAccountByIBAN(toIban)
+                        .orElseThrow(() -> new AccountNotFoundException(toIban));
                 toAccountId = toAccount.getAccountId();
             }
             transactions = repository.findFilteredTransactionsByAccount(accountId, startDate, endDate, amountCondition, amountValue, fromAccountId, toAccountId);
