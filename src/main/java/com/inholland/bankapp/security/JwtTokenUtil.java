@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
@@ -19,7 +20,6 @@ public class JwtTokenUtil {
     private int jwtExpirationMs;
 
     public String generateToken(Authentication authentication) {
-        // Correctly obtaining the username from the authentication object
         String username = ((User) authentication.getPrincipal()).getUsername();
         String role = authentication.getAuthorities().stream()
                 .map(grantedAuthority -> grantedAuthority.getAuthority())
@@ -29,47 +29,45 @@ public class JwtTokenUtil {
                 .setSubject(username)
                 .claim("role", role)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(new Date().getTime() + jwtExpirationMs))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }
 
     public String getUserNameFromJwtToken(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecret)
-                .parseClaimsJws(token)
-                .getBody();
-
-        return claims.getSubject();
+        return getClaimFromToken(token, Claims::getSubject);
     }
 
     public String getUserRoleFromJwtToken(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecret)
-                .parseClaimsJws(token)
-                .getBody();
-
-        return claims.get("role", String.class);
+        return getClaimFromToken(token, claims -> claims.get("role", String.class));
     }
 
-    public boolean validateJwtToken(String authToken) {
+    public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = getAllClaimsFromToken(token);
+        return claimsResolver.apply(claims);
+    }
+
+    private Claims getAllClaimsFromToken(String token) {
+        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
+    }
+
+    private Boolean isTokenExpired(String token) {
+        final Date expiration = getClaimFromToken(token, Claims::getExpiration);
+        return expiration.before(new Date());
+    }
+
+    public Boolean validateJwtToken(String token) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
-            return true;
+            return !isTokenExpired(token);
+        } catch (ExpiredJwtException e) {
+            System.out.println("JWT token is expired: " + e.getMessage());
         } catch (SignatureException e) {
-            // Invalid signature
             System.out.println("Invalid JWT signature: " + e.getMessage());
         } catch (MalformedJwtException e) {
-            // Invalid JWT token
             System.out.println("Invalid JWT token: " + e.getMessage());
-        } catch (ExpiredJwtException e) {
-            // JWT token is expired
-            System.out.println("JWT token is expired: " + e.getMessage());
         } catch (UnsupportedJwtException e) {
-            // JWT token is unsupported
             System.out.println("JWT token is unsupported: " + e.getMessage());
         } catch (IllegalArgumentException e) {
-            // JWT claims string is empty
             System.out.println("JWT claims string is empty: " + e.getMessage());
         }
 
