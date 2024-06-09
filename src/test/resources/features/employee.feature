@@ -34,7 +34,7 @@ Feature: Everything related to employee actions and their management
 
   #Cezar
   Scenario: Set daily and absolute transfer limit for customer account
-    Given The endpoint for "accounts/changeAccount/NL00INHO0342486737" is available for method "PUT" and the employee is logged in
+    Given The endpoint for "accounts/NL00INHO0342486737" is available for method "PUT" and the employee is logged in
     When I set the daily and absolute transfer limit for the customer with the following details:
     | accountNumber       | dailyTransferLimit | absoluteTransferLimit |
     | NL00INHO0342486737  | 1000               | 0                     |

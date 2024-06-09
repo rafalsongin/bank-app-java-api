@@ -19,7 +19,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
     Page<Transaction> findAll(Pageable pageable);
 
     @Query("SELECT t FROM Transaction t WHERE t.fromAccount = :accountId OR t.toAccount = :accountId ORDER BY t.timestamp DESC")
-    List<Transaction> findTransactionsByAccountId(@Param("accountId") Integer accountId);
+    Page<Transaction> findTransactionsByAccountId(@Param("accountId") Integer accountId, Pageable pageable);
 
     @Query("SELECT t FROM Transaction t WHERE " +
             "(:startDate IS NULL OR DATE(t.timestamp) >= :startDate) AND " +
@@ -51,12 +51,13 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             "AND (:fromAccountId IS NULL OR t.fromAccount = :fromAccountId) " +
             "AND (:toAccountId IS NULL OR t.toAccount = :toAccountId) " +
             "ORDER BY t.timestamp DESC")
-    List<Transaction> findFilteredTransactionsByAccountId(
+    Page<Transaction> findFilteredTransactionsByAccountId(
             @Param("accountId") Integer accountId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             @Param("amountCondition") String amountCondition,
             @Param("amountValue") Float amountValue,
             @Param("fromAccountId") Integer fromAccountId,
-            @Param("toAccountId") Integer toAccountId);
+            @Param("toAccountId") Integer toAccountId,
+            Pageable pageable);
 }

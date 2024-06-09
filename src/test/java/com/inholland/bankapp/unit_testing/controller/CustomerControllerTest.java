@@ -1,14 +1,16 @@
 package com.inholland.bankapp.unit_testing.controller;
 
 import com.inholland.bankapp.controller.CustomerController;
-import com.inholland.bankapp.model.Customer;
+import com.inholland.bankapp.dto.CustomerDto;
 import com.inholland.bankapp.model.UserRole;
 import com.inholland.bankapp.service.CustomerService;
+import com.inholland.bankapp.unit_testing.TestSecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -18,14 +20,15 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(CustomerController.class)
+@Import(TestSecurityConfig.class)
 class CustomerControllerTest {
 
     // <editor-fold desc="Test dummy variables">
@@ -33,6 +36,7 @@ class CustomerControllerTest {
     private static final String FIRST_NAME = "John";
     private static final String LAST_NAME = "Doe";
     private static final String IBAN = "NL91ABNA0417164300";
+    private static final int CUSTOMER_ID = 30;
 
     // </editor-fold>
 
@@ -42,6 +46,7 @@ class CustomerControllerTest {
 
     @MockBean
     private CustomerService customerService;
+
 
     // <editor-fold desc="Test for get all customers">
 
@@ -59,8 +64,7 @@ class CustomerControllerTest {
     @WithMockUser // Cezar
     void getAllCustomers() throws Exception
     {
-
-        List<Customer> customers = createCustomers();
+        List<CustomerDto> customers = createCustomers();
         // Mock the service layer
         when(customerService.getAllCustomers()).thenReturn(customers);
 
@@ -89,7 +93,7 @@ class CustomerControllerTest {
     void getIbanByCustomerName_ReturnsIban() throws Exception {
         when(customerService.getIbanByCustomerName(FIRST_NAME,LAST_NAME)).thenReturn(IBAN);
 
-        this.mockMvc.perform(get("/api/customers/getIbanByCustomerName/{firstName}/{lastName}", FIRST_NAME,LAST_NAME))
+        this.mockMvc.perform(get("/api/customers/iban/{firstName}/{lastName}", FIRST_NAME,LAST_NAME))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().string(is(IBAN)));
@@ -101,7 +105,7 @@ class CustomerControllerTest {
 
         when(customerService.getIbanByCustomerName(FIRST_NAME,LAST_NAME)).thenReturn(null);
 
-        this.mockMvc.perform(get("/api/customers/getIbanByCustomerName/{firstName}/{lastName}", FIRST_NAME,LAST_NAME))
+        this.mockMvc.perform(get("/api/customers/iban/{firstName}/{lastName}", FIRST_NAME,LAST_NAME))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
@@ -112,7 +116,7 @@ class CustomerControllerTest {
 
         when(customerService.getIbanByCustomerName(FIRST_NAME,LAST_NAME)).thenReturn("");
 
-        this.mockMvc.perform(get("/api/customers/getIbanByCustomerName/{firstName}/{lastName}", FIRST_NAME,LAST_NAME))
+        this.mockMvc.perform(get("/api/customers/iban/{firstName}/{lastName}", FIRST_NAME,LAST_NAME))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(""));
@@ -120,66 +124,136 @@ class CustomerControllerTest {
 
     // </editor-fold>
 
-    
-
+    // <editor-fold desc="Test for approve customer">
     @Test
-    void getCustomerById() {
+    @WithMockUser // Cezar
+    void approveCustomer_ReturnsOk() throws Exception {
+        doNothing().when(customerService).approveCustomer(CUSTOMER_ID);
 
+        this.mockMvc.perform(post("/api/customers/approve/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string("Customer approved"));
     }
 
     @Test
-    void testGetCustomerById() {
+    @WithMockUser // Cezar
+    void approveCustomer_ReturnsBadRequest() throws Exception {
+        doThrow(new IllegalArgumentException("Invalid customer ID")).when(customerService).approveCustomer(CUSTOMER_ID);
+
+        this.mockMvc.perform(post("/api/customers/approve/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Invalid customer ID"));
     }
 
     @Test
-    void getUnverifiedCustomers() {
+    @WithMockUser // Cezar
+    void approveCustomer_ReturnsInternalServerError() throws Exception {
+        doThrow(new RuntimeException("Internal server error")).when(customerService).approveCustomer(CUSTOMER_ID);
+
+        this.mockMvc.perform(post("/api/customers/approve/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(""));
+    }
+
+    // </editor-fold>
+
+    // <editor-fold desc="Test for decline customer">
+
+    @Test
+    @WithMockUser
+    void declineCustomer_ReturnsOk() throws Exception {
+        doNothing().when(customerService).declineCustomer(CUSTOMER_ID);
+
+        this.mockMvc.perform(post("/api/customers/decline/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string("Customer declined"));
     }
 
     @Test
-    void approveCustomer() {
+    @WithMockUser
+    void declineCustomer_ReturnsBadRequest() throws Exception {
+        doThrow(new IllegalArgumentException("Invalid customer ID")).when(customerService).declineCustomer(CUSTOMER_ID);
+
+        this.mockMvc.perform(post("/api/customers/decline/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Invalid customer ID"));
     }
 
     @Test
-    void declineCustomer() {
+    @WithMockUser
+    void declineCustomer_ReturnsInternalServerError() throws Exception {
+        doThrow(new RuntimeException("Internal server error")).when(customerService).declineCustomer(CUSTOMER_ID);
+
+        this.mockMvc.perform(post("/api/customers/decline/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(""));
     }
 
-    @Test
-    void closeCustomerAccount() {
-    }
+    // </editor-fold>
 
-    @Test
-    void updateCustomerDetails() {
-    }
-
-    private List<Customer> createCustomers() {
-        // probably will have to change to dto
+    private List<CustomerDto> createCustomers() {
         // Prepare test data
-        Customer customer1 = new Customer();
+        CustomerDto customer1 = new CustomerDto();
         customer1.setUserId(1);
         customer1.setFirstName("John");
         customer1.setLastName("Doe");
         customer1.setUsername("john_doe");
         customer1.setEmail("john.doe@example.com");
-        customer1.setPassword("password");
-        customer1.setBankId(1);
         customer1.setUserRole(UserRole.CUSTOMER); // Assuming you have a UserRole enum with CUSTOMER
-        customer1.setBSN("123456789");
         customer1.setPhoneNumber("123-456-7890");
-        customer1.setTransactionLimit(1000.0f);
 
-        Customer customer2 = new Customer();
+        CustomerDto customer2 = new CustomerDto();
         customer2.setUserId(2);
         customer2.setFirstName("Jane");
         customer2.setLastName("Doe");
         customer2.setUsername("jane_doe");
         customer2.setEmail("jane.doe@example.com");
-        customer2.setPassword("password");
-        customer2.setBankId(1);
         customer2.setUserRole(UserRole.CUSTOMER);
-        customer2.setBSN("987654321");
         customer2.setPhoneNumber("098-765-4321");
-        customer2.setTransactionLimit(2000.0f);
 
         return Arrays.asList(customer1, customer2);
     }
+
+    // <editor-fold desc="Test for closing customer account">
+    @Test
+    @WithMockUser // Mariia
+    void closeCustomerAccount_ReturnsOk() throws Exception {
+        doNothing().when(customerService).closeCustomerAccount(CUSTOMER_ID);
+
+        this.mockMvc.perform(put("/api/customers/close/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string("Customer account closed"));
+    }
+
+    @Test
+    @WithMockUser // Mariia
+    void closeCustomerAccount_ReturnsBadRequest() throws Exception {
+        doThrow(new IllegalArgumentException("Invalid customer ID")).when(customerService).closeCustomerAccount(CUSTOMER_ID);
+
+        this.mockMvc.perform(put("/api/customers/close/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Invalid customer ID"));
+    }
+
+    @Test
+    @WithMockUser // Mariia
+    void closeCustomerAccount_ReturnsInternalServerError() throws Exception {
+        doThrow(new RuntimeException("Internal server error")).when(customerService).closeCustomerAccount(CUSTOMER_ID);
+
+        this.mockMvc.perform(put("/api/customers/close/{customerID}", CUSTOMER_ID))
+                .andDo(print())
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(""));
+    }
+    // </editor-fold>
+
+
 }
