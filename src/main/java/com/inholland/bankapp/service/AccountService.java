@@ -184,7 +184,7 @@ public class AccountService {
     // </editor-fold>
 
     // <editor-fold desc="ATM methods.">
-    public double findCheckingAccountBalanceByEmail(String email) {
+    public Double findCheckingAccountBalanceByEmail(String email) {
         return accountRepository.findCheckingAccountBalanceByEmail(email);
     }
 
@@ -193,8 +193,14 @@ public class AccountService {
         if (amount <= 0) {
             throw new IllegalArgumentException("Deposit amount must be greater than zero");
         }
+        
+        System.out.println("Email: " + email);
 
-        int accountId = accountRepository.getCheckingAccountIdByEmail(email);
+        Integer accountId = accountRepository.getCheckingAccountIdByEmail(email);
+        if (accountId == null) {
+            throw new IllegalArgumentException("Checking account not found for email: " + email);
+        }
+
         transformAtmTransactionIntoTransaction(accountId, amount, "ATM DEPOSIT");
 
         accountRepository.depositToCheckingAccount(email, amount);
