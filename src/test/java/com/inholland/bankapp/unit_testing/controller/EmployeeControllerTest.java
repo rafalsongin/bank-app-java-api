@@ -42,7 +42,7 @@ public class EmployeeControllerTest {
 
     // <editor-fold desc="Test for getEmployeeByEmail">
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "EMPLOYEE")
     void getEmployeeByEmail_ReturnsOk() throws Exception {
         Employee employee = new Employee();
         employee.setEmail("test@example.com");
@@ -59,7 +59,7 @@ public class EmployeeControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "EMPLOYEE")
     void getEmployeeByEmail_ReturnsNotFound() throws Exception {
         when(employeeService.getEmployeeByEmail(anyString())).thenReturn(Optional.empty());
 
@@ -70,7 +70,7 @@ public class EmployeeControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "EMPLOYEE")
     void getEmployeeByEmail_ReturnsInternalServerError() throws Exception {
         when(employeeService.getEmployeeByEmail(anyString())).thenThrow(new RuntimeException("Internal server error"));
 

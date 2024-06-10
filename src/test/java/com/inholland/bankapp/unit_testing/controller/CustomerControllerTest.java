@@ -51,7 +51,7 @@ class CustomerControllerTest {
     // <editor-fold desc="Test for get all customers">
 
     @Test
-    @WithMockUser // Cezar
+    @WithMockUser(roles = "EMPLOYEE") // Cezar
     void getAllCustomers_ReturnEmpty() throws Exception {
         when(customerService.getAllCustomers()).thenReturn(Collections.emptyList());
 
@@ -61,7 +61,7 @@ class CustomerControllerTest {
     }
 
     @Test
-    @WithMockUser // Cezar
+    @WithMockUser(roles = "EMPLOYEE")// Cezar
     void getAllCustomers() throws Exception
     {
         List<CustomerDto> customers = createCustomers();
@@ -89,7 +89,7 @@ class CustomerControllerTest {
 
     // <editor-fold desc="Test for getting IBAN by customer name">
     @Test
-    @WithMockUser // Cezar
+    @WithMockUser(roles = "CUSTOMER") // Cezar
     void getIbanByCustomerName_ReturnsIban() throws Exception {
         when(customerService.getIbanByCustomerName(FIRST_NAME,LAST_NAME)).thenReturn(IBAN);
 
@@ -100,7 +100,7 @@ class CustomerControllerTest {
     }
 
     @Test
-    @WithMockUser // Cezar
+    @WithMockUser(roles = "CUSTOMER") // Cezar
     void getIbanByCustomerName_ReturnsNoContent() throws Exception {
 
         when(customerService.getIbanByCustomerName(FIRST_NAME,LAST_NAME)).thenReturn(null);
@@ -111,7 +111,7 @@ class CustomerControllerTest {
     }
 
     @Test
-    @WithMockUser // Cezar
+    @WithMockUser(roles = "CUSTOMER") // Cezar
     void getIbanByCustomerName_ReturnsNotFound() throws Exception {
 
         when(customerService.getIbanByCustomerName(FIRST_NAME,LAST_NAME)).thenReturn("");
@@ -126,7 +126,7 @@ class CustomerControllerTest {
 
     // <editor-fold desc="Test for approve customer">
     @Test
-    @WithMockUser // Cezar
+    @WithMockUser(roles = "EMPLOYEE") // Cezar
     void approveCustomer_ReturnsOk() throws Exception {
         doNothing().when(customerService).approveCustomer(CUSTOMER_ID);
 
@@ -137,7 +137,7 @@ class CustomerControllerTest {
     }
 
     @Test
-    @WithMockUser // Cezar
+    @WithMockUser(roles = "EMPLOYEE") // Cezar
     void approveCustomer_ReturnsBadRequest() throws Exception {
         doThrow(new IllegalArgumentException("Invalid customer ID")).when(customerService).approveCustomer(CUSTOMER_ID);
 
@@ -148,7 +148,7 @@ class CustomerControllerTest {
     }
 
     @Test
-    @WithMockUser // Cezar
+    @WithMockUser(roles = "EMPLOYEE") // Cezar
     void approveCustomer_ReturnsInternalServerError() throws Exception {
         doThrow(new RuntimeException("Internal server error")).when(customerService).approveCustomer(CUSTOMER_ID);
 
@@ -163,7 +163,7 @@ class CustomerControllerTest {
     // <editor-fold desc="Test for decline customer">
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "EMPLOYEE")
     void declineCustomer_ReturnsOk() throws Exception {
         doNothing().when(customerService).declineCustomer(CUSTOMER_ID);
 
@@ -174,7 +174,7 @@ class CustomerControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "EMPLOYEE")
     void declineCustomer_ReturnsBadRequest() throws Exception {
         doThrow(new IllegalArgumentException("Invalid customer ID")).when(customerService).declineCustomer(CUSTOMER_ID);
 
@@ -185,7 +185,7 @@ class CustomerControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "EMPLOYEE")
     void declineCustomer_ReturnsInternalServerError() throws Exception {
         doThrow(new RuntimeException("Internal server error")).when(customerService).declineCustomer(CUSTOMER_ID);
 
