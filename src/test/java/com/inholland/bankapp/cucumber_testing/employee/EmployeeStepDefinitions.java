@@ -7,6 +7,7 @@ import com.inholland.bankapp.model.Account;
 import com.inholland.bankapp.model.AccountApprovalStatus;
 import com.inholland.bankapp.model.Customer;
 import com.jayway.jsonpath.JsonPath;
+import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -54,6 +55,7 @@ public class EmployeeStepDefinitions extends BaseStepDefinitions{
     public void theEndpointForIsAvailableForMethodAndEmployeeIsLoggedIn(String endpoint, String method) {
         // Get a real JWT token for an employee
         String token = getEmployeeBearerToken();
+
         httpHeaders.set("Authorization", "Bearer " + token);
 
         response = restTemplate.exchange(
@@ -333,7 +335,6 @@ public class EmployeeStepDefinitions extends BaseStepDefinitions{
     @Then("I get a list of customer's transactions")
     public void iGetAListOfCustomerTransactions() {
         String body = response.getBody();
-        System.out.println("Response body: " + body);
         int actual = JsonPath.read(body, "$.content.length()");
         Assertions.assertTrue(actual >= 1, "Expected at least 1 transaction, but got " + actual);
     }
