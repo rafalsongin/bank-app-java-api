@@ -23,6 +23,16 @@ Feature: Everything related to employee actions and their management
     Then The customer account state is updated to declined
     And I get http status 200
 
+      #Cezar
+  Scenario: Set daily and absolute transfer limit for customer account
+    Given The endpoint for "accounts/NL00INHO0342486737" is available for method "PUT" and the employee is logged in
+    When I set the daily and absolute transfer limit for the customer with the following details:
+      | accountNumber       | dailyTransferLimit | absoluteTransferLimit |
+      | NL00INHO0342486737  | 1000               | 0                     |
+    Then The daily and absolute transfer limit for the customer account is updated
+    And I get http status 200
+
+
   #Cezar
   Scenario: Transfer funds between customers checking accounts.
   Given The endpoint for "transactions" is available for method "POST" and the employee is logged in
@@ -32,14 +42,6 @@ Feature: Everything related to employee actions and their management
   Then A new transaction is created
     And I get http status 201
 
-  #Cezar
-  Scenario: Set daily and absolute transfer limit for customer account
-    Given The endpoint for "accounts/NL00INHO0342486737" is available for method "PUT" and the employee is logged in
-    When I set the daily and absolute transfer limit for the customer with the following details:
-    | accountNumber       | dailyTransferLimit | absoluteTransferLimit |
-    | NL00INHO0342486737  | 1000               | 0                     |
-    Then The daily and absolute transfer limit for the customer account is updated
-    And I get http status 200
 
 
 
