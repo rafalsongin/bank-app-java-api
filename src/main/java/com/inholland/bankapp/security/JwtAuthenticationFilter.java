@@ -1,5 +1,7 @@
 package com.inholland.bankapp.security;
 
+import com.inholland.bankapp.model.UserRole;
+import com.inholland.bankapp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,6 +26,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsService userDetailsService;
 
+    @Autowired
+    private UserService userService;
+
     private static final Logger logger = Logger.getLogger(JwtAuthenticationFilter.class.getName());
 
     @Override
@@ -43,12 +48,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
             if (jwtTokenUtil.validateJwtToken(jwt)) {
-                String role = jwtTokenUtil.getUserRoleFromJwtToken(jwt);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, Collections.singleton(() -> role));
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                logger.info("Set SecurityContext with authentication for user: " + username);
+                UserRole role = userService.getUserRoleByEmail(username);
+                if (role != null) {
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, Collections.singleton(() -> "ROLE_" + role.name()));
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    logger.info("Set SecurityContext with authentication for user: " + username);
+                } else {
+                    logger.warning("User role not found for user: " + username);
+                }
             } else {
                 logger.warning("JWT token validation failed for token: " + jwt);
             }

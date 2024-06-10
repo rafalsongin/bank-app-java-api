@@ -1,5 +1,6 @@
 package com.inholland.bankapp.controller;
 
+import com.inholland.bankapp.config.SecurityUtil;
 import com.inholland.bankapp.dto.AccountDto;
 import com.inholland.bankapp.exceptions.CustomerAccountsNotFoundException;
 import com.inholland.bankapp.exceptions.CustomerNotFoundException;
@@ -26,6 +27,7 @@ public class AccountController {
     // <editor-fold desc="Put Endpoints">
     @PutMapping("/{accountIBAN}")
     public ResponseEntity<?> updateAccount(@PathVariable String accountIBAN, @RequestBody AccountDto updatedAccount) {
+        
         try {
             AccountDto account = accountService.updateAccount(accountIBAN, updatedAccount);
             if (account == null) {
