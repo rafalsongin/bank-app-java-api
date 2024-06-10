@@ -1,5 +1,6 @@
 package com.inholland.bankapp.controller;
 
+import com.inholland.bankapp.config.SecurityUtil;
 import com.inholland.bankapp.dto.CustomerDto;
 import com.inholland.bankapp.exceptions.CustomerNotFoundException;
 import com.inholland.bankapp.service.CustomerService;
@@ -23,6 +24,7 @@ public class CustomerController {
     @GetMapping
     public ResponseEntity<List<CustomerDto>> getAllCustomers() {
         try {
+            SecurityUtil.checkIfEmployee();
             List<CustomerDto> customers = customerService.getAllCustomers();
             if (customers.isEmpty()) {
                 return ResponseEntity.noContent().build();
@@ -61,6 +63,7 @@ public class CustomerController {
     @GetMapping("/iban/{firstName}/{lastName}")
     public ResponseEntity<String> getIbanByCustomerName(@PathVariable String firstName, @PathVariable String lastName) {
         try {
+            SecurityUtil.checkIfEmployee();
             String iban = customerService.getIbanByCustomerName(firstName, lastName);
             if (iban == null) {
                 return ResponseEntity.noContent().build();
@@ -83,6 +86,7 @@ public class CustomerController {
     @PostMapping("/approve/{customerID}")
     public ResponseEntity<String> approveCustomer(@PathVariable int customerID) {
         try {
+            SecurityUtil.checkIfEmployee();
             customerService.approveCustomer(customerID);
             return ResponseEntity.ok("Customer approved");
         } catch (IllegalArgumentException e) {
@@ -95,6 +99,7 @@ public class CustomerController {
     @PostMapping("/decline/{customerID}")
     public ResponseEntity<String> declineCustomer(@PathVariable int customerID) {
         try {
+            SecurityUtil.checkIfEmployee();
             customerService.declineCustomer(customerID);
             return ResponseEntity.ok("Customer declined");
         } catch (IllegalArgumentException e) {
