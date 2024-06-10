@@ -1,5 +1,6 @@
 package com.inholland.bankapp.controller;
 
+import com.inholland.bankapp.config.SecurityUtil;
 import com.inholland.bankapp.model.Customer;
 import com.inholland.bankapp.model.Employee;
 import com.inholland.bankapp.service.EmployeeService;
@@ -25,8 +26,8 @@ public class EmployeeController {
 
     @GetMapping("/email/{email}")
     public ResponseEntity<Employee> getEmployeeByEmail(@PathVariable String email) {
-
         try {
+            SecurityUtil.checkIfEmployee();
             Optional<Employee> employeeOpt = employeeService.getEmployeeByEmail(email);
             if (!employeeOpt.isPresent()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);

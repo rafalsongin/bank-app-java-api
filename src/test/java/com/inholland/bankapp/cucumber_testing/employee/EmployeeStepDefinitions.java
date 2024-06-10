@@ -191,7 +191,7 @@ public class EmployeeStepDefinitions extends BaseStepDefinitions{
             System.out.println("Request: " + request);
 
             response = restTemplate.exchange(
-                    "/api/accounts/changeAccount/" + accountIBAN,
+                    "/api/accounts/" + accountIBAN,
                     HttpMethod.PUT,
                     request,
                     String.class

@@ -27,8 +27,8 @@ public class AccountController {
     // <editor-fold desc="Put Endpoints">
     @PutMapping("/{accountIBAN}")
     public ResponseEntity<?> updateAccount(@PathVariable String accountIBAN, @RequestBody AccountDto updatedAccount) {
-        
         try {
+            SecurityUtil.checkIfEmployee();
             AccountDto account = accountService.updateAccount(accountIBAN, updatedAccount);
             if (account == null) {
                 return ResponseEntity.notFound().build();
@@ -46,6 +46,7 @@ public class AccountController {
     @GetMapping("/checking/{IBAN}")
     public ResponseEntity<?> getCheckingAccountByIBAN(@PathVariable String IBAN) {
         try {
+            SecurityUtil.checkIfEmployee();
             AccountDto account = accountService.getCheckingAccountByIBAN(IBAN);
             if (account == null) {
                 return ResponseEntity.notFound().build();
