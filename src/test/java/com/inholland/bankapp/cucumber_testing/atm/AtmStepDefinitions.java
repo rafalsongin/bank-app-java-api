@@ -2,9 +2,11 @@ package com.inholland.bankapp.cucumber_testing.atm;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inholland.bankapp.cucumber_testing.CommonStepDefinitions;
+import com.inholland.bankapp.cucumber_testing.BaseStepDefinitions;
 import com.inholland.bankapp.dto.AtmTransactionDto;
 import com.inholland.bankapp.dto.LoginDto;
 import io.cucumber.java.en.*;
+import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -14,7 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.logging.Logger;
 
-public class AtmStepDefinitions {
+public class AtmStepDefinitions extends BaseStepDefinitions {
 
     @Autowired
     private RestTemplate restTemplate;
@@ -27,9 +29,13 @@ public class AtmStepDefinitions {
 
     private HttpHeaders headers = new HttpHeaders();
     private ResponseEntity<String> response;
-    private String baseUrl = "http://localhost:" + 8080 + "/atm";
 
     private static final Logger logger = Logger.getLogger(AtmStepDefinitions.class.getName());
+
+    @PostConstruct
+    public void init() {
+        super.init();
+    }
 
     @Given("The user is authenticated with email {string}")
     public void theUserIsAuthenticated(String email) {
@@ -41,7 +47,7 @@ public class AtmStepDefinitions {
     }
 
     private String authenticateCustomer(String email, String password) {
-        String loginUrl = "http://localhost:8080/auth/login-atm"; // The authentication endpoint
+        String loginUrl = "http://localhost:" + port + "/auth/login-atm"; // The authentication endpoint
         HttpHeaders loginHeaders = new HttpHeaders();
         loginHeaders.setContentType(MediaType.APPLICATION_JSON);
 
@@ -64,7 +70,7 @@ public class AtmStepDefinitions {
     public void theUserRetrievesTheCheckingAccountBalance() {
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
         try {
-            response = restTemplate.exchange(baseUrl + "/balance", HttpMethod.GET, entity, String.class);
+            response = restTemplate.exchange("http://localhost:" + port + "/atm/balance", HttpMethod.GET, entity, String.class);
             commonStepDefinitions.setResponse(response);
         } catch (HttpServerErrorException e) {
             logger.severe("Error during balance retrieval: " + e.getResponseBodyAsString());
@@ -93,7 +99,7 @@ public class AtmStepDefinitions {
         HttpEntity<AtmTransactionDto> entity = new HttpEntity<>(atmTransactionDto, headers);
         logger.info("Request headers for deposit: " + entity.getHeaders());
         try {
-            response = restTemplate.postForEntity(baseUrl + "/deposit", entity, String.class);
+            response = restTemplate.postForEntity("http://localhost:" + port + "/atm/deposit", entity, String.class);
             commonStepDefinitions.setResponse(response);
         } catch (HttpClientErrorException e) {
             logger.severe("Error during deposit: " + e.getResponseBodyAsString());
@@ -113,7 +119,7 @@ public class AtmStepDefinitions {
         atmTransactionDto.setAmount(amount);
         HttpEntity<AtmTransactionDto> entity = new HttpEntity<>(atmTransactionDto, headers);
         try {
-            response = restTemplate.postForEntity(baseUrl + "/withdraw", entity, String.class);
+            response = restTemplate.postForEntity("http://localhost:" + port + "/atm/withdraw", entity, String.class);
             commonStepDefinitions.setResponse(response);
         } catch (HttpClientErrorException e) {
             logger.severe("Error during withdrawal: " + e.getResponseBodyAsString());

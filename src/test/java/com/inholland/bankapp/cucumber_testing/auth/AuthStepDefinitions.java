@@ -1,18 +1,19 @@
 package com.inholland.bankapp.cucumber_testing.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.inholland.bankapp.cucumber_testing.CommonStepDefinitions;
+import com.inholland.bankapp.cucumber_testing.BaseStepDefinitions;
 import com.inholland.bankapp.dto.CustomerRegistrationDto;
 import com.inholland.bankapp.dto.LoginDto;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
-public class AuthStepDefinitions {
+public class AuthStepDefinitions extends BaseStepDefinitions {
 
     @Autowired
     private RestTemplate restTemplate;
@@ -20,11 +21,13 @@ public class AuthStepDefinitions {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private CommonStepDefinitions commonStepDefinitions;
+    @LocalServerPort
+    private int port;
 
     private HttpHeaders headers = new HttpHeaders();
-    private String baseUrl = "http://localhost:" + 8080 + "/auth";
+
+    @Autowired
+    private BaseStepDefinitions baseStepDefinitions;
 
     @Given("The following customer registration details")
     public void theFollowingCustomerRegistrationDetails(DataTable dataTable) {
@@ -38,8 +41,9 @@ public class AuthStepDefinitions {
         registrationDto.setPhoneNumber(customerData.get("phoneNumber"));
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<CustomerRegistrationDto> request = new HttpEntity<>(registrationDto, headers);
+        String baseUrl = "http://localhost:" + port + "/auth";
         ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/register", request, String.class);
-        commonStepDefinitions.setResponse(response);
+        baseStepDefinitions.setResponse(response);
     }
 
     @Given("The following login details")
@@ -50,8 +54,9 @@ public class AuthStepDefinitions {
         loginDto.setPassword(loginData.get("password"));
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<LoginDto> request = new HttpEntity<>(loginDto, headers);
+        String baseUrl = "http://localhost:" + port + "/auth";
         ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/login", request, String.class);
-        commonStepDefinitions.setResponse(response);
+        baseStepDefinitions.setResponse(response);
     }
 
     @When("The customer submits the registration form")
@@ -72,7 +77,8 @@ public class AuthStepDefinitions {
         loginDto.setPassword(loginData.get("password"));
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<LoginDto> request = new HttpEntity<>(loginDto, headers);
+        String baseUrl = "http://localhost:" + port + "/auth";
         ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/login-atm", request, String.class);
-        commonStepDefinitions.setResponse(response);
+        baseStepDefinitions.setResponse(response);
     }
 }
