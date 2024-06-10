@@ -1,7 +1,10 @@
 package com.inholland.bankapp.controller;
 
+import com.inholland.bankapp.config.SecurityUtil;
 import com.inholland.bankapp.dto.AtmTransactionDto;
+import com.inholland.bankapp.model.Employee;
 import com.inholland.bankapp.service.AccountService;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +26,8 @@ public class AtmController {
     @GetMapping("/balance")
     public ResponseEntity<?> getCheckingAccountBalance() {
         try {
+            SecurityUtil.checkIfCustomer();
+            
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
             logger.info("Email from token: " + email);
@@ -30,15 +35,20 @@ public class AtmController {
             Double balance = accountService.findCheckingAccountBalanceByEmail(email);
             logger.info("Balance retrieved: " + balance);
             return ResponseEntity.ok(balance);
+        } catch (BadRequestException e) {
+            logger.severe("Error during balance retrieval: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             logger.severe("Error during balance retrieval: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred fetching balance");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
     @PostMapping("/deposit")
     public ResponseEntity<?> depositToCheckingAccount(@RequestBody AtmTransactionDto atmTransactionDto) {
         try {
+            SecurityUtil.checkIfCustomer();
+            
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
             logger.info("Email from token: " + email);
@@ -46,7 +56,8 @@ public class AtmController {
             accountService.depositToCheckingAccount(email, atmTransactionDto.getAmount());
 
             return ResponseEntity.ok("Deposit was successful");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | BadRequestException e) {
+            logger.severe("Error during balance retrieval: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             logger.severe("Error during deposit: " + e.getMessage());
@@ -57,6 +68,8 @@ public class AtmController {
     @PostMapping("/withdraw")
     public ResponseEntity<?> withdrawFromCheckingAccount(@RequestBody AtmTransactionDto atmTransactionDto) {
         try {
+            SecurityUtil.checkIfCustomer();
+            
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
             logger.info("Email from token: " + email);
@@ -64,7 +77,8 @@ public class AtmController {
             accountService.withdrawFromCheckingAccount(email, atmTransactionDto.getAmount());
 
             return ResponseEntity.ok("Withdraw was successful");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | BadRequestException e) {
+            logger.severe("Error during balance retrieval: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             logger.severe("Error during withdrawal: " + e.getMessage());

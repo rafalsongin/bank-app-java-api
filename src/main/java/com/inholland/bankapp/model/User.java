@@ -35,6 +35,8 @@ public class User {
     @Column(name = "bank_id")
     private int bankId;
 
+    @Getter
     @Column(name = "user_role")
     private UserRole userRole;
+
 }
