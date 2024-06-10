@@ -137,4 +137,40 @@ public class CustomerStepDefinitions extends BaseStepDefinitions {
             throw new RuntimeException("Failed to login and get token");
         }
     }
+
+
+    // <editor-fold desc="Customer gets their transactions.">
+    @When("Customer retrieves all transactions for their account")
+    public void customerRetrievesAllTransactionsForTheirAccount() {
+        response = restTemplate.exchange(
+                "/api/transactions/account/NL00INHO0854894591?username=igmas@gmail.com&role=CUSTOMER",
+                HttpMethod.GET,
+                new HttpEntity<>(null, httpHeaders),
+                String.class);
+    }
+
+    @Then("Customer gets a list of transactions")
+    public void customerGetsAListOfTransactions() {
+        String body = response.getBody();
+        int actual = JsonPath.read(body, "$.content.length()");
+        Assertions.assertTrue(actual >= 1, "Expected at least 1 transaction, but got " + actual);
+    }
+
+    @When("Customer retrieves all transactions greater than 200 for their account")
+    public void customerRetrievesAllTransactionsGreaterThanForTheirAccount() {
+        response = restTemplate.exchange(
+                "/api/transactions/account/NL00INHO0127227054?username=igmas@gmail.com&role=CUSTOMER&amountCondition=greaterThan&amount=200",
+                HttpMethod.GET,
+                new HttpEntity<>(null, httpHeaders),
+                String.class);
+    }
+
+    @Then("Customer gets a list of transactions greater than 200")
+    public void customerGetsAListOfTransactionsGreaterThan() {
+        String body = response.getBody();
+        System.out.println(body);
+        int actual = JsonPath.read(body, "$.content.length()");
+        Assertions.assertTrue(actual >= 1, "Expected at least 1 transaction, but got " + actual);
+    }
+    // </editor-fold>
 }
