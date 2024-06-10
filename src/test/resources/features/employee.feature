@@ -42,13 +42,8 @@ Feature: Everything related to employee actions and their management
     And I get http status 200
 
 
-
-  Scenario: View a list of unverified customers.
-
   Scenario: Close a customer account.
 
   Scenario: View a list of all transactions.
 
   Scenario: View a list of individual transactions for a customer.
-
-
