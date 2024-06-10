@@ -277,6 +277,68 @@ public class EmployeeStepDefinitions extends BaseStepDefinitions{
 
     // </editor-fold>
 
+    // <editor-fold desc="Testing Scenario: Close customer account.">
+    @When ("I close the customer account")
+    public void iCloseTheCustomerAccount() {
+        if (!prepareTheTestDummyCustomer()) {
+            throw new RuntimeException("Failed to prepare the test dummy customer");
+        }
+        response = restTemplate.exchange(
+                "/api/customers/close/" + TEST_USER_ID,
+                HttpMethod.PUT,
+                new HttpEntity<>(null, httpHeaders),
+                String.class
+        );
+    }
+
+    @Then("The customer account is closed")
+    public void theCustomerAccountIsClosed() {
+        Customer customer = customerService.getCustomerById(TEST_USER_ID).orElse(null);
+        Assertions.assertNotNull(customer, "Customer not found");
+        Assertions.assertEquals(AccountApprovalStatus.CLOSED, customer.getAccountApprovalStatus(), "Customer account state is not closed");
+    }
+    // </editor-fold>
+
+    // <editor-fold desc="Testing Scenario: View all transactions.">
+    @When("I retrieve all transactions")
+    public void iRetrieveAllTransactions() {
+        response = restTemplate.exchange(
+                "/api/transactions?page=1&size=10&amountCondition=equal&username=rafal.songin@gmail.com&role=EMPLOYEE",
+                HttpMethod.GET,
+                new HttpEntity<>(null, httpHeaders),
+                String.class
+        );
+    }
+
+    @Then("I get a list of transactions")
+    public void iGetAListOfTransactions() {
+        String body = response.getBody();
+        System.out.println("Response body: " + body);
+        int actual = JsonPath.read(body, "$.content.length()");
+        Assertions.assertTrue(actual >= 1, "Expected at least 1 transaction, but got " + actual);
+    }
+    // </editor-fold>
+
+    // <editor-fold desc="Testing Scenario: View all transactions by IBAN.">
+    @When("I retrieve all transactions for a customer")
+    public void iRetrieveAllTransactionsForACustomer() {
+        response = restTemplate.exchange(
+                "/api/transactions/account/NL00INHO0854894591?username=rafal.songin@gmail.com&role=EMPLOYEE",
+                HttpMethod.GET,
+                new HttpEntity<>(null, httpHeaders),
+                String.class
+        );
+    }
+
+    @Then("I get a list of customer's transactions")
+    public void iGetAListOfCustomerTransactions() {
+        String body = response.getBody();
+        System.out.println("Response body: " + body);
+        int actual = JsonPath.read(body, "$.content.length()");
+        Assertions.assertTrue(actual >= 1, "Expected at least 1 transaction, but got " + actual);
+    }
+    // </editor-fold>
+
     private boolean prepareTheTestDummyCustomer()
     {
         try {
@@ -330,5 +392,3 @@ public class EmployeeStepDefinitions extends BaseStepDefinitions{
         }
     }
 }
-
-

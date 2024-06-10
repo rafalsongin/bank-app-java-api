@@ -77,5 +77,5 @@ add-data.sql
 
 - [Cezar Florinel](https://github.com/CezarFlorinel)
 - [Ignas Montvydas](https://github.com/IgnasMon)
-- [Mariia Kovalenkoo](https://github.com/MariiaKovalenkoo)
+- [Mariia Kovalenko](https://github.com/MariiaKovalenkoo)
 - [Rafal Songin](https://github.com/rafalsongin)
