@@ -12,6 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -50,7 +54,7 @@ class AccountControllerTestSpringMockito {
     // <editor-fold desc="Test for updateAccount">
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "EMPLOYEE")
     void updateAccount_ReturnsOk() throws Exception {
         String accountIBAN = "NL91ABNA0417164300";
         AccountDto updatedAccount = new AccountDto();
@@ -66,7 +70,7 @@ class AccountControllerTestSpringMockito {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "EMPLOYEE")
     void updateAccount_ReturnsBadRequest() throws Exception {
         String accountIBAN = "NL91ABNA0417164300";
         AccountDto updatedAccount = new AccountDto();
@@ -82,7 +86,7 @@ class AccountControllerTestSpringMockito {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "EMPLOYEE")
     void updateAccount_ReturnsInternalServerError() throws Exception {
         String accountIBAN = "NL91ABNA0417164300";
         AccountDto updatedAccount = new AccountDto();
@@ -102,7 +106,7 @@ class AccountControllerTestSpringMockito {
     // <editor-fold desc="Test for getCheckingAccountByIBAN">
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "EMPLOYEE")
     void getCheckingAccountByIBAN_ReturnsOk() throws Exception {
         String IBAN = "NL91ABNA0417164300";
         AccountDto account = new AccountDto();
@@ -116,7 +120,7 @@ class AccountControllerTestSpringMockito {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "EMPLOYEE")
     void getCheckingAccountByIBAN_ReturnsNotFound() throws Exception {
         String IBAN = "NL91ABNA0417164300";
         when(accountService.getCheckingAccountByIBAN(IBAN)).thenReturn(null);
@@ -127,7 +131,7 @@ class AccountControllerTestSpringMockito {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "EMPLOYEE")
     void getCheckingAccountByIBAN_ReturnsBadRequest() throws Exception {
         String IBAN = "NL91ABNA0417164300";
         when(accountService.getCheckingAccountByIBAN(IBAN))
@@ -144,7 +148,7 @@ class AccountControllerTestSpringMockito {
     // <editor-fold desc="Test for getAccountsByCustomerId">
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "EMPLOYEE")
     void getAccountsByCustomerId_ReturnsOk() throws Exception {
         Integer customerId = 1;
         List<AccountDto> accounts = Arrays.asList(new AccountDto(), new AccountDto());
@@ -158,7 +162,7 @@ class AccountControllerTestSpringMockito {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "EMPLOYEE")
     void getAccountsByCustomerId_ReturnsNoContent() throws Exception {
         Integer customerId = 1;
         when(accountService.getAccountsByCustomerId(customerId)).thenReturn(Collections.emptyList());
@@ -169,7 +173,7 @@ class AccountControllerTestSpringMockito {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "EMPLOYEE")
     void getAccountsByCustomerId_ReturnsInternalServerError() throws Exception {
         Integer customerId = 1;
         when(accountService.getAccountsByCustomerId(customerId)).thenThrow(new RuntimeException("Internal server error"));

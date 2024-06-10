@@ -63,7 +63,7 @@ public class CustomerController {
     @GetMapping("/iban/{firstName}/{lastName}")
     public ResponseEntity<String> getIbanByCustomerName(@PathVariable String firstName, @PathVariable String lastName) {
         try {
-            SecurityUtil.checkIfEmployee();
+            SecurityUtil.checkIfCustomer();
             String iban = customerService.getIbanByCustomerName(firstName, lastName);
             if (iban == null) {
                 return ResponseEntity.noContent().build();
