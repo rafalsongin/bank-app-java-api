@@ -114,7 +114,7 @@ public class TransactionControllerTest {
 
         Page<TransactionDto> transactions = new PageImpl<>(Collections.singletonList(new TransactionDto()));
         when(transactionService.getAllTransactions(anyInt(), anyInt(), any(), any(), any(), any(), any(), any())).thenReturn(transactions);
-        when(userService.userExists(anyString())).thenReturn(true);
+        when(userService.userExists(username)).thenReturn(true);
 
         this.mockMvc.perform(get("/api/transactions")
                         .param("page", "1")
@@ -148,6 +148,22 @@ public class TransactionControllerTest {
         String role = "CUSTOMER";
 
         when(userService.userExists(username)).thenReturn(true);
+
+        mockMvc.perform(get("/api/transactions")
+                        .param("page", "1")
+                        .param("size", "10")
+                        .param("username", username)
+                        .param("role", role))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Unauthorized access"));
+    }
+
+    @Test
+    public void testGetAllTransactions_UnauthorizedAccessUserDoesNotExist() throws Exception {
+        String username = "testuser";
+        String role = "CUSTOMER";
+
+        when(userService.userExists(username)).thenReturn(false);
 
         mockMvc.perform(get("/api/transactions")
                         .param("page", "1")
@@ -341,16 +357,21 @@ public class TransactionControllerTest {
     @Test
     @WithMockUser
     void testGetAllTransactions_ReturnsOkWithoutFilters() throws Exception {
+        String username = "employeeUser";
+        String role = "EMPLOYEE";
+        int page = 1;
+        int size = 10;
+
         Page<TransactionDto> transactions = getTransactionDtos();
 
-        when(transactionService.getAllTransactions(anyInt(), anyInt(), any(), any(), any(), any(), any(), any())).thenReturn(transactions);
-        when(userService.userExists(anyString())).thenReturn(true);
+        when(transactionService.getAllTransactions(eq(page), eq(size), any(), any(), any(), any(), any(), any())).thenReturn(transactions);
+        when(userService.userExists(username)).thenReturn(true);
 
         this.mockMvc.perform(get("/api/transactions")
-                        .param("page", "1")
-                        .param("size", "10")
-                        .param("username", "test_user")
-                        .param("role", "EMPLOYEE"))
+                        .param("page", String.valueOf(page))
+                        .param("size", String.valueOf(size))
+                        .param("username", username)
+                        .param("role", role))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(2)))
@@ -371,7 +392,6 @@ public class TransactionControllerTest {
                 .andExpect(jsonPath("$.content[1].initiatorName", is("test_user")))
                 .andExpect(jsonPath("$.content[1].initiatorRole", is("CUSTOMER")))
                 .andExpect(jsonPath("$.content[1].timestamp", is("2024-06-02T12:00:00")));
-
     }
 
     @Test
@@ -721,13 +741,35 @@ public class TransactionControllerTest {
     void testCustomerGetAllTransactionsByIban_ReturnsOk() throws Exception {
         String username = "user";
         String role = "CUSTOMER";
+        String iban = "NL91ABNA0417164300";
 
         Page<TransactionDto> transactions = new PageImpl<>(Collections.singletonList(new TransactionDto()));
         when(transactionService.getAllTransactionsByIban(anyInt(), anyInt(), anyString(), any(), any(), any(), any(), any(), any())).thenReturn(transactions);
-        when(userService.userExists(anyString())).thenReturn(true);
-        when(userService.isAccountOwner(anyString(), anyString())).thenReturn(true);
+        when(userService.userExists(username)).thenReturn(true);
+        when(userService.isAccountOwner(username, iban)).thenReturn(true);
 
-        this.mockMvc.perform(get("/api/transactions/account/{iban}", "NL91ABNA0417164300")
+        this.mockMvc.perform(get("/api/transactions/account/{iban}", iban)
+                        .param("page", "1")
+                        .param("size", "10")
+                        .param("username", username)
+                        .param("role", role))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)));
+    }
+
+    @Test
+    @WithMockUser
+    void testEmployeeGetAllTransactionsByIban_ReturnsOk() throws Exception {
+        String username = "employeeUser";
+        String role = "EMPLOYEE";
+        String iban = "NL91ABNA0417164300";
+
+        Page<TransactionDto> transactions = new PageImpl<>(Collections.singletonList(new TransactionDto()));
+        when(transactionService.getAllTransactionsByIban(anyInt(), anyInt(), anyString(), any(), any(), any(), any(), any(), any())).thenReturn(transactions);
+        when(userService.userExists(username)).thenReturn(true);
+
+        this.mockMvc.perform(get("/api/transactions/account/{iban}", iban)
                         .param("page", "1")
                         .param("size", "10")
                         .param("username", username)
@@ -747,7 +789,7 @@ public class TransactionControllerTest {
         Page<TransactionDto> transactions = new PageImpl<>(Collections.singletonList(new TransactionDto()));
         when(transactionService.getAllTransactionsByIban(anyInt(), anyInt(), eq(iban), any(), any(), any(), any(), any(), any())).thenReturn(transactions);
         when(userService.userExists(username)).thenReturn(true);
-        when(userService.isAccountOwner(username, iban)).thenReturn(false);  // Use specific username and iban
+        when(userService.isAccountOwner(username, iban)).thenReturn(false);
 
         this.mockMvc.perform(get("/api/transactions/account/{iban}", iban)
                         .param("page", "1")
@@ -761,33 +803,14 @@ public class TransactionControllerTest {
 
     @Test
     @WithMockUser
-    void testEmployeeGetAllTransactionsByIban_ReturnsOk() throws Exception {
-        String username = "employeeUser";
-        String role = "EMPLOYEE";
-
-        Page<TransactionDto> transactions = new PageImpl<>(Collections.singletonList(new TransactionDto()));
-        when(transactionService.getAllTransactionsByIban(anyInt(), anyInt(), anyString(), any(), any(), any(), any(), any(), any())).thenReturn(transactions);
-        when(userService.userExists(anyString())).thenReturn(true);
-
-        this.mockMvc.perform(get("/api/transactions/account/{iban}", "NL91ABNA0417164300")
-                        .param("page", "1")
-                        .param("size", "10")
-                        .param("username", username)
-                        .param("role", role))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(1)));
-    }
-
-    @Test
-    @WithMockUser
     void testGetAllTransactionsByIban_UserDoesNotExist() throws Exception {
         String username = "test_user";
         String role = "CUSTOMER";
+        String iban = "NL91ABNA0417164300";
 
-        when(userService.userExists(anyString())).thenReturn(false);
+        when(userService.userExists(username)).thenReturn(false);
 
-        this.mockMvc.perform(get("/api/transactions/account/{iban}", "NL91ABNA0417164300")
+        this.mockMvc.perform(get("/api/transactions/account/{iban}", iban)
                         .param("page", "1")
                         .param("size", "10")
                         .param("username", username)
@@ -801,14 +824,16 @@ public class TransactionControllerTest {
     public void testGetAllTransactionsByIban_InvalidUserRole() throws Exception {
         String username = "test_user";
         String invalidRole = "INVALID_ROLE";
+        String iban = "NL91ABNA0417164300";
 
         when(userService.userExists(username)).thenReturn(true);
 
-        mockMvc.perform(get("/api/transactions")
+        mockMvc.perform(get("/api/transactions/account/{iban}", iban)
                         .param("page", "1")
                         .param("size", "10")
                         .param("username", username)
                         .param("role", invalidRole))
+                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Invalid role"));
     }
@@ -849,6 +874,139 @@ public class TransactionControllerTest {
                 .andExpect(content().string(""));
     }
 
+    @Test
+    @WithMockUser
+    void testGetAllTransactionsByIban_WithDateRangeFilter_ReturnsOk() throws Exception {
+        String username = "user";
+        String role = "CUSTOMER";
+        String iban = "NL91ABNA0417164300";
+        String startDate = "2023-01-01";
+        String endDate = "2023-01-31";
+
+        Page<TransactionDto> transactions = new PageImpl<>(Collections.singletonList(new TransactionDto()));
+        when(transactionService.getAllTransactionsByIban(anyInt(), anyInt(), eq(iban), eq(LocalDate.parse(startDate)), eq(LocalDate.parse(endDate)), any(), any(), any(), any())).thenReturn(transactions);
+        when(userService.userExists(username)).thenReturn(true);
+        when(userService.isAccountOwner(username, iban)).thenReturn(true);
+
+        this.mockMvc.perform(get("/api/transactions/account/{iban}", iban)
+                        .param("page", "1")
+                        .param("size", "10")
+                        .param("username", username)
+                        .param("role", role)
+                        .param("startDate", startDate)
+                        .param("endDate", endDate))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)));
+    }
+
+    @Test
+    @WithMockUser
+    void testGetAllTransactionsByIban_WithAmountFilter_ReturnsOk() throws Exception {
+        String username = "user";
+        String role = "CUSTOMER";
+        String iban = "NL91ABNA0417164300";
+        String amountCondition = "greaterThan";
+        String amountValue = "100.00";
+
+        Page<TransactionDto> transactions = new PageImpl<>(Collections.singletonList(new TransactionDto()));
+        when(transactionService.getAllTransactionsByIban(anyInt(), anyInt(), eq(iban), any(), any(), eq(amountCondition), eq(Float.parseFloat(amountValue)), any(), any())).thenReturn(transactions);
+        when(userService.userExists(username)).thenReturn(true);
+        when(userService.isAccountOwner(username, iban)).thenReturn(true);
+
+        this.mockMvc.perform(get("/api/transactions/account/{iban}", iban)
+                        .param("page", "1")
+                        .param("size", "10")
+                        .param("username", username)
+                        .param("role", role)
+                        .param("amountCondition", amountCondition)
+                        .param("amountValue", amountValue))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)));
+    }
+
+    @Test
+    @WithMockUser
+    void testGetAllTransactionsByIban_WithFromIbanFilter_ReturnsOk() throws Exception {
+        String username = "user";
+        String role = "CUSTOMER";
+        String iban = "NL91ABNA0417164300";
+        String fromIban = "NL91ABNA0417164301";
+
+        Page<TransactionDto> transactions = new PageImpl<>(Collections.singletonList(new TransactionDto()));
+        when(transactionService.getAllTransactionsByIban(anyInt(), anyInt(), eq(iban), any(), any(), any(), any(), eq(fromIban), any())).thenReturn(transactions);
+        when(userService.userExists(username)).thenReturn(true);
+        when(userService.isAccountOwner(username, iban)).thenReturn(true);
+
+        this.mockMvc.perform(get("/api/transactions/account/{iban}", iban)
+                        .param("page", "1")
+                        .param("size", "10")
+                        .param("username", username)
+                        .param("role", role)
+                        .param("fromIban", fromIban))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)));
+    }
+
+    @Test
+    @WithMockUser
+    void testGetAllTransactionsByIban_WithToIbanFilter_ReturnsOk() throws Exception {
+        String username = "user";
+        String role = "CUSTOMER";
+        String iban = "NL91ABNA0417164300";
+        String toIban = "NL91ABNA0417164302";
+
+        Page<TransactionDto> transactions = new PageImpl<>(Collections.singletonList(new TransactionDto()));
+        when(transactionService.getAllTransactionsByIban(anyInt(), anyInt(), eq(iban), any(), any(), any(), any(), any(), eq(toIban))).thenReturn(transactions);
+        when(userService.userExists(username)).thenReturn(true);
+        when(userService.isAccountOwner(username, iban)).thenReturn(true);
+
+        this.mockMvc.perform(get("/api/transactions/account/{iban}", iban)
+                        .param("page", "1")
+                        .param("size", "10")
+                        .param("username", username)
+                        .param("role", role)
+                        .param("toIban", toIban))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)));
+    }
+
+    @Test
+    @WithMockUser
+    void testGetAllTransactionsByIban_WithAllFilters_ReturnsOk() throws Exception {
+        String username = "user";
+        String role = "CUSTOMER";
+        String iban = "NL91ABNA0417164300";
+        String startDate = "2023-01-01";
+        String endDate = "2023-01-31";
+        String amountCondition = "greaterThan";
+        String amountValue = "100.00";
+        String fromIban = "NL91ABNA0417164301";
+        String toIban = "NL91ABNA0417164302";
+
+        Page<TransactionDto> transactions = new PageImpl<>(Collections.singletonList(new TransactionDto()));
+        when(transactionService.getAllTransactionsByIban(anyInt(), anyInt(), eq(iban), eq(LocalDate.parse(startDate)), eq(LocalDate.parse(endDate)), eq(amountCondition), eq(Float.parseFloat(amountValue)), eq(fromIban), eq(toIban))).thenReturn(transactions);
+        when(userService.userExists(username)).thenReturn(true);
+        when(userService.isAccountOwner(username, iban)).thenReturn(true);
+
+        this.mockMvc.perform(get("/api/transactions/account/{iban}", iban)
+                        .param("page", "1")
+                        .param("size", "10")
+                        .param("username", username)
+                        .param("role", role)
+                        .param("startDate", startDate)
+                        .param("endDate", endDate)
+                        .param("amountCondition", amountCondition)
+                        .param("amountValue", amountValue)
+                        .param("fromIban", fromIban)
+                        .param("toIban", toIban))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)));
+    }
     // </editor-fold>
 
     // </editor-fold>
