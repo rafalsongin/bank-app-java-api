@@ -16,7 +16,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.logging.Logger;
 
-public class AtmStepDefinitions extends BaseStepDefinitions {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class AtmStepDefinitions extends CommonStepDefinitions {
 
     @Autowired
     private RestTemplate restTemplate;
@@ -83,13 +85,12 @@ public class AtmStepDefinitions extends BaseStepDefinitions {
         response = commonStepDefinitions.getResponse();
         Assertions.assertNotNull(response.getBody(), "Response body is null");
         double balance = Double.parseDouble(response.getBody());
-        Assertions.assertEquals(expectedBalance, balance);
+        assertEquals(expectedBalance, balance);
     }
 
-    @And("The response status should be {int}")
+    @Then("The response status should be {int}")
     public void theResponseStatusShouldBe(int statusCode) {
-        response = commonStepDefinitions.getResponse();
-        Assertions.assertEquals(statusCode, response.getStatusCodeValue());
+        assertEquals(statusCode, getResponse().getStatusCodeValue());
     }
 
     @When("The user deposits {double} into the checking account")
@@ -107,10 +108,10 @@ public class AtmStepDefinitions extends BaseStepDefinitions {
         }
     }
 
-    @Then("The response should be {string}")
+    @And("The response should be {string}")
     public void theResponseShouldBe(String expectedResponse) {
         response = commonStepDefinitions.getResponse();
-        Assertions.assertEquals(expectedResponse, response.getBody());
+        assertEquals(expectedResponse, response.getBody());
     }
 
     @When("The user withdraws {double} from the checking account")

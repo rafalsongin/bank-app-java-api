@@ -62,7 +62,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 logger.warning("JWT token validation failed for token: " + jwt);
             }
         } else {
-            logger.warning("Username is null or SecurityContext already has an authentication");
+            logger.info("No username found or SecurityContext already contains an authentication.");
         }
 
         filterChain.doFilter(request, response);
