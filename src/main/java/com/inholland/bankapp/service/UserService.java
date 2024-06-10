@@ -1,6 +1,7 @@
 package com.inholland.bankapp.service;
 
 import com.inholland.bankapp.model.User;
+import com.inholland.bankapp.model.UserRole;
 import com.inholland.bankapp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,5 +34,13 @@ public class UserService {
             return userRepository.isAccountOwner(iban, user.getUserId());
         }
         return false;
+    }
+
+    public UserRole getUserRoleByEmail(String email) {
+        Optional<User> user = userRepository.findByEmail(email);
+        if (user.isPresent()) {
+            return user.get().getUserRole(); 
+        }
+        return null;
     }
 }
