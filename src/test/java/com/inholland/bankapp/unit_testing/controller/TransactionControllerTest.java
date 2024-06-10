@@ -103,7 +103,6 @@ public class TransactionControllerTest {
 
     // </editor-fold>
 
-    // <editor-fold desc="Mariia">
 
     // <editor-fold desc="Test for getAllTransactions">
     @Test
@@ -442,7 +441,7 @@ public class TransactionControllerTest {
         String role = "EMPLOYEE";
         int page = 1;
         int size = 10;
-        float amountValue = 200.0f;
+        float amountValue = 100.0f;
         String amountCondition = "greaterThan";
 
         Page<TransactionDto> transactions = getTransactionDtos();
@@ -638,7 +637,7 @@ public class TransactionControllerTest {
         String role = "EMPLOYEE";
         int page = 1;
         int size = 10;
-        String endDate = "2023-12-31";
+        String endDate = "2024-12-31";
 
         Page<TransactionDto> transactions = new PageImpl<>(Collections.singletonList(new TransactionDto()));
         when(userService.userExists(username)).thenReturn(true);
@@ -714,7 +713,7 @@ public class TransactionControllerTest {
         String role = "EMPLOYEE";
         int page = 1;
         int size = 10;
-        float amountValue = 1500.0f;
+        float amountValue = 150.0f;
         String amountCondition = "equals";
 
         Page<TransactionDto> transactions = new PageImpl<>(Collections.singletonList(new TransactionDto()));
@@ -880,8 +879,8 @@ public class TransactionControllerTest {
         String username = "user";
         String role = "CUSTOMER";
         String iban = "NL91ABNA0417164300";
-        String startDate = "2023-01-01";
-        String endDate = "2023-01-31";
+        String startDate = "2024-01-01";
+        String endDate = "2024-01-31";
 
         Page<TransactionDto> transactions = new PageImpl<>(Collections.singletonList(new TransactionDto()));
         when(transactionService.getAllTransactionsByIban(anyInt(), anyInt(), eq(iban), eq(LocalDate.parse(startDate)), eq(LocalDate.parse(endDate)), any(), any(), any(), any())).thenReturn(transactions);
@@ -980,8 +979,8 @@ public class TransactionControllerTest {
         String username = "user";
         String role = "CUSTOMER";
         String iban = "NL91ABNA0417164300";
-        String startDate = "2023-01-01";
-        String endDate = "2023-01-31";
+        String startDate = "2024-01-01";
+        String endDate = "2024-01-31";
         String amountCondition = "greaterThan";
         String amountValue = "100.00";
         String fromIban = "NL91ABNA0417164301";
@@ -1007,7 +1006,5 @@ public class TransactionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)));
     }
-    // </editor-fold>
-
     // </editor-fold>
 }
