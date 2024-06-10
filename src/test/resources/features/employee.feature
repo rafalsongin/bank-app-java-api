@@ -41,14 +41,23 @@ Feature: Everything related to employee actions and their management
     Then The daily and absolute transfer limit for the customer account is updated
     And I get http status 200
 
-
-
-  Scenario: View a list of unverified customers.
-
+  #Mariia
   Scenario: Close a customer account.
+    Given The endpoint for "customers/close/27" is available for method "PUT" and the employee is logged in
+    When I close the customer account
+    Then The customer account is closed
+    And I get http status 200
 
+  #Mariia
   Scenario: View a list of all transactions.
+    Given The endpoint for "transactions?page=1&size=10&amountCondition=equal&username=rafal.songin%40gmail.com&role=EMPLOYEE" is available for method "GET" and the employee is logged in
+    When I retrieve all transactions
+    Then I get a list of transactions
+    And I get http status 200
 
+  #Mariia
   Scenario: View a list of individual transactions for a customer.
-
-
+    Given The endpoint for "transactions/account/NL00INHO0854894591?username=rafal.songin%40gmail.com&role=EMPLOYEE" is available for method "GET" and the employee is logged in
+    When I retrieve all transactions for a customer
+    Then I get a list of customer's transactions
+    And I get http status 200

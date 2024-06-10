@@ -38,7 +38,13 @@ public class TransactionController {
             @RequestParam String username,
             @RequestParam String role) {
         try {
-            if (UserRole.valueOf(role.toUpperCase()) != UserRole.EMPLOYEE || !userService.userExists(username)) {
+            UserRole userRole;
+            try {
+                userRole = UserRole.valueOf(role.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid role");
+            }
+            if (!userService.userExists(username) || userRole != UserRole.EMPLOYEE) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
             }
             Page<TransactionDto> transactions = service.getAllTransactions(page, size, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
@@ -67,15 +73,19 @@ public class TransactionController {
             @RequestParam String username,
             @RequestParam String role) {
         try {
-            UserRole userRole = UserRole.valueOf(role.toUpperCase());
-            if (userRole == UserRole.EMPLOYEE && !userService.userExists(username)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
+            UserRole userRole;
+            try {
+                userRole = UserRole.valueOf(role.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid role");
             }
-            else if (userRole == UserRole.CUSTOMER && !userService.userExists(username) && !userService.isAccountOwner(username, iban)) {
+            if (!userService.userExists(username) ||
+                    !(userRole == UserRole.EMPLOYEE || (userRole == UserRole.CUSTOMER && userService.isAccountOwner(username, iban)))) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
             }
             Page<TransactionDto> transactions = service.getAllTransactionsByIban(page, size, iban, startDate, endDate, amountCondition, amountValue, fromIban, toIban);
             return ResponseEntity.ok(transactions);
+
         } catch (IllegalArgumentException e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (AccountNotFoundException e){
