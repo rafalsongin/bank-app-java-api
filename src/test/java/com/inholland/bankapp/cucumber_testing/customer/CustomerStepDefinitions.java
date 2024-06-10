@@ -90,7 +90,7 @@ public class CustomerStepDefinitions extends BaseStepDefinitions {
         String firstName = data.get(0).get("firstName");
         String lastName = data.get(0).get("lastName");
 
-        String endpoint = String.format("/api/customers/getIbanByCustomerName/%s/%s", firstName, lastName);
+        String endpoint = String.format("/api/customers/iban/%s/%s", firstName, lastName);
 
         // Make the GET request
         response = restTemplate.exchange(
