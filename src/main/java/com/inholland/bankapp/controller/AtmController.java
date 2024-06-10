@@ -47,6 +47,8 @@ public class AtmController {
     @PostMapping("/deposit")
     public ResponseEntity<?> depositToCheckingAccount(@RequestBody AtmTransactionDto atmTransactionDto) {
         try {
+            SecurityUtil.checkIfCustomer();
+            
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
             logger.info("Email from token: " + email);
@@ -54,7 +56,8 @@ public class AtmController {
             accountService.depositToCheckingAccount(email, atmTransactionDto.getAmount());
 
             return ResponseEntity.ok("Deposit was successful");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | BadRequestException e) {
+            logger.severe("Error during balance retrieval: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             logger.severe("Error during deposit: " + e.getMessage());
@@ -65,6 +68,8 @@ public class AtmController {
     @PostMapping("/withdraw")
     public ResponseEntity<?> withdrawFromCheckingAccount(@RequestBody AtmTransactionDto atmTransactionDto) {
         try {
+            SecurityUtil.checkIfCustomer();
+            
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
             logger.info("Email from token: " + email);
@@ -72,7 +77,8 @@ public class AtmController {
             accountService.withdrawFromCheckingAccount(email, atmTransactionDto.getAmount());
 
             return ResponseEntity.ok("Withdraw was successful");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | BadRequestException e) {
+            logger.severe("Error during balance retrieval: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             logger.severe("Error during withdrawal: " + e.getMessage());
