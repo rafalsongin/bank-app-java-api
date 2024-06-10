@@ -29,6 +29,7 @@ public class AccountController {
     public ResponseEntity<?> updateAccount(@PathVariable String accountIBAN, @RequestBody AccountDto updatedAccount) {
         
         try {
+
             AccountDto account = accountService.updateAccount(accountIBAN, updatedAccount);
             if (account == null) {
                 return ResponseEntity.notFound().build();
