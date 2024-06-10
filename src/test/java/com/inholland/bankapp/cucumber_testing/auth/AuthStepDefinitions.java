@@ -21,13 +21,7 @@ public class AuthStepDefinitions extends BaseStepDefinitions {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @LocalServerPort
-    private int port;
-
     private HttpHeaders headers = new HttpHeaders();
-
-    @Autowired
-    private BaseStepDefinitions baseStepDefinitions;
 
     @Given("The following customer registration details")
     public void theFollowingCustomerRegistrationDetails(DataTable dataTable) {
@@ -43,7 +37,7 @@ public class AuthStepDefinitions extends BaseStepDefinitions {
         HttpEntity<CustomerRegistrationDto> request = new HttpEntity<>(registrationDto, headers);
         String baseUrl = "http://localhost:" + port + "/auth";
         ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/register", request, String.class);
-        baseStepDefinitions.setResponse(response);
+        // Handle the response here if needed
     }
 
     @Given("The following login details")
@@ -56,7 +50,7 @@ public class AuthStepDefinitions extends BaseStepDefinitions {
         HttpEntity<LoginDto> request = new HttpEntity<>(loginDto, headers);
         String baseUrl = "http://localhost:" + port + "/auth";
         ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/login", request, String.class);
-        baseStepDefinitions.setResponse(response);
+        // Handle the response here if needed
     }
 
     @When("The customer submits the registration form")
@@ -79,6 +73,6 @@ public class AuthStepDefinitions extends BaseStepDefinitions {
         HttpEntity<LoginDto> request = new HttpEntity<>(loginDto, headers);
         String baseUrl = "http://localhost:" + port + "/auth";
         ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/login-atm", request, String.class);
-        baseStepDefinitions.setResponse(response);
+        // Handle the response here if needed
     }
 }
