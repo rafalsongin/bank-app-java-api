@@ -7,6 +7,7 @@ import com.inholland.bankapp.model.Account;
 import com.inholland.bankapp.model.AccountApprovalStatus;
 import com.inholland.bankapp.model.Customer;
 import com.jayway.jsonpath.JsonPath;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -58,7 +59,7 @@ public class CustomerStepDefinitions extends BaseStepDefinitions {
     @Given("The endpoint for {string} is available for method {string} and the customer is logged in")
     public void theEndpointForIsAvailableForMethodAndCustomerIsLoggedIn(String endpoint, String method) {
         // Get a real JWT token for an employee
-        String token = getEmployeeBearerToken();
+        String token = getCustomerBearerToken();
         httpHeaders.set("Authorization", "Bearer " + token);
 
         response = restTemplate.exchange(
@@ -85,7 +86,7 @@ public class CustomerStepDefinitions extends BaseStepDefinitions {
 
     // <editor-fold desc="Find user's IBAN by their first and last name.">
     @When("The customer sends a request to the endpoint with the following parameters:")
-    public void theCustomerSendsARequestToTheEndpointWithTheFollowingParameters(io.cucumber.datatable.DataTable dataTable) {
+    public void theCustomerSendsARequestToTheEndpointWithTheFollowingParameters(DataTable dataTable) {
         List<Map<String, String>> data = dataTable.asMaps(String.class, String.class);
         String firstName = data.get(0).get("firstName");
         String lastName = data.get(0).get("lastName");
@@ -117,7 +118,8 @@ public class CustomerStepDefinitions extends BaseStepDefinitions {
 
     // </editor-fold>
 
-    private String getEmployeeBearerToken() {
+    // <editor-fold desc="Token Retrieval">
+    private String getCustomerBearerToken() {
         // Logic to get a Bearer token for an employee
         String loginUrl = "/auth/login"; // The authentication endpoint
         HttpHeaders loginHeaders = new HttpHeaders();
@@ -138,7 +140,7 @@ public class CustomerStepDefinitions extends BaseStepDefinitions {
             throw new RuntimeException("Failed to login and get token");
         }
     }
-
+    // </editor-fold>
 
     // <editor-fold desc="Customer gets their transactions.">
     @When("Customer retrieves filtered transactions for their account with endpoint {string}")
@@ -156,6 +158,41 @@ public class CustomerStepDefinitions extends BaseStepDefinitions {
         System.out.println(body);
         int actual = JsonPath.read(body, "$.content.length()");
         Assertions.assertTrue(actual >= 1, "Expected at least 1 transaction, but got " + actual);
+    }
+    // </editor-fold>
+
+    // <editor-fold desc="When - Customer gets their customer details by email">
+    @When("The customer sends a GET request to the endpoint with email {string}")
+    public void theCustomerSendsAGetRequestToTheEndpointWithEmail(String email) {
+        String endpoint = "/api/customers/email/" + email;
+        response = restTemplate.exchange(endpoint, HttpMethod.GET, new HttpEntity<>(httpHeaders), String.class);
+    }
+    // </editor-fold>
+
+    // <editor-fold desc="When - Customer gets their customer details by id">
+    @When("The customer sends a GET request to the endpoint with id {int}")
+    public void theCustomerSendsAGETRequestToTheEndpointWithID(int id) {
+        String endpoint = "/api/customers/id/" + id;
+        System.out.println(endpoint);
+        response = restTemplate.exchange(endpoint, HttpMethod.GET, new HttpEntity<>(null, httpHeaders), String.class);
+    }
+    // </editor-fold>
+
+    // <editor-fold desc="Then - response: customer details">
+    @Then("The response body contains the customer details:")
+    public void theResponseBodyContainsTheCustomerDetails(DataTable expectedDataTable) {
+        Map<String, String> expectedData = expectedDataTable.asMap(String.class, String.class);
+        try {
+            String responseBody = response.getBody();
+
+            // Extract values from JSON response and verify each field
+            for (Map.Entry<String, String> entry : expectedData.entrySet()) {
+                String actualValue = JsonPath.read(responseBody, "$." + entry.getKey()).toString();
+                Assertions.assertEquals(entry.getValue(), actualValue, "Mismatch for field: " + entry.getKey());
+            }
+        }catch (Exception e){
+            Assertions.fail("Failed test: " + e);
+        }
     }
     // </editor-fold>
 }
