@@ -1,32 +1,30 @@
 package com.inholland.bankapp.cucumber_testing.employee;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.inholland.bankapp.cucumber_testing.BaseStepDefinitions;
 import com.inholland.bankapp.dto.AccountDto;
 import com.inholland.bankapp.dto.LoginDto;
+import com.inholland.bankapp.dto.TransactionDto;
 import com.inholland.bankapp.model.Account;
 import com.inholland.bankapp.model.AccountApprovalStatus;
 import com.inholland.bankapp.model.Customer;
+import com.inholland.bankapp.repository.AccountRepository;
+import com.inholland.bankapp.repository.CustomerRepository;
+import com.inholland.bankapp.service.AccountService;
+import com.inholland.bankapp.service.CustomerService;
 import com.jayway.jsonpath.JsonPath;
-import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.cucumber.spring.CucumberContextConfiguration;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
-import com.inholland.bankapp.dto.TransactionDto;
-import com.inholland.bankapp.service.AccountService;
-import com.inholland.bankapp.service.CustomerService;
-import com.inholland.bankapp.repository.CustomerRepository;
-import com.inholland.bankapp.repository.AccountRepository;
-import java.util.*;
-import com.inholland.bankapp.cucumber_testing.BaseStepDefinitions;
 
-public class EmployeeStepDefinitions extends BaseStepDefinitions{
+import java.util.*;
+
+public class EmployeeStepDefinitions extends BaseStepDefinitions {
 
     // <editor-fold desc="Variables">
     @Autowired
@@ -163,7 +161,7 @@ public class EmployeeStepDefinitions extends BaseStepDefinitions{
     @When("I set the daily and absolute transfer limit for the customer with the following details:")
     public void iUpdateTheDailyTransferLimitForTheAccount(io.cucumber.datatable.DataTable dataTable) {
 
-        Account account ;
+        Account account;
         AccountDto accountDto = new AccountDto();
 
         List<Map<String, String>> data = dataTable.asMaps(String.class, String.class);
@@ -171,7 +169,7 @@ public class EmployeeStepDefinitions extends BaseStepDefinitions{
         float dailyTransferLimit = Float.parseFloat(data.get(0).get("dailyTransferLimit"));
         float absoluteTransferLimit = Float.parseFloat(data.get(0).get("absoluteTransferLimit"));
 
-        Optional <Account> optionalAccount = accountService.getAccountByIBAN(accountIBAN);
+        Optional<Account> optionalAccount = accountService.getAccountByIBAN(accountIBAN);
         if (optionalAccount.isEmpty()) {
             throw new RuntimeException("Account not found");
         }
@@ -198,8 +196,7 @@ public class EmployeeStepDefinitions extends BaseStepDefinitions{
                     request,
                     String.class
             );
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to update account", e);
         }
     }
@@ -280,7 +277,7 @@ public class EmployeeStepDefinitions extends BaseStepDefinitions{
     // </editor-fold>
 
     // <editor-fold desc="Testing Scenario: Close customer account.">
-    @When ("I close the customer account")
+    @When("I close the customer account")
     public void iCloseTheCustomerAccount() {
         if (!prepareTheTestDummyCustomer()) {
             throw new RuntimeException("Failed to prepare the test dummy customer");
@@ -340,8 +337,7 @@ public class EmployeeStepDefinitions extends BaseStepDefinitions{
     }
     // </editor-fold>
 
-    private boolean prepareTheTestDummyCustomer()
-    {
+    private boolean prepareTheTestDummyCustomer() {
         try {
             // set the cutomer account state to unverified
             // delete all the accounts related to him
@@ -363,8 +359,7 @@ public class EmployeeStepDefinitions extends BaseStepDefinitions{
             for (Account account : accounts) {
                 accountRepository.deleteById(account.getAccountId());
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return false;
         }
 

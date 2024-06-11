@@ -42,3 +42,38 @@ Feature: All that is related to customer service.
     When Customer retrieves filtered transactions for their account with endpoint "transactions/account/NL00INHO0127227054?username=igmas@gmail.com&role=CUSTOMER&toIban=NL00INHO0854894591"
     Then Customer gets a list of transactions
     And Customer gets http status 200
+
+
+  # Ignas - Scenario for getting customer details by email
+  # NOTE: these details could change depending, if the customer details have been changed
+  Scenario: Customer gets details by email
+    Given The endpoint for "customers/email/tester@tester.nl" is available for method "GET" and the customer is logged in
+    When The customer sends a GET request to the endpoint with email "tester@tester.nl"
+    Then The response body contains the customer details:
+      | userId | 34 |
+      | username | testertestington |
+      | email | tester@tester.nl |
+      | firstName | tester |
+      | lastName | testington |
+      | bankName | Bank of the Netherlands |
+      | userRole | CUSTOMER |
+      | bsn | 067896789 |
+      | phoneNumber | 0698769876 |
+      | accountApprovalStatus | VERIFIED |
+    And Customer gets http status 200
+
+  Scenario: Customer gets details by id
+    Given The endpoint for "customers/id/34" is available for method "GET" and the customer is logged in
+    When The customer sends a GET request to the endpoint with id 34
+    Then The response body contains the customer details:
+      | userId | 34 |
+      | username | testertestington |
+      | email | tester@tester.nl |
+      | firstName | tester |
+      | lastName | testington |
+      | bankName | Bank of the Netherlands |
+      | userRole | CUSTOMER |
+      | bsn | 067896789 |
+      | phoneNumber | 0698769876 |
+      | accountApprovalStatus | VERIFIED |
+    And Customer gets http status 200
