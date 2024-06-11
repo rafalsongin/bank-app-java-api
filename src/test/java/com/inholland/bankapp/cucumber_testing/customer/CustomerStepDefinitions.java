@@ -107,6 +107,7 @@ public class CustomerStepDefinitions extends BaseStepDefinitions {
 
         try {
             String actualIban = response.getBody();
+            System.out.println("resp: " + response);
             // Assert the IBAN in the response
             Assertions.assertEquals(expectedIban, actualIban);
         } catch (Exception e) {
@@ -123,8 +124,8 @@ public class CustomerStepDefinitions extends BaseStepDefinitions {
         loginHeaders.setContentType(MediaType.APPLICATION_JSON);
 
         LoginDto loginDto = new LoginDto();
-        loginDto.setUsername("rafal.songin@gmail.com");
-        loginDto.setPassword("rafalsongin");
+        loginDto.setUsername("igmas@gmail.com");
+        loginDto.setPassword("igmas12345");
 
         HttpEntity<LoginDto> loginRequest = new HttpEntity<>(loginDto, loginHeaders);
 
