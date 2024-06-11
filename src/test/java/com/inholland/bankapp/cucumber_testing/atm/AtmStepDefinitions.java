@@ -1,7 +1,6 @@
 package com.inholland.bankapp.cucumber_testing.atm;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.inholland.bankapp.cucumber_testing.CommonStepDefinitions;
 import com.inholland.bankapp.cucumber_testing.BaseStepDefinitions;
 import com.inholland.bankapp.dto.AtmTransactionDto;
 import com.inholland.bankapp.dto.LoginDto;
@@ -18,7 +17,7 @@ import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class AtmStepDefinitions extends CommonStepDefinitions {
+public class AtmStepDefinitions extends BaseStepDefinitions {
 
     @Autowired
     private RestTemplate restTemplate;
@@ -26,13 +25,9 @@ public class AtmStepDefinitions extends CommonStepDefinitions {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private CommonStepDefinitions commonStepDefinitions;
-
     private HttpHeaders headers = new HttpHeaders();
-    private ResponseEntity<String> response;
-
     private static final Logger logger = Logger.getLogger(AtmStepDefinitions.class.getName());
+    private Exception exception;
 
     @PostConstruct
     public void init() {
@@ -49,7 +44,7 @@ public class AtmStepDefinitions extends CommonStepDefinitions {
     }
 
     private String authenticateCustomer(String email, String password) {
-        String loginUrl = "http://localhost:" + port + "/auth/login-atm"; // The authentication endpoint
+        String loginUrl = baseUrl + "/auth/login-atm"; // The authentication endpoint
         HttpHeaders loginHeaders = new HttpHeaders();
         loginHeaders.setContentType(MediaType.APPLICATION_JSON);
 
@@ -72,25 +67,21 @@ public class AtmStepDefinitions extends CommonStepDefinitions {
     public void theUserRetrievesTheCheckingAccountBalance() {
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
         try {
-            response = restTemplate.exchange("http://localhost:" + port + "/atm/balance", HttpMethod.GET, entity, String.class);
-            commonStepDefinitions.setResponse(response);
-        } catch (HttpServerErrorException e) {
+            response = restTemplate.exchange(baseUrl + "/atm/balance", HttpMethod.GET, entity, String.class);
+        } catch (HttpServerErrorException | HttpClientErrorException e) {
+            exception = e;
             logger.severe("Error during balance retrieval: " + e.getResponseBodyAsString());
-            throw e;
         }
     }
 
     @Then("The balance should be {double}")
     public void theBalanceShouldBe(double expectedBalance) {
-        response = commonStepDefinitions.getResponse();
+        if (exception != null) {
+            Assertions.fail("Exception occurred: " + exception.getMessage());
+        }
         Assertions.assertNotNull(response.getBody(), "Response body is null");
         double balance = Double.parseDouble(response.getBody());
         assertEquals(expectedBalance, balance);
-    }
-
-    @Then("The response status should be {int}")
-    public void theResponseStatusShouldBe(int statusCode) {
-        assertEquals(statusCode, getResponse().getStatusCodeValue());
     }
 
     @When("The user deposits {double} into the checking account")
@@ -100,17 +91,18 @@ public class AtmStepDefinitions extends CommonStepDefinitions {
         HttpEntity<AtmTransactionDto> entity = new HttpEntity<>(atmTransactionDto, headers);
         logger.info("Request headers for deposit: " + entity.getHeaders());
         try {
-            response = restTemplate.postForEntity("http://localhost:" + port + "/atm/deposit", entity, String.class);
-            commonStepDefinitions.setResponse(response);
+            response = restTemplate.postForEntity(baseUrl + "/atm/deposit", entity, String.class);
         } catch (HttpClientErrorException e) {
+            exception = e;
             logger.severe("Error during deposit: " + e.getResponseBodyAsString());
-            throw e;
         }
     }
 
     @And("The response should be {string}")
     public void theResponseShouldBe(String expectedResponse) {
-        response = commonStepDefinitions.getResponse();
+        if (exception != null) {
+            Assertions.fail("Exception occurred: " + exception.getMessage());
+        }
         assertEquals(expectedResponse, response.getBody());
     }
 
@@ -120,11 +112,23 @@ public class AtmStepDefinitions extends CommonStepDefinitions {
         atmTransactionDto.setAmount(amount);
         HttpEntity<AtmTransactionDto> entity = new HttpEntity<>(atmTransactionDto, headers);
         try {
-            response = restTemplate.postForEntity("http://localhost:" + port + "/atm/withdraw", entity, String.class);
-            commonStepDefinitions.setResponse(response);
+            response = restTemplate.postForEntity(baseUrl + "/atm/withdraw", entity, String.class);
         } catch (HttpClientErrorException e) {
+            exception = e;
             logger.severe("Error during withdrawal: " + e.getResponseBodyAsString());
-            throw e;
+        }
+    }
+
+    @Then("The response status should be {int}")
+    public void theResponseStatusShouldBe(int status) {
+        if (exception != null) {
+            Assertions.assertTrue(exception instanceof HttpClientErrorException, "Expected HttpClientErrorException but got: " + exception.getClass().getName());
+            HttpClientErrorException clientErrorException = (HttpClientErrorException) exception;
+            Assertions.assertEquals(status, clientErrorException.getStatusCode().value(), "Status code does not match");
+        } else {
+            Assertions.assertNotNull(response, "Response is null");
+            int actual = response.getStatusCode().value();
+            Assertions.assertEquals(status, actual);
         }
     }
 }
