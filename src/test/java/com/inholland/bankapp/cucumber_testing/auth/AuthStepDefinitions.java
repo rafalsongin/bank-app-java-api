@@ -2,18 +2,19 @@ package com.inholland.bankapp.cucumber_testing.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inholland.bankapp.cucumber_testing.BaseStepDefinitions;
+import com.inholland.bankapp.cucumber_testing.CommonStepDefinitions;
 import com.inholland.bankapp.dto.CustomerRegistrationDto;
 import com.inholland.bankapp.dto.LoginDto;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
-public class AuthStepDefinitions extends BaseStepDefinitions {
+public class AuthStepDefinitions extends CommonStepDefinitions {
 
     @Autowired
     private RestTemplate restTemplate;
@@ -36,8 +37,13 @@ public class AuthStepDefinitions extends BaseStepDefinitions {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<CustomerRegistrationDto> request = new HttpEntity<>(registrationDto, headers);
         String baseUrl = "http://localhost:" + port + "/auth";
-        ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/register", request, String.class);
-        // Handle the response here if needed
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/register", request, String.class);
+            setResponse(response);
+        } catch (HttpClientErrorException e) {
+            ResponseEntity<String> response = new ResponseEntity<>(e.getResponseBodyAsString(), e.getStatusCode());
+            setResponse(response);
+        }
     }
 
     @Given("The following login details")
@@ -49,8 +55,13 @@ public class AuthStepDefinitions extends BaseStepDefinitions {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<LoginDto> request = new HttpEntity<>(loginDto, headers);
         String baseUrl = "http://localhost:" + port + "/auth";
-        ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/login", request, String.class);
-        // Handle the response here if needed
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/login", request, String.class);
+            setResponse(response);
+        } catch (HttpClientErrorException e) {
+            ResponseEntity<String> response = new ResponseEntity<>(e.getResponseBodyAsString(), e.getStatusCode());
+            setResponse(response);
+        }
     }
 
     @When("The customer submits the registration form")
@@ -72,7 +83,12 @@ public class AuthStepDefinitions extends BaseStepDefinitions {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<LoginDto> request = new HttpEntity<>(loginDto, headers);
         String baseUrl = "http://localhost:" + port + "/auth";
-        ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/login-atm", request, String.class);
-        // Handle the response here if needed
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/login-atm", request, String.class);
+            setResponse(response);
+        } catch (HttpClientErrorException e) {
+            ResponseEntity<String> response = new ResponseEntity<>(e.getResponseBodyAsString(), e.getStatusCode());
+            setResponse(response);
+        }
     }
 }

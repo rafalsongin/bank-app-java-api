@@ -1,17 +1,11 @@
 package com.inholland.bankapp.cucumber_testing;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 
-@Component
-public class CommonStepDefinitions {
-    private ResponseEntity<String> response;
+@Setter
+@Getter
+public class CommonStepDefinitions extends BaseStepDefinitions {
 
-    public ResponseEntity<String> getResponse() {
-        return response;
-    }
-
-    public void setResponse(ResponseEntity<String> response) {
-        this.response = response;
-    }
 }
