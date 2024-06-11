@@ -1,10 +1,12 @@
 package com.inholland.bankapp.cucumber_testing.atm;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inholland.bankapp.cucumber_testing.BaseStepDefinitions;
 import com.inholland.bankapp.dto.AtmTransactionDto;
 import com.inholland.bankapp.dto.LoginDto;
-import io.cucumber.java.en.*;
+import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +23,6 @@ public class AtmStepDefinitions extends BaseStepDefinitions {
 
     @Autowired
     private RestTemplate restTemplate;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     private HttpHeaders headers = new HttpHeaders();
     private static final Logger logger = Logger.getLogger(AtmStepDefinitions.class.getName());

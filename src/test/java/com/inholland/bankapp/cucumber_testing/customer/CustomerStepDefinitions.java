@@ -1,57 +1,30 @@
 package com.inholland.bankapp.cucumber_testing.customer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.inholland.bankapp.dto.AccountDto;
+import com.inholland.bankapp.cucumber_testing.BaseStepDefinitions;
 import com.inholland.bankapp.dto.LoginDto;
-import com.inholland.bankapp.model.Account;
-import com.inholland.bankapp.model.AccountApprovalStatus;
-import com.inholland.bankapp.model.Customer;
 import com.jayway.jsonpath.JsonPath;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.cucumber.spring.CucumberContextConfiguration;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
-import com.inholland.bankapp.dto.TransactionDto;
-import com.inholland.bankapp.service.AccountService;
-import com.inholland.bankapp.service.CustomerService;
-import com.inholland.bankapp.repository.CustomerRepository;
-import com.inholland.bankapp.repository.AccountRepository;
 
-
-import java.io.IOException;
-import java.util.*;
-import com.inholland.bankapp.cucumber_testing.BaseStepDefinitions;
-
-import io.cucumber.java.en.Given;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class CustomerStepDefinitions extends BaseStepDefinitions {
 
     // <editor-fold desc="Variables">
     @Autowired
     private TestRestTemplate restTemplate;
-    @Autowired
-    private ObjectMapper mapper;
-
-    @Autowired
-    private AccountService accountService;
-    @Autowired
-    private CustomerService customerService;
-    @Autowired
-    private CustomerRepository customerRepository;
-    @Autowired
-    private AccountRepository accountRepository;
-
-    private HttpHeaders httpHeaders = new HttpHeaders();
+    private final HttpHeaders httpHeaders = new HttpHeaders();
     private ResponseEntity<String> response;
-
-    private final static int TEST_USER_ID = 27;
 
     // </editor-fold>
 
@@ -190,7 +163,7 @@ public class CustomerStepDefinitions extends BaseStepDefinitions {
                 String actualValue = JsonPath.read(responseBody, "$." + entry.getKey()).toString();
                 Assertions.assertEquals(entry.getValue(), actualValue, "Mismatch for field: " + entry.getKey());
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             Assertions.fail("Failed test: " + e);
         }
     }
